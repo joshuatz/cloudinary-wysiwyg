@@ -5,9 +5,11 @@ class AccountSettingsPanel extends Component {
     super(props);
     // Constants
     this.LOCALSTORAGEKEY = 'accountSettings';
+    //this.reset();
     // Set the initial state
     var defaultState = {
-      cloudName : ''
+      cloudinaryCloudName : '',
+      fetchInstantly : false
     }
     if (localStorage.getItem(this.LOCALSTORAGEKEY)){
       // Attempt to fill state from storage
@@ -26,25 +28,59 @@ class AccountSettingsPanel extends Component {
     console.log(this.state);
   }
   handleChange(e){
-    if (this.state.cloudName!==e.target.value){
+    console.log(e.target);
+
+    // Use the id of the input as the storage key
+    let settingKey = e.target.id;
+
+    // Get value dependent on type of input
+    let value = (e.target.type==='checkbox' ? e.target.checked : e.target.value);
+    
+    if (this.state[settingKey]!==value){
+      // Make sure to use callback!
       this.setState({
-        cloudName : e.target.value
+        [settingKey] : value
+      },()=>{
+        console.group('state');
+          console.log(this.state);
+        console.groupEnd();
+        this.saveItDown();
       });
-      this.saveItDown();
-      console.log(this.state);
     }
   }
   saveItDown(){
     localStorage.setItem(this.LOCALSTORAGEKEY,JSON.stringify(this.state));
   }
+  reset(){
+    localStorage.removeItem(this.LOCALSTORAGEKEY);
+  }
+
+  test(){
+
+  }
   render() {
     return (
-        <div className="accountSettingsPanelWrapper row">
-            <div className="accountSettingsPanel input-field col s6">
-                <input id="cloudinaryCloudName" type="text" name="cloudinaryCloudName" value={this.state.cloudName} onChange={this.handleChange.bind(this)} onKeyUp={this.handleChange.bind(this)} />
-                <label htmlFor="cloudinaryCloudName">Your Cloud Name</label>
+      <div className="accountSettingsPanelWrapper">
+        <div className="row valign-wrapper">
+            <div className="input-field col s5">
+              <input id="cloudinaryCloudName" type="text" name="cloudinaryCloudName" value={this.state.cloudinaryCloudName} onChange={this.handleChange.bind(this)} onKeyUp={this.handleChange.bind(this)} />
+              <label htmlFor="cloudinaryCloudName">Your Cloud Name</label>
+            </div>
+            <div className="col s6 offset-s1 center">
+              <div className="valign-wrapper">
+                <div className="switchHeading">Instant Rendering</div>
+                <div className="switch">
+                  <label>
+                    Off
+                    <input id="fetchInstantly" type="checkbox" checked={this.state.fetchInstantly} onChange={this.handleChange.bind(this)} />
+                    <span className="lever"></span>
+                    On
+                  </label>
+                </div>
+              </div>
             </div>
         </div>
+      </div>
     );
   }
 }
