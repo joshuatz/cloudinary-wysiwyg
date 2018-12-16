@@ -5,12 +5,8 @@ class AccountSettingsPanel extends Component {
     super(props);
     // Constants
     this.LOCALSTORAGEKEY = 'accountSettings';
-    //this.reset();
     // Set the initial state
-    var defaultState = {
-      cloudinaryCloudName : '',
-      fetchInstantly : false
-    }
+    var defaultState = this.getDefaultState();
     if (localStorage.getItem(this.LOCALSTORAGEKEY)){
       // Attempt to fill state from storage
       let newState = defaultState;
@@ -26,6 +22,13 @@ class AccountSettingsPanel extends Component {
       this.state = defaultState;
     }
     console.log(this.state);
+  }
+
+  getDefaultState(){
+    return {
+      cloudinaryCloudName : '',
+      fetchInstantly : false
+    }
   }
   handleChange(e){
     console.log(e.target);
@@ -52,11 +55,8 @@ class AccountSettingsPanel extends Component {
     localStorage.setItem(this.LOCALSTORAGEKEY,JSON.stringify(this.state));
   }
   reset(){
+    this.setState(this.getDefaultState());
     localStorage.removeItem(this.LOCALSTORAGEKEY);
-  }
-
-  test(){
-
   }
   render() {
     return (
@@ -79,6 +79,11 @@ class AccountSettingsPanel extends Component {
                 </div>
               </div>
             </div>
+        </div>
+        <div className="row center">
+          <div className="col s4 offset-s4 center">
+            <div className="btn red" onClick={this.reset.bind(this)}>Reset</div>
+          </div>
         </div>
       </div>
     );
