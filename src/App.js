@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import AccountSettingsPanel from './components/AccountSettingsPanel';
 import LogPanel from './components/LogPanel';
+import CanvasWrapper from './components/editor/CanvasWrapper';
 import './App.css';
 
 class App extends Component {
@@ -34,6 +35,7 @@ class App extends Component {
     return (
       <div className="App">
         <AccountSettingsPanel mainMethods={this.mainMethods} />
+        <CanvasWrapper mainMethods={this.mainMethods} />
         <LogPanel logQueue={this.state.logQueue} />
       </div>
     );
