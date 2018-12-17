@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import LogPanel from './LogPanel';
 
 class AccountSettingsPanel extends Component {
   constructor(props){
@@ -57,6 +58,7 @@ class AccountSettingsPanel extends Component {
   reset(){
     this.setState(this.getDefaultState());
     localStorage.removeItem(this.LOCALSTORAGEKEY);
+    this.props.mainMethods.addMsg('Reset Settings');
   }
   render() {
     return (

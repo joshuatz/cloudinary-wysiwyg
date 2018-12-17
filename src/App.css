@@ -1,3 +1,6 @@
+/**
+* Start of create-react-app default CSS
+*/
 .App {
   text-align: center;
 }
@@ -29,4 +32,17 @@
   to {
     transform: rotate(360deg);
   }
+}
+/**
+* END of create-react-app default CSS
+*/
+
+/**
+* Start of my custom CSS
+*/
+.logPanel {
+  font-family: monospace;
+  color: greenyellow;
+  background-color: black;
+  min-height: 400px;
 }

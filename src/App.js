@@ -1,12 +1,40 @@
 import React, { Component } from 'react';
 import AccountSettingsPanel from './components/AccountSettingsPanel';
+import LogPanel from './components/LogPanel';
 import './App.css';
 
 class App extends Component {
+  constructor(){
+    super();
+    this.state = {
+      logQueue : []
+    }
+  }
+  addMsg(msg,callback){
+    // Prepend timestamp to msg
+    let stamp = (new Date()).toLocaleTimeString();
+    msg = stamp + ' - ' + msg;
+    callback = (callback || (()=>{}));
+    let queue = this.state.logQueue;
+    console.log(queue);
+    // Push to the front of queue
+    queue.unshift(msg);
+    // Only keep 10 messages in queue
+    if (queue.length > 10){
+      queue = queue.slice(0,11);
+    }
+    this.setState({
+      logQueue : queue
+    },callback);
+  }
+  mainMethods = {
+    addMsg : this.addMsg.bind(this)
+  }
   render() {
     return (
       <div className="App">
-        <AccountSettingsPanel />
+        <AccountSettingsPanel mainMethods={this.mainMethods} />
+        <LogPanel logQueue={this.state.logQueue} />
       </div>
     );
   }
