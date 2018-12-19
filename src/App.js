@@ -8,7 +8,11 @@ class App extends Component {
   constructor(){
     super();
     this.state = {
-      logQueue : []
+      logQueue : [],
+      editor : {
+        canvasObj : {},
+        layers : []
+      }
     }
   }
   addMsg(msg,callback){
@@ -35,7 +39,7 @@ class App extends Component {
     return (
       <div className="App">
         <AccountSettingsPanel mainMethods={this.mainMethods} />
-        <CanvasWrapper mainMethods={this.mainMethods} />
+        <CanvasWrapper mainMethods={this.mainMethods} editorData={this.state.editor} />
         <LogPanel logQueue={this.state.logQueue} />
       </div>
     );

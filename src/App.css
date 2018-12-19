@@ -46,3 +46,29 @@
   background-color: black;
   min-height: 400px;
 }
+.canvasWrapper .canvas-container {
+  border: 4px dashed black;
+  margin-left: auto;
+  margin-right: auto;
+}
+/*
+.canvasWrapper .canvas-container {
+  width: 100% !important;
+}
+.canvasWrapper #editorCanvas {
+  width: 100% !important;
+}
+*/
+
+/**
+* Toolbar Panel
+*/
+.toolbarButton {
+  background-color: black;
+  color : white;
+  display: inline-block;
+  width: calc(100% / 3);
+  margin-left: auto;
+  margin-right: auto;
+  min-height: 60px;
+}
