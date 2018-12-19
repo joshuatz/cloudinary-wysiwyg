@@ -7,7 +7,8 @@ class CanvasWrapper extends Component {
   constructor(props){
     super(props);
     this.state = {
-      counter : 0
+      counter : 0,
+      editorData : this.props.editorData
     }
   }
   canvasStyles = {
@@ -29,11 +30,14 @@ class CanvasWrapper extends Component {
     });
 
     canvas.add(rect);
-    this.props.editorData.canvasObj = canvas;
+    //this.props.editorData.canvasObj = canvas;
+    let editorData = this.state.editorData;
+    editorData.canvasObj = canvas;
     console.log(this.props);
     //debugger;
     this.setState({
-      counter : ++this.state.counter
+      counter : ++this.state.counter,
+      editorData : editorData
     });
   }
   render(){
@@ -44,7 +48,7 @@ class CanvasWrapper extends Component {
             <canvas id="editorCanvas" style={this.canvasStyles}></canvas>
           </div>
           <div className="col s3">
-            <ToolPanel editorData={this.props.editorData} counter={this.state.counter} />
+            <ToolPanel editorData={this.state.editorData} counter={this.state.counter} />
           </div>
           <div className="col s3">
             <LayersPanel />

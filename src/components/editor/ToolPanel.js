@@ -13,6 +13,7 @@ class ToolPanel extends Component {
     console.log(this.props);
     //debugger;
     this.setState({
+      editorData : this.props.editorData,
       canvasObj : this.props.editorData.canvasObj,
       fabric : window.fabric
     },function(){
@@ -30,7 +31,8 @@ class ToolPanel extends Component {
       name : 'Squre Shape',
       action : function(){
         //let canvas = this.getCanvas();
-        let canvas = this.state.canvasObj;
+        //let canvas = this.state.canvasObj;
+        let canvas = this.state.editorData.canvasObj;
         let fabric = this.state.fabric;
         let rect = new fabric.Rect({
           top : 50,
