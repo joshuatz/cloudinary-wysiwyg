@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import LayersPanel from './LayersPanel';
 import ImageAssets from './ImageAssets';
 import ToolPanel from './ToolPanel';
+import PaintSelector from './PaintSelector';
 
 class CanvasWrapper extends Component {
   constructor(props){
@@ -49,6 +50,9 @@ class CanvasWrapper extends Component {
           </div>
           <div className="col s3">
             <ToolPanel editorData={this.state.editorData} counter={this.state.counter} />
+          </div>
+          <div className="col s3">
+            <PaintSelector />
           </div>
           <div className="col s3">
             <LayersPanel />
