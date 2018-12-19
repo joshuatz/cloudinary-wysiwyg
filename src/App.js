@@ -11,6 +11,7 @@ class App extends Component {
       logQueue : [],
       editorData : {
         canvasObj : {},
+        isItemSelected : false,
         layers : [],
         currSelectedColor : {
           'hex' : '#4a90e2'

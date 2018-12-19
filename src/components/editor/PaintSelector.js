@@ -8,7 +8,7 @@ class PaintSelector extends Component {
   }
 
   state = {
-    background: '#fff',
+    background: this.props.startingColor.hex
   };
 
   componentDidMount(){
