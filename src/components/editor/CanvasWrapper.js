@@ -29,6 +29,10 @@ class CanvasWrapper extends Component {
     });
   }
 
+  clearCanvas(){
+    this.state.editorData.canvasObj.clear();
+  }
+
   handleShapeSelect(shape){
     console.log(shape);
   }
@@ -68,7 +72,8 @@ class CanvasWrapper extends Component {
     },
     canvas : {
       handleShapeSelect : this.handleShapeSelect.bind(this),
-      addRect : this.addRect.bind(this)
+      addRect : this.addRect.bind(this),
+      clearCanvas : this.clearCanvas.bind(this)
     }
   }
   render(){

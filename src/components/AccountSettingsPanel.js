@@ -59,6 +59,7 @@ class AccountSettingsPanel extends Component {
     this.setState(this.getDefaultState());
     localStorage.removeItem(this.LOCALSTORAGEKEY);
     this.props.mainMethods.addMsg('Reset Settings');
+    this.props.mainMethods.resetEverything();
   }
   render() {
     return (

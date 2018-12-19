@@ -10,7 +10,7 @@ class App extends Component {
     this.state = {
       logQueue : [],
       editorData : {
-        canvasObj : {'foo':'bar'},
+        canvasObj : {},
         layers : [],
         currSelectedColor : {
           'hex' : '#4a90e2'
@@ -36,8 +36,15 @@ class App extends Component {
     },callback);
     console.log(this.state);
   }
+  resetEverything(){
+    let canvas = this.state.editorData.canvasObj;
+    if (canvas && canvas['targets']){
+      canvas.clear();
+    }
+  }
   mainMethods = {
-    addMsg : this.addMsg.bind(this)
+    addMsg : this.addMsg.bind(this),
+    resetEverything : this.resetEverything.bind(this)
   }
   render() {
     return (
