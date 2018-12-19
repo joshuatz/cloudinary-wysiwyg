@@ -4,7 +4,6 @@ class ToolPanel extends Component {
   constructor(props){
     super(props);
     this.state = {
-      canvasObj : {},
       fabric : {}
     }
   }
@@ -25,6 +24,10 @@ class ToolPanel extends Component {
     return this.props.editorData.canvasObj;
   }
 
+  handleShapeSelect(shape){
+    console.log(shape);
+  }
+
   buttons = [
     {
       icon : 'fa-vector-square',
@@ -42,6 +45,9 @@ class ToolPanel extends Component {
           fill : 'blue'
         });
         canvas.add(rect);
+        rect.on('selected',()=>{
+          this.handleShapeSelect(rect);
+        });
       }
     },
     {

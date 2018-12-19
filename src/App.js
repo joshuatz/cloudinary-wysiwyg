@@ -10,7 +10,7 @@ class App extends Component {
     this.state = {
       logQueue : [],
       editor : {
-        canvasObj : {},
+        canvasObj : {'foo':'bar'},
         layers : []
       }
     }
