@@ -1,27 +1,29 @@
 import React, {Component} from 'react';
 import {SketchPicker} from 'react-color';
+import {ChromePicker} from 'react-color';
 
 class PaintSelector extends Component {
   constructor(props){
     super(props);
-    this.state = {
-      selectedColor : ''
-    }
   }
+
+  state = {
+    background: '#fff',
+  };
 
   componentDidMount(){
     //
   }
 
   handleChangeComplete = (color, event) => {
-    console.log(color);
-    console.log(event);
+    this.setState({ background: color.hex });
+    this.props.mainMethods.colors.handleColorSelect(color,event);
   }
 
   render(){
     return (
-      <div>
-        <SketchPicker onChangeComplete={ this.handleChangeComplete }/>
+      <div className="colorPickerWrapper">
+        <ChromePicker onChangeComplete={this.handleChangeComplete} color={this.state.background}/>
       </div>
     )
   }

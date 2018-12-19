@@ -24,41 +24,22 @@ class ToolPanel extends Component {
     return this.props.editorData.canvasObj;
   }
 
-  handleShapeSelect(shape){
-    console.log(shape);
-  }
-
   buttons = [
     {
       icon : 'fa-vector-square',
       name : 'Squre Shape',
       action : function(){
-        //let canvas = this.getCanvas();
-        //let canvas = this.state.canvasObj;
-        let canvas = this.state.editorData.canvasObj;
-        let fabric = this.state.fabric;
-        let rect = new fabric.Rect({
-          top : 50,
-          left : 50,
-          width: 100,
-          height : 100,
-          fill : 'blue'
-        });
-        canvas.add(rect);
-        rect.on('selected',()=>{
-          this.handleShapeSelect(rect);
-        });
+        this.props.mainMethods.canvas.addRect();
       }
     },
     {
       icon : 'fa-file-image',
       name : 'Add Image',
       action : function(){
-
       }
     },
     {
-      icon : '',
+      icon : 'fa-layer-group',
       name : 'Add Layer',
       action : function(){
 
@@ -68,7 +49,7 @@ class ToolPanel extends Component {
       icon : 'fa-paint-roller',
       name : 'Add Background',
       action : function(){
-
+        
       }
     }
   ]

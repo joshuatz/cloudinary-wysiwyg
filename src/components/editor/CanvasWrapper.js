@@ -9,6 +9,7 @@ class CanvasWrapper extends Component {
     super(props);
     this.state = {
       counter : 0,
+      fabric : window.fabric,
       editorData : this.props.editorData
     }
   }
@@ -21,43 +22,72 @@ class CanvasWrapper extends Component {
       width : 400,
       height : 400
     });
- 
-    var rect = new fabric.Rect({
-        top : 100,
-        left : 100,
-        width : 60,
-        height : 70,
-        fill : 'red'
-    });
-
-    canvas.add(rect);
-    //this.props.editorData.canvasObj = canvas;
     let editorData = this.state.editorData;
     editorData.canvasObj = canvas;
-    console.log(this.props);
-    //debugger;
     this.setState({
-      counter : ++this.state.counter,
       editorData : editorData
     });
+  }
+
+  handleShapeSelect(shape){
+    console.log(shape);
+  }
+  handleColorSelect(color,event){
+    console.log(color);
+    console.log(event);
+    let editorData = this.state.editorData;
+    editorData.currSelectedColor = color;
+    this.setState({
+      editorData : editorData
+    });
+  }
+  getSelectedObjColor(){
+    
+  }
+  getCurrSelectedColor(){
+    return this.state.editorData.currSelectedColor;
+  }
+  addRect(){
+    let canvas = this.state.editorData.canvasObj;
+    let fabric = this.state.fabric;
+    let rect = new fabric.Rect({
+      top : 50,
+      left : 50,
+      width: 100,
+      height : 100,
+      fill : this.getCurrSelectedColor().hex
+    });
+    canvas.add(rect);
+    rect.on('selected',()=>{
+      this.handleShapeSelect(rect);
+    });
+  }
+  mainMethods = {
+    colors : {
+      handleColorSelect : this.handleColorSelect.bind(this)
+    },
+    canvas : {
+      handleShapeSelect : this.handleShapeSelect.bind(this),
+      addRect : this.addRect.bind(this)
+    }
   }
   render(){
     return(
       <div className="canvasWrapper">
         <div className="row">
-          <div className="col s9">
+          <div className="col s7">
             <canvas id="editorCanvas" style={this.canvasStyles}></canvas>
           </div>
-          <div className="col s3">
-            <ToolPanel editorData={this.state.editorData} counter={this.state.counter} />
+          <div className="col s5">
+            <ToolPanel editorData={this.state.editorData} mainMethods={this.mainMethods}/>
           </div>
-          <div className="col s3">
-            <PaintSelector />
+          <div className="col s5">
+            <PaintSelector mainMethods={this.mainMethods} />
           </div>
-          <div className="col s3">
+          <div className="col s5">
             <LayersPanel />
           </div>
-          <div className="col s3">
+          <div className="col s5">
             <ImageAssets />
           </div>
         </div>

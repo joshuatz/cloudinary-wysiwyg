@@ -65,13 +65,22 @@
 */
 .toolbarButton {
   background-color: black;
-  color : white;
+  color: white;
   display: inline-block;
-  width: calc(100% / 3);
-  margin-left: auto;
+  width: calc(97% / 3);
   margin-right: auto;
-  min-height: 60px;
+  min-height: 66px;
+  max-width: calc(97% / 3);
+  margin-left: 1%;
+  margin-top: 4px;
+  float: left;
 }
 .toolbarButton > i {
   margin-right: 10px;
+}
+.colorPickerWrapper {
+  padding-top: 8px;
+}
+.colorPickerWrapper, .colorPickerWrapper > div{
+  margin: auto;
 }

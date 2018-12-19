@@ -9,9 +9,12 @@ class App extends Component {
     super();
     this.state = {
       logQueue : [],
-      editor : {
+      editorData : {
         canvasObj : {'foo':'bar'},
-        layers : []
+        layers : [],
+        currSelectedColor : {
+          'hex' : '#4a90e2'
+        }
       }
     }
   }
@@ -40,7 +43,7 @@ class App extends Component {
     return (
       <div className="App">
         <AccountSettingsPanel mainMethods={this.mainMethods} />
-        <CanvasWrapper mainMethods={this.mainMethods} editorData={this.state.editor} />
+        <CanvasWrapper mainMethods={this.mainMethods} editorData={this.state.editorData} />
         <LogPanel logQueue={this.state.logQueue} />
       </div>
     );
