@@ -6,6 +6,9 @@ import ToolPanel from './ToolPanel';
 class CanvasWrapper extends Component {
   constructor(props){
     super(props);
+    this.state = {
+      counter : 0
+    }
   }
   canvasStyles = {
     // width : '100%'
@@ -28,19 +31,25 @@ class CanvasWrapper extends Component {
     canvas.add(rect);
     this.props.editorData.canvasObj = canvas;
     console.log(this.props);
+    //debugger;
+    this.setState({
+      counter : ++this.state.counter
+    });
   }
   render(){
     return(
       <div className="canvasWrapper">
         <div className="row">
-          <div className="col s12">
+          <div className="col s9">
             <canvas id="editorCanvas" style={this.canvasStyles}></canvas>
           </div>
-        </div>
-        <div className="row">
-          <div className="col s6">
+          <div className="col s3">
+            <ToolPanel editorData={this.props.editorData} counter={this.state.counter} />
+          </div>
+          <div className="col s3">
             <LayersPanel />
-            <ToolPanel />
+          </div>
+          <div className="col s3">
             <ImageAssets />
           </div>
         </div>

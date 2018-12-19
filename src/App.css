@@ -72,3 +72,6 @@
   margin-right: auto;
   min-height: 60px;
 }
+.toolbarButton > i {
+  margin-right: 10px;
+}

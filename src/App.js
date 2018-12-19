@@ -31,6 +31,7 @@ class App extends Component {
     this.setState({
       logQueue : queue
     },callback);
+    console.log(this.state);
   }
   mainMethods = {
     addMsg : this.addMsg.bind(this)
