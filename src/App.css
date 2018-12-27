@@ -61,6 +61,17 @@
 */
 
 /**
+* Helpers
+*/
+.hidden {
+  display:  none !important;
+}
+.autoCenter {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/**
 * Toolbar Panel
 */
 .toolbarButton {
@@ -83,4 +94,11 @@
 }
 .colorPickerWrapper, .colorPickerWrapper > div{
   margin: auto;
+}
+
+/**
+* Image Selector Modal
+*/
+.ImageSelectorWrapper .button {
+  margin-left: 10px;
 }

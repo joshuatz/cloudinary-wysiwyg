@@ -127,7 +127,7 @@ class CanvasWrapper extends Component {
   modals = {
     imageSelector : {
       launch : function(){
-        this.Helpers.mtz.modal('.ImageSelectorModal').open();
+        this.Helpers.mtz.modal('.imageHostingMethodSelector').open();
       }.bind(this)
     }
   }

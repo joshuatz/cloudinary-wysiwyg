@@ -57,7 +57,7 @@ class ToolPanel extends Component {
   render(){
     let buttonsHTML = this.buttons.map((val,index)=>{
       return (
-          <button className="toolbarButton" onClick={val.action.bind(this)}>
+          <button className="toolbarButton" key={'tlbb_' + index} onClick={val.action.bind(this)}>
             <i className={"fas " + val.icon}></i>{val.name}
           </button>
       )

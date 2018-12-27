@@ -8,8 +8,9 @@ class Helpers {
   mtz = {
     init : function(){
       let $ = this.$;
-      //$('.modal').modal();
-      this.Materialize.AutoInit();
+      $(document).ready(function(){
+        this.Materialize.AutoInit();
+      }.bind(this));
     }.bind(this),
     modal : function(selector){
       let $ = this.$;
