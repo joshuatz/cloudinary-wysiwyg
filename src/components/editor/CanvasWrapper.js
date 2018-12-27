@@ -161,6 +161,10 @@ class CanvasWrapper extends Component {
     }
   }
 
+  generateCloudinaryAsset(){
+    
+  }
+
   modals = {
     imageSelector : {
       launch : function(){
