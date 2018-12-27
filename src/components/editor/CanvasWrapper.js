@@ -18,23 +18,13 @@ class CanvasWrapper extends Component {
     this.$ = window.jQuery;
     this.Materialize = window.M;
     this.Helpers = new Helpers();
+    this.appMethods = this.props.appMethods;
   }
-  /**
-   * Update state.editorData with any prop-val pair
-   */
-  mergeEditorData(prop,val,OPT_Callback){
-    let callback = (OPT_Callback || (()=>{}));
-    let state = this.state;
-    let editorData = this.state.editorData;
-    editorData[prop] = val;
-    state.editorData = editorData;
-    this.setState(state,()=>{
-      callback(state);
-    });
-  }
+
   canvasStyles = {
     // width : '100%'
   }
+
   componentDidMount(){
     let fabric = window.fabric;
     var canvas = new fabric.Canvas('editorCanvas',{
@@ -60,11 +50,11 @@ class CanvasWrapper extends Component {
   }
 
   handleShapeSelect(shape){
-    this.mergeEditorData('isItemSelected',true);
+    this.appMethods.mergeEditorData('isItemSelected',true);
     console.log(shape);
   }
   handleNoSelection(){
-    this.mergeEditorData('isItemSelected',false);
+    this.appMethods.mergeEditorData('isItemSelected',false);
   }
   handleColorSelect(color,event){
     console.log(color);
@@ -92,7 +82,7 @@ class CanvasWrapper extends Component {
     if (this.state.editorData.isItemSelected){
       if (!canvas.getActiveObject()){
         // Nothing selected
-        this.mergeEditorData('isItemSelected',false);
+        this.appMethods.mergeEditorData('isItemSelected',false);
       }
       else if (typeof(canvas.getActiveObject()['_objects'])!=='undefined'){
         // Group selected
@@ -140,7 +130,7 @@ class CanvasWrapper extends Component {
       // Need to create IMG element. Update state and wil prompt re-render and creation of element
       let currImages = this.state.editorData.images;
       currImages.urls.push(url);
-      this.mergeEditorData('images',currImages,(newState)=>{
+      this.appMethods.mergeEditorData('images',currImages,(newState)=>{
         //@TODO refactor this to use a componentDidUpdate hook or something else to make sure image is now in DOM and can use, instead of timeout
         setTimeout(()=>{
           console.log(_this);
@@ -174,6 +164,7 @@ class CanvasWrapper extends Component {
   }
 
   mainMethods = {
+    appMethods : this.props.appMethods,
     colors : {
       handleColorSelect : this.handleColorSelect.bind(this)
     },

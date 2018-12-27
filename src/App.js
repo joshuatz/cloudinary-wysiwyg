@@ -5,10 +5,12 @@ import LogPanel from './components/LogPanel';
 import CanvasWrapper from './components/editor/CanvasWrapper';
 import './App.css';
 import ImageSelector from './components/editor/modals/ImageSelector';
+import Helpers from './inc/Helpers';
 
 class App extends Component {
   constructor(){
     super();
+    // Using this as top-level state
     this.state = {
       logQueue : [],
       editorData : {
@@ -25,14 +27,26 @@ class App extends Component {
       }
     }
     this.jQuery = window.jQuery;
+    this.helpers = new Helpers();
   }
+
+  mergeMasterState(targetProp,newVal,OPT_Callback){
+    let callback = (OPT_Callback || (()=>{}));
+    let updatedState = this.state;
+    this.helpers.index(updatedState,targetProp,newVal);
+    this.setState(updatedState,callback);
+  }
+
+  mergeEditorData(targetProp,newVal,OPT_Callback){
+    targetProp = 'editorData.' + targetProp;
+    this.mergeMasterState(targetProp,newVal,OPT_Callback);
+  }
+
   addMsg(msg,callback){
     // Prepend timestamp to msg
-    let stamp = (new Date()).toLocaleTimeString();
-    msg = stamp + ' - ' + msg;
+    msg = (new Date()).toLocaleTimeString() + ' - ' + msg;
     callback = (callback || (()=>{}));
     let queue = this.state.logQueue;
-    console.log(queue);
     // Push to the front of queue
     queue.unshift(msg);
     // Only keep 10 messages in queue
@@ -42,7 +56,6 @@ class App extends Component {
     this.setState({
       logQueue : queue
     },callback);
-    console.log(this.state);
   }
   resetEverything(){
     let canvas = this.state.editorData.canvasObj;
@@ -50,9 +63,11 @@ class App extends Component {
       canvas.clear();
     }
   }
-  mainMethods = {
+  appMethods = {
     addMsg : this.addMsg.bind(this),
-    resetEverything : this.resetEverything.bind(this)
+    resetEverything : this.resetEverything.bind(this),
+    mergeMasterState : this.mergeMasterState.bind(this),
+    mergeEditorData : this.mergeEditorData.bind(this)
   }
 
   fireUpdateHooks(){
@@ -73,8 +88,8 @@ class App extends Component {
     return (
       <div className="App">
         <Init />
-        <AccountSettingsPanel mainMethods={this.mainMethods} />
-        <CanvasWrapper mainMethods={this.mainMethods} editorData={this.state.editorData} />
+        <AccountSettingsPanel appMethods={this.appMethods} />
+        <CanvasWrapper appMethods={this.appMethods} editorData={this.state.editorData} />
         <LogPanel logQueue={this.state.logQueue} />
       </div>
     );
