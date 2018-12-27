@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import Helpers from '../../inc/Helpers';
 import LayersPanel from './panels/LayersPanel';
 import ImageAssets from './panels/ImageAssets';
 import ToolPanel from './panels/ToolPanel';
@@ -12,6 +13,9 @@ class CanvasWrapper extends Component {
       fabric : window.fabric,
       editorData : this.props.editorData
     }
+    this.jQuery = window.jQuery;
+    this.Materialize = window.M;
+    this.Helpers = new Helpers();
   }
   mergeEditorData(prop,val,OPT_Callback){
     let callback = (OPT_Callback || (()=>{}));
@@ -120,6 +124,14 @@ class CanvasWrapper extends Component {
     //
   }
 
+  modals = {
+    imageSelector : {
+      launch : function(){
+        this.Helpers.mtz.modal('.ImageSelectorModal').open();
+      }.bind(this)
+    }
+  }
+
   mainMethods = {
     colors : {
       handleColorSelect : this.handleColorSelect.bind(this)
@@ -128,7 +140,8 @@ class CanvasWrapper extends Component {
       handleShapeSelect : this.handleShapeSelect.bind(this),
       addRect : this.addRect.bind(this),
       clearCanvas : this.clearCanvas.bind(this)
-    }
+    },
+    modals : this.modals
   }
   render(){
     return(

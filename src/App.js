@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
+import Init from './components/Init';
 import AccountSettingsPanel from './components/AccountSettingsPanel';
 import LogPanel from './components/LogPanel';
 import CanvasWrapper from './components/editor/CanvasWrapper';
 import './App.css';
+import ImageSelector from './components/editor/modals/ImageSelector';
 
 class App extends Component {
   constructor(){
@@ -19,6 +21,7 @@ class App extends Component {
         }
       }
     }
+    this.jQuery = window.jQuery;
   }
   addMsg(msg,callback){
     // Prepend timestamp to msg
@@ -51,9 +54,13 @@ class App extends Component {
   render() {
     return (
       <div className="App">
+        <Init />
         <AccountSettingsPanel mainMethods={this.mainMethods} />
         <CanvasWrapper mainMethods={this.mainMethods} editorData={this.state.editorData} />
         <LogPanel logQueue={this.state.logQueue} />
+        <div className="modals">
+          <ImageSelector />
+        </div>
       </div>
     );
   }

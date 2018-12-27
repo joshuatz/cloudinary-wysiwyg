@@ -36,6 +36,7 @@ class ToolPanel extends Component {
       icon : 'fa-file-image',
       name : 'Add Image',
       action : function(){
+        this.props.mainMethods.modals.imageSelector.launch();
       }
     },
     {
