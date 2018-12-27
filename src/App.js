@@ -12,6 +12,7 @@ class App extends Component {
       editorData : {
         canvasObj : {},
         isItemSelected : false,
+        images : {},
         layers : [],
         currSelectedColor : {
           'hex' : '#4a90e2'

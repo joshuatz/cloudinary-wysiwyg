@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
-import LayersPanel from './LayersPanel';
-import ImageAssets from './ImageAssets';
-import ToolPanel from './ToolPanel';
-import PaintSelector from './PaintSelector';
+import LayersPanel from './panels/LayersPanel';
+import ImageAssets from './panels/ImageAssets';
+import ToolPanel from './panels/ToolPanel';
+import PaintSelector from './panels/PaintSelector';
 
 class CanvasWrapper extends Component {
   constructor(props){
@@ -115,6 +115,11 @@ class CanvasWrapper extends Component {
       this.handleShapeSelect(rect);
     });
   }
+
+  addImage(){
+    //
+  }
+
   mainMethods = {
     colors : {
       handleColorSelect : this.handleColorSelect.bind(this)
