@@ -14,11 +14,14 @@ class App extends Component {
       editorData : {
         canvasObj : {},
         isItemSelected : false,
-        images : {},
+        images : {
+          urls : []
+        },
         layers : [],
         currSelectedColor : {
           'hex' : '#4a90e2'
-        }
+        },
+        updateHooks : []
       }
     }
     this.jQuery = window.jQuery;
@@ -51,6 +54,21 @@ class App extends Component {
     addMsg : this.addMsg.bind(this),
     resetEverything : this.resetEverything.bind(this)
   }
+
+  fireUpdateHooks(){
+    this.state.updateHooks.forEach((hook)=>{
+      if (typeof(hook)==='function'){
+        hook(this.state);
+      }
+    });
+  }
+
+  componentDidUpdate(){
+    this.fireUpdateHooks.bind(this);
+  }
+  componentDidMount(){
+    this.fireUpdateHooks.bind(this);
+  }
   render() {
     return (
       <div className="App">
@@ -58,9 +76,6 @@ class App extends Component {
         <AccountSettingsPanel mainMethods={this.mainMethods} />
         <CanvasWrapper mainMethods={this.mainMethods} editorData={this.state.editorData} />
         <LogPanel logQueue={this.state.logQueue} />
-        <div className="modals">
-          <ImageSelector />
-        </div>
       </div>
     );
   }

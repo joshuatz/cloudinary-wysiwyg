@@ -3,7 +3,19 @@ import React, {Component} from 'react';
 class ImageSelector extends Component {
   constructor(props){
     super(props);
+    this.$ = window.jQuery;
   }
+
+  addImageByUrl(url){
+    console.log(url);
+    this.props.mainMethods.canvas.addImage(url);
+  }
+
+  hostedImageUrlAdd(){
+    let hostedImageUrl = this.$('#hostedImageUrl_1').val();
+    this.addImageByUrl(hostedImageUrl);
+  }
+
   render(){
     return(
       <div className="ImageSelectorWrapper">
@@ -34,7 +46,7 @@ class ImageSelector extends Component {
                 </div>
               </div>
               <div className="row">
-                <div className="button btn">Add Image</div>
+                <div className="button btn" onClick={this.hostedImageUrlAdd.bind(this)}>Add Image</div>
               </div>
             </div>
           </div>

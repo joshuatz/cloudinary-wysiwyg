@@ -4,6 +4,7 @@ import LayersPanel from './panels/LayersPanel';
 import ImageAssets from './panels/ImageAssets';
 import ToolPanel from './panels/ToolPanel';
 import PaintSelector from './panels/PaintSelector';
+import ImageSelector from './modals/ImageSelector';
 
 class CanvasWrapper extends Component {
   constructor(props){
@@ -14,9 +15,13 @@ class CanvasWrapper extends Component {
       editorData : this.props.editorData
     }
     this.jQuery = window.jQuery;
+    this.$ = window.jQuery;
     this.Materialize = window.M;
     this.Helpers = new Helpers();
   }
+  /**
+   * Update state.editorData with any prop-val pair
+   */
   mergeEditorData(prop,val,OPT_Callback){
     let callback = (OPT_Callback || (()=>{}));
     let state = this.state;
@@ -47,6 +52,7 @@ class CanvasWrapper extends Component {
     canvas.on('selection:cleared',()=>{
       this.handleNoSelection();
     });
+    this.canvas = canvas;
   }
 
   clearCanvas(){
@@ -120,8 +126,39 @@ class CanvasWrapper extends Component {
     });
   }
 
-  addImage(){
-    //
+  getPseudoImage(url){
+    return this.$('img[src="' + url + '"]')[0];
+  }
+
+  addImage(urlOrImgElem){
+    var _this = this;
+    let canvas = this.state.editorData.canvasObj;
+    let fabric = this.state.fabric;
+    let imageElem = urlOrImgElem;
+    if (typeof(urlOrImgElem)==='string'){
+      let url = urlOrImgElem;
+      // Need to create IMG element. Update state and wil prompt re-render and creation of element
+      let currImages = this.state.editorData.images;
+      currImages.urls.push(url);
+      this.mergeEditorData('images',currImages,(newState)=>{
+        //@TODO refactor this to use a componentDidUpdate hook or something else to make sure image is now in DOM and can use, instead of timeout
+        setTimeout(()=>{
+          console.log(_this);
+          imageElem = _this.getPseudoImage(url);
+          // Callback self
+          _this.addImage(imageElem);
+          console.log(_this.state);
+        },100);
+      });
+    }
+    else {
+      let imgInstance = new fabric.Image(imageElem,{
+        left : 100,
+        top : 100
+      });
+      canvas.add(imgInstance);
+      return imgInstance;
+    }
   }
 
   modals = {
@@ -139,11 +176,15 @@ class CanvasWrapper extends Component {
     canvas : {
       handleShapeSelect : this.handleShapeSelect.bind(this),
       addRect : this.addRect.bind(this),
-      clearCanvas : this.clearCanvas.bind(this)
+      clearCanvas : this.clearCanvas.bind(this),
+      addImage : this.addImage.bind(this)
     },
     modals : this.modals
   }
   render(){
+    let pseudoImages = this.state.editorData.images.urls.map((val,index)=>{
+      return <img className="pseudoImage" key={index} src={val} />
+    });
     return(
       <div className="canvasWrapper">
         <div className="row">
@@ -160,8 +201,16 @@ class CanvasWrapper extends Component {
             <LayersPanel />
           </div>
           <div className="col s5">
-            <ImageAssets />
+            <ImageAssets mainMethods={this.mainMethods} />
           </div>
+        </div>
+        {/* Modals */}
+        <div className="modals">
+          <ImageSelector mainMethods={this.mainMethods} />
+        </div>
+        {/* Hidden Elements that necessary */}
+        <div className="dynamicData hidden">
+          {pseudoImages}
         </div>
       </div>
     );
