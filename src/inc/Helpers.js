@@ -92,6 +92,21 @@ class Helpers {
     });
     return boundObj;
   }
+
+  objectMerge = function(objectA,objectB){
+    let mergedObj = {};
+    if (Array.isArray(objectA)){
+      let objArr = objectA;
+      for (var x=0; x<objArr.length; x++){
+        mergedObj = this.objectMerge(mergedObj,objArr[x]);
+      }
+    }
+    else {
+      for (var attr in objectA){mergedObj[attr] = objectA[attr]};
+      for (var attr in objectB){mergedObj[attr] = objectB[attr]};
+    }
+    return mergedObj;
+  }
 }
 
 export default Helpers;

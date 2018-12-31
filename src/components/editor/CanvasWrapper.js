@@ -22,6 +22,9 @@ class CanvasWrapper extends Component {
     this.cloudinaryInstance = window.cloudinaryInstance;
     this.helpers = new Helpers();
     this.appMethods = this.props.appMethods;
+    // Note - cloudinary seems to prefer GIF over PNG for working with transparency in fetch layers.
+    this.fallbackTransparentPixelSrc = 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png';
+    this.fallbackSolidPixelSrc = 'https://via.placeholder.com/1';
   }
 
   canvasStyles = {
@@ -113,6 +116,7 @@ class CanvasWrapper extends Component {
             imageElem = _this.getPseudoImage(url);
             // Callback self
             _this.canvasMethods.addImage.bind(_this)(imageElem);
+            _this.canvasMethods.renderAll.bind(_this)();
             console.log(_this.state);
           },200);
         });
@@ -137,25 +141,70 @@ class CanvasWrapper extends Component {
      * Note - all cloudinary transformations, including layering, have to fall onto a base layer in order to get a final result. If there really is no base (e.g. no background) you could fake by using a completely transparent PNG or white image.
      */
     setConfig : function(){
-      debugger;
+      //debugger;
       if (this.state.accountSettings.cloudinaryCloudName!==''){
         this.cloudinaryInstance.config({'cloud_name' : this.state.accountSettings.cloudinaryCloudName});
       }
     },
+    getTransparentPixelSrc : function(){
+      return typeof(this.state.editorData.transparentPixelSrc)==='string' ? this.state.editorData.transparentPixelSrc : this.fallbackTransparentPixelSrc;
+    },
+    getSolidPixelSrc : function(){
+      return typeof(this.state.editorData.solidPixelSrc)==='string' ? this.state.editorData.solidPixelSrc : this.fallbackSolidPixelSrc;
+    },
     getBaseImage : function(){
       return this.state.editorData.baseImage!==null ? this.state.editorData.baseImage : 'transparent_1x1';
     },
-    getTransformation : function(type){
+    getTransformationObj : function(type){
       let perTypes = {
         'image' : function(src,width,height,xOffset,yOffset){
-        
+
+        },
+        'pixel' : function(solidOrTransparent){
+          let pixelSrc = solidOrTransparent==='transparent' ? this.mainMethods.cloudinary.getTransparentPixelSrc() : this.mainMethods.cloudinary.getSolidPixelSrc();
+          if(typeof(pixelSrc)==='string' && pixelSrc!==''){
+            if (/http/.test(pixelSrc)){
+              return {
+                overlay : {
+                  resourceType : 'fetch',
+                  url : pixelSrc
+                }
+              }
+            }
+            else {
+              return {
+                overlay : {
+                  resourceType : 'publicId',
+                  publicId : pixelSrc
+                }
+              }
+            }
+          }
+          return {};
         }
       }
       return {
-        'get' : perTypes[type]
+        'get' : perTypes[type].bind(this)
       }
     },
+    /**
+     * Maps the generic settings that should map almost directly from the canvas to cloudinary transformation (e.g. width, height)
+     * @param {object} canvasObj - A fabric.js canvas object (e.g. rectangle, image, etc.)
+     * @param {object} [OPT_trans] - Optional existing tranformation object to augment with the new settings 
+     */
+    mapCanvasObjPropsToTrans(canvasObj,OPT_trans){
+      let transObj = (OPT_trans || {});
+      let updatedProps = this.helpers.objectMerge(transObj,{
+        width : canvasObj.get('width'),
+        height : canvasObj.get('height'),
+        x : canvasObj.get('left'),
+        y : canvasObj.get('top'),
+        gravity : 'north_west'
+      });
+      return updatedProps;
+    },
     generateFromCanvas : function(canvas){
+      let _this = this;
       this.cloudinaryMethods.setConfig.bind(this)();
       let cloudinaryInstance = this.cloudinaryInstance;
       let cloudinary = this.cloudinary;
@@ -166,17 +215,43 @@ class CanvasWrapper extends Component {
       let test = '';
       //debugger;
       let canvasObjects = canvas._objects;
+
+      let transformationArr = [];
+
+      // The very first step, before even looking at which objects are on the canvas, should be to get the "base" image (i.e. the background) on which all objects will be laid. Should be resized to current canvas size
+      let baseTransformationObj = {
+        width : canvas.width,
+        height : canvas.height,
+        crop : 'pad'
+      };
+      cloudinaryImageTag.transformation().chain().transformation(baseTransformationObj).chain();
+      transformationArr.push(baseTransformationObj);
+
       canvasObjects.forEach((val,index)=>{
         console.log(val);
         let currObj = val;
 
+        // Generic mapping of canvas object attr to cloudinary transformation attrs
+        let genericTransformationObj = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj);
+
         // Create new tranformation
         let tr = cloudinary.Transformation.new();
+        let trObj = {};
 
         let objType = currObj.get('type');
         let objMatched = true;
         if (objType==='rect'){
-
+          // Current way of doing shapes - use a transparent PNG - crop to size, and fill with color
+          trObj = _this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid');
+          // Set fill color, size, and offset
+          trObj = _this.helpers.objectMerge([trObj,genericTransformationObj,{
+            background : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
+            color : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
+            effect : 'colorize'
+          }]);
+          debugger;
+          transformationArr.push(trObj);
+          tr = trObj;
         }
         else if (objType==='image'){
           //tr.overlay(new cloudinary.Layer())
@@ -192,7 +267,17 @@ class CanvasWrapper extends Component {
               resourceType : 'fetch',
               url : remoteSrc
             });
+            trObj = {
+              overlay : {
+                resourceType : 'fetch',
+                url : remoteSrc
+              }
+            }
           }
+          trObj.width = currObj.get('width');
+          trObj.height = currObj.get('height');
+          trObj.x = currObj.get('left');
+          trObj.y = currObj.get('top');
           // https://cloudinary.com/documentation/image_transformations#adding_image_overlays
           // https://cloudinary.com/documentation/jquery_image_manipulation#chaining_transformations
           // https://cloudinary.com/documentation/jquery_image_manipulation#adding_text_and_image_overlays
@@ -200,15 +285,16 @@ class CanvasWrapper extends Component {
         else {
           objMatched = false;
         }
+        // If the current canvas object got matched to a known type and triggered a transformation...
         if (objMatched){
-          debugger;
-          console.log(tr);
-          test = cloudinaryImageTag.transformation().chain().transformation(tr);
+          cloudinaryImageTag.transformation().chain().transformation(tr);
+          transformationArr.push(trObj);
         }
       });
+      console.log(transformationArr);
       console.log(cloudinaryImageTag);
       console.log(cloudinaryImageTag.toHtml());
-      console.log(test);
+      window.open(/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1])
     }
   }
   
@@ -250,6 +336,22 @@ class CanvasWrapper extends Component {
     }
     return selected;
   }
+
+  getObjColor(canvasObj){
+    let val = false;
+    if (canvasObj.fill && canvasObj.fill!==''){
+      val = canvasObj.fill;
+    }
+    else if (canvasObj.backgroundColor) {
+      val = canvasObj.backgroundColor;
+    }
+    if (/^#/.test(val)){
+      return {
+        hex : val
+      }
+    }
+  }
+
   getSelectedObjColor(){
     
   }
