@@ -40,6 +40,13 @@ class ToolPanel extends Component {
       }
     },
     {
+      icon : 'fa-font',
+      name : 'Add Text',
+      action : function(){
+        //
+      }
+    },
+    {
       icon : 'fa-layer-group',
       name : 'Add Layer',
       action : function(){

@@ -46,7 +46,7 @@ class ImageSelector extends Component {
                 </div>
               </div>
               <div className="row">
-                <div className="button btn" onClick={this.hostedImageUrlAdd.bind(this)}>Add Image</div>
+                <div className="button btn modal-trigger modal-close" onClick={this.hostedImageUrlAdd.bind(this)}>Add Image</div>
               </div>
             </div>
           </div>

@@ -114,7 +114,7 @@ class CanvasWrapper extends Component {
             // Callback self
             _this.canvasMethods.addImage.bind(_this)(imageElem);
             console.log(_this.state);
-          },100);
+          },200);
         });
       }
       else {
@@ -196,8 +196,6 @@ class CanvasWrapper extends Component {
           // https://cloudinary.com/documentation/image_transformations#adding_image_overlays
           // https://cloudinary.com/documentation/jquery_image_manipulation#chaining_transformations
           // https://cloudinary.com/documentation/jquery_image_manipulation#adding_text_and_image_overlays
-          //cloudinaryImageTag.transformation().overlay(new cloudinary.Layer().publicId(publicId)); 
-          //cloudinaryImageTag.transformation().overlay(new cloudinary.Layer().publicId(publicId)); 
         }
         else {
           objMatched = false;
@@ -230,7 +228,7 @@ class CanvasWrapper extends Component {
       this.getSelectedObjs().forEach((item)=>{
         item.set('fill',color.hex);
       });
-      this.canvasRenderAll();
+      this.mainMethods.canvas.renderAll();
     }
   }
 
