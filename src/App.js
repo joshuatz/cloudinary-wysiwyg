@@ -6,6 +6,17 @@ import CanvasWrapper from './components/editor/CanvasWrapper';
 import './App.css';
 import ImageSelector from './components/editor/modals/ImageSelector';
 import Helpers from './inc/Helpers';
+import $ from 'jquery';
+import 'jquery-ui';
+import 'blueimp-file-upload/js/vendor/jquery.ui.widget.js';
+import 'blueimp-file-upload/js/jquery.iframe-transport.js';
+import 'blueimp-file-upload/js/jquery.fileupload.js';
+// import * as cloudinary from 'cloudinary-jquery-file-upload/cloudinary-jquery-file-upload.min.js';
+import * as cloudinary from 'cloudinary-jquery-file-upload/cloudinary-jquery-file-upload.js';
+window.$ = $;
+window.jQuery = $;
+window.cloudinary = cloudinary;
+window.cloudinaryInstance = cloudinary.CloudinaryJQuery.new();
 
 class App extends Component {
   constructor(){
@@ -23,13 +34,24 @@ class App extends Component {
         currSelectedColor : {
           'hex' : '#4a90e2'
         },
-        updateHooks : []
+        updateHooks : [],
+        baseImage : null
+      },
+      accountSettings : {
+        cloudinaryCloudName : '',
+        fetchInstantly : false
       }
     }
     this.jQuery = window.jQuery;
     this.helpers = new Helpers();
   }
 
+  /**
+   * Use this to update the master state, by picking out a key via dot notation and specifying a new value
+   * @param {string} targetProp - dot notation string for accessing value in state object - e.g. "editorData.images"
+   * @param {*} newVal - the new value to assign
+   * @param {function} [OPT_Callback] - Optional callback
+   */
   mergeMasterState(targetProp,newVal,OPT_Callback){
     let callback = (OPT_Callback || (()=>{}));
     let updatedState = this.state;
@@ -88,8 +110,8 @@ class App extends Component {
     return (
       <div className="App">
         <Init />
-        <AccountSettingsPanel appMethods={this.appMethods} />
-        <CanvasWrapper appMethods={this.appMethods} editorData={this.state.editorData} />
+        <AccountSettingsPanel appMethods={this.appMethods} masterState={this.state} />
+        <CanvasWrapper appMethods={this.appMethods} masterState={this.state} editorData={this.state.editorData} />
         <LogPanel logQueue={this.state.logQueue} />
       </div>
     );

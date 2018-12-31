@@ -74,6 +74,24 @@ class Helpers {
     else
       return this.index(obj[is[0]],is.slice(1), value);
   }
+
+  /**
+   * Lazy way of binding a group of functions to a value/state
+   * @param {object} object
+   * @param {*} bindTo 
+   */
+  bindObjectMethod(object,bindTo){
+    let boundObj = {};
+    Object.keys(object).forEach((key,index)=>{
+      if (typeof(object[key])==='function'){
+        boundObj[key] = object[key].bind(bindTo);
+      }
+      else {
+        boundObj[key] = object[key];
+      }
+    });
+    return boundObj;
+  }
 }
 
 export default Helpers;

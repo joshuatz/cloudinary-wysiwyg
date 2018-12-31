@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import LogPanel from './LogPanel';
+const MASTER_STATE_KEY = 'accountSettings';
 
 class AccountSettingsPanel extends Component {
   constructor(props){
     super(props);
+
     // Constants
     this.LOCALSTORAGEKEY = 'accountSettings';
+
     // Set the initial state
     var defaultState = this.getDefaultState();
     if (localStorage.getItem(this.LOCALSTORAGEKEY)){
@@ -17,12 +20,13 @@ class AccountSettingsPanel extends Component {
           newState[key] = savedState[key];
         }
       });
-      this.state = newState;
+      // Merge back up
+      this.props.appMethods.mergeMasterState(MASTER_STATE_KEY,newState);
+      //this.state = newState;
     }
-    else {
-      this.state = defaultState;
-    }
-    console.log(this.state);
+
+    // Attach this components state to master
+    this.state = this.props.masterState[MASTER_STATE_KEY];
   }
 
   getDefaultState(){
@@ -30,7 +34,13 @@ class AccountSettingsPanel extends Component {
       cloudinaryCloudName : '',
       fetchInstantly : false
     }
+    return this.props.masterState[MASTER_STATE_KEY];
   }
+
+  getAccountSettingsState(){
+    return this.props.masterState[MASTER_STATE_KEY];
+  }
+
   handleChange(e){
     console.log(e.target);
 
@@ -39,7 +49,7 @@ class AccountSettingsPanel extends Component {
 
     // Get value dependent on type of input
     let value = (e.target.type==='checkbox' ? e.target.checked : e.target.value);
-    
+    /*
     if (this.state[settingKey]!==value){
       // Make sure to use callback!
       this.setState({
@@ -51,16 +61,35 @@ class AccountSettingsPanel extends Component {
         this.saveItDown();
       });
     }
+    */
+
+    let stateCopy = this.getAccountSettingsState();
+    if (stateCopy[settingKey]!==value){
+      // Update copy
+      stateCopy[settingKey]=value;
+      // Update master, then save to localstorage - make sure to use callback!
+      this.props.appMethods.mergeMasterState(MASTER_STATE_KEY,stateCopy,()=>{
+        console.group('state');
+          console.log(this.getAccountSettingsState());
+        console.groupEnd();
+        this.saveItDown();
+      });
+    }
   }
+  
   saveItDown(){
-    localStorage.setItem(this.LOCALSTORAGEKEY,JSON.stringify(this.state));
+    //localStorage.setItem(this.LOCALSTORAGEKEY,JSON.stringify(this.state));
+    localStorage.setItem(this.LOCALSTORAGEKEY,JSON.stringify(this.props.masterState[MASTER_STATE_KEY]));
   }
+
   reset(){
-    this.setState(this.getDefaultState());
+    //this.setState(this.getDefaultState());
+    this.props.appMethods.mergeMasterState(MASTER_STATE_KEY,this.getDefaultState());
     localStorage.removeItem(this.LOCALSTORAGEKEY);
     this.props.appMethods.addMsg('Reset Settings');
     this.props.appMethods.resetEverything();
   }
+
   render() {
     return (
       <div className="accountSettingsPanelWrapper">

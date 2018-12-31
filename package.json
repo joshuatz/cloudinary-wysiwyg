@@ -7,6 +7,7 @@
     "cloudinary-jquery-file-upload": "^2.5.0",
     "http": "0.0.0",
     "jquery": "^3.3.1",
+    "jquery-ui": "^1.12.1",
     "materialize-css": "^1.0.0-rc.2",
     "react": "^16.6.3",
     "react-color": "^2.14.1",
