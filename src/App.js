@@ -66,6 +66,10 @@ class App extends Component {
     this.setState(updatedState,callback);
   }
 
+  getMasterState(){
+    return this.state;
+  }
+
   mergeEditorData(targetProp,newVal,OPT_Callback){
     targetProp = 'editorData.' + targetProp;
     this.mergeMasterState(targetProp,newVal,OPT_Callback);
@@ -96,7 +100,8 @@ class App extends Component {
     addMsg : this.addMsg.bind(this),
     resetEverything : this.resetEverything.bind(this),
     mergeMasterState : this.mergeMasterState.bind(this),
-    mergeEditorData : this.mergeEditorData.bind(this)
+    mergeEditorData : this.mergeEditorData.bind(this),
+    getMasterState : this.getMasterState.bind(this)
   }
 
   fireUpdateHooks(){

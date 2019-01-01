@@ -41,7 +41,7 @@ class ImageSelector extends Component {
             <div className="modal-content">
               <div className="row">
                 <div className="input-field col s8 offset-s1">
-                  <input type="url" className="validate" id="hostedImageUrl_1" value="https://picsum.photos/200/300" />
+                  <input type="url" className="validate" id="hostedImageUrl_1" defaultValue="https://picsum.photos/200/300" />
                   <label htmlFor="hostedImageUrl_1">Hosted Image URL:</label>
                 </div>
               </div>

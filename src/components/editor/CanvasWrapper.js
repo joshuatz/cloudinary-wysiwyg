@@ -27,6 +27,7 @@ class CanvasWrapper extends Component {
     this.fallbackTransparentPixelSrc = 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png';
     this.fallbackSolidPixelSrc = 'https://via.placeholder.com/1';
     this.fallbackBasePicId = 'flowers';
+    this.masterState = this.props.masterState;
   }
 
   canvasStyles = {
@@ -402,7 +403,7 @@ class CanvasWrapper extends Component {
   }
 
   mainMethods = {
-    appMethods : this.appMethods,
+    appMethods : this.props.appMethods,
     colors : {
       handleColorSelect : this.handleColorSelect.bind(this)
     },
@@ -427,7 +428,7 @@ class CanvasWrapper extends Component {
             <PaintSelector mainMethods={this.mainMethods} startingColor={this.state.editorData.currSelectedColor} />
           </div>
           <div className="col s5">
-            <FontSelector mainMethods={this.mainMethods} />
+            <FontSelector mainMethods={this.mainMethods} masterState={this.masterState} />
           </div>
           <div className="col s5">
             <LayersPanel />
