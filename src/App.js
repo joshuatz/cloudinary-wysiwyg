@@ -45,7 +45,7 @@ class App extends Component {
         baseImage : null
       },
       accountSettings : {
-        cloudinaryCloudName : '',
+        cloudinaryCloudName : 'demo',
         fetchInstantly : false
       }
     }

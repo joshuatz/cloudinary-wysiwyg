@@ -26,6 +26,7 @@ class CanvasWrapper extends Component {
     // Note - cloudinary seems to prefer GIF over PNG for working with transparency in fetch layers.
     this.fallbackTransparentPixelSrc = 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png';
     this.fallbackSolidPixelSrc = 'https://via.placeholder.com/1';
+    this.fallbackBasePicId = 'flowers';
   }
 
   canvasStyles = {
@@ -163,7 +164,7 @@ class CanvasWrapper extends Component {
       return typeof(this.state.editorData.solidPixelSrc)==='string' ? this.state.editorData.solidPixelSrc : this.fallbackSolidPixelSrc;
     },
     getBaseImage : function(){
-      return this.state.editorData.baseImage!==null ? this.state.editorData.baseImage : 'transparent_1x1';
+      return this.state.editorData.baseImage!==null ? this.state.editorData.baseImage : this.fallbackBasePicId;
     },
     getTransformationObj : function(type){
       let perTypes = {
@@ -221,7 +222,8 @@ class CanvasWrapper extends Component {
       canvas = typeof(canvas._objects)==='object' ? canvas : this.canvas;
       // Start the transformation chain by create the base cloudinary imageTag
       //debugger;
-      let cloudinaryImageTag = cloudinaryInstance.imageTag(this.cloudinaryMethods.getBaseImage.bind(this)());
+      let baseImageId = this.cloudinaryMethods.getBaseImage.bind(this)();
+      let cloudinaryImageTag = cloudinaryInstance.imageTag(baseImageId);
       let test = '';
       //debugger;
       let canvasObjects = canvas._objects;
@@ -234,6 +236,13 @@ class CanvasWrapper extends Component {
         height : canvas.height,
         crop : 'pad'
       };
+      // Next, if the base image is set as the default fallback - meaning that the user wants to overlay on top of a solid or transparent background, we should make sure the base image will show that way...
+      // @TODO allow for solid fill instead of transparent
+      if (baseImageId === this.fallbackBasePicId){
+        baseTransformationObj = this.helpers.objectMerge(baseTransformationObj,{
+          opacity : 0
+        });
+      }
       cloudinaryImageTag.transformation().chain().transformation(baseTransformationObj).chain();
       transformationArr.push(baseTransformationObj);
 
@@ -259,7 +268,6 @@ class CanvasWrapper extends Component {
             color : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
             effect : 'colorize'
           }]);
-          debugger;
           transformationArr.push(trObj);
           tr = trObj;
         }

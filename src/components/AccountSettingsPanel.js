@@ -31,7 +31,7 @@ class AccountSettingsPanel extends Component {
 
   getDefaultState(){
     return {
-      cloudinaryCloudName : '',
+      cloudinaryCloudName : 'demo',
       fetchInstantly : false
     }
     return this.props.masterState[MASTER_STATE_KEY];
