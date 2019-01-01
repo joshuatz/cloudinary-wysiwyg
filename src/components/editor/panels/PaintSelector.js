@@ -7,23 +7,18 @@ class PaintSelector extends Component {
     super(props);
   }
 
-  state = {
-    background: this.props.startingColor.hex
-  };
-
   componentDidMount(){
     //
   }
 
   handleChangeComplete = (color, event) => {
-    this.setState({ background: color.hex });
     this.props.mainMethods.colors.handleColorSelect(color,event);
   }
 
   render(){
     return (
       <div className="colorPickerWrapper">
-        <ChromePicker onChangeComplete={this.handleChangeComplete} color={this.state.background}/>
+        <ChromePicker onChangeComplete={this.handleChangeComplete} color={this.props.color.hex}/>
       </div>
     )
   }

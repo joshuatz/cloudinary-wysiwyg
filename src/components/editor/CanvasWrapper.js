@@ -28,6 +28,7 @@ class CanvasWrapper extends Component {
     this.fallbackSolidPixelSrc = 'https://via.placeholder.com/1';
     this.fallbackBasePicId = 'flowers';
     this.masterState = this.props.masterState;
+    this.canvasReRenderIp = false;
   }
 
   canvasStyles = {
@@ -52,7 +53,7 @@ class CanvasWrapper extends Component {
       this.handleNoSelection();
     });
     canvas.on('object:selected',()=>{
-      this.mainMethods.canvas.getSelectedObjs();
+      this.mainMethods.canvas.getSelectedObjs(true);
     })
     this.canvas = canvas;
   }
@@ -66,26 +67,39 @@ class CanvasWrapper extends Component {
     },
     renderAll : function(){
       let canvas = this.state.editorData.canvasObj;
+      this.canvasReRenderIp = true;
       canvas.renderAll();
+      this.canvasReRenderIp = false;
     },
-    getSelectedObjs : function(){
-      let selected = [];
+    // This can be used to retrieve selectd objects on the canvas, but is also called whenever something is selected, as a way to update various state things
+    getSelectedObjs : function(triggerUpdates){
+      let selectedArr = [];
       let canvas = this.state.editorData.canvasObj;
-      if (this.state.editorData.isItemSelected){
-        if (!canvas.getActiveObject()){
-          // Nothing selected
-          this.handleNoSelection();
-        }
-        else if (typeof(canvas.getActiveObject()['_objects'])!=='undefined'){
+
+      if (!canvas.getActiveObject()){
+        // Nothing selected
+        this.appMethods.mergeEditorData('isItemSelected',false);
+        this.handleNoSelection();
+      }
+      else {
+        this.appMethods.mergeEditorData('isItemSelected',true);
+        if (typeof(canvas.getActiveObject()['_objects'])!=='undefined'){
           // Group selected
-          selected = canvas.getActiveObject()._objects;
+          selectedArr = canvas.getActiveObject()._objects;
         }
         else {
-          selected = [canvas.getActiveObject()];
-          this.appMethods.mergeEditorData('currSelectedItemType',selected[0].get('type'));
+          // Single thing selected
+          //debugger;
+          let selectedObj = canvas.getActiveObject()
+          selectedArr = [selectedObj];
+          this.appMethods.mergeEditorData('currSelectedItemType',selectedObj.get('type'));
+          if (triggerUpdates){
+            // Update input panels from selected object
+            this.updateInputPanelFromCanvasObj(selectedObj);
+          }
         }
       }
-      return selected;
+      return selectedArr;
     },
     handleShapeSelect : function(shape){
       this.appMethods.mergeEditorData('isItemSelected',true);
@@ -321,10 +335,13 @@ class CanvasWrapper extends Component {
   handleNoSelection(){
     this.appMethods.mergeEditorData('isItemSelected',false);
     this.appMethods.mergeEditorData('currSelectedItemType',false);
+    this.appMethods.mergeEditorData('currSelectedItemGenericProps',{});
   }
   handleColorSelect(color,event){
+    console.group('handleColorSelect');
     console.log(color);
     console.log(event);
+    console.groupEnd();
     let editorData = this.state.editorData;
     editorData.currSelectedColor = color;
     this.setState({
@@ -332,30 +349,26 @@ class CanvasWrapper extends Component {
     });
     if (this.state.editorData.isItemSelected){
       // items are selected, iterate through all of them and set color
-      this.getSelectedObjs().forEach((item)=>{
+      this.mainMethods.canvas.getSelectedObjs().forEach((item)=>{
         item.set('fill',color.hex);
       });
       this.mainMethods.canvas.renderAll();
     }
   }
 
-  getSelectedObjs(){
-    let selected = [];
-    let canvas = this.state.editorData.canvasObj;
-    if (this.state.editorData.isItemSelected){
-      if (!canvas.getActiveObject()){
-        // Nothing selected
-        this.appMethods.mergeEditorData('isItemSelected',false);
-      }
-      else if (typeof(canvas.getActiveObject()['_objects'])!=='undefined'){
-        // Group selected
-        selected = canvas.getActiveObject()._objects;
-      }
-      else {
-        selected = [canvas.getActiveObject()];
-      }
-    }
-    return selected;
+  updateInputPanelFromCanvasObj(canvasObj){
+    console.log(canvasObj);
+    this.updateColorSelectorFromCanvasObj(canvasObj);
+    this.updateFontSelectorFromCanvasObj(canvasObj);
+    this.mainMethods.canvas.renderAll();
+  }
+
+  updateColorSelectorFromCanvasObj(canvasObj){
+    console.log(this.getObjColor(canvasObj));
+    this.appMethods.mergeEditorData('currSelectedColor',this.getObjColor(canvasObj));
+  }
+  updateFontSelectorFromCanvasObj(canvasObj){
+
   }
 
   getObjColor(canvasObj){
@@ -425,7 +438,7 @@ class CanvasWrapper extends Component {
             <ToolPanel editorData={this.state.editorData} mainMethods={this.mainMethods}/>
           </div>
           <div className="col s5">
-            <PaintSelector mainMethods={this.mainMethods} startingColor={this.state.editorData.currSelectedColor} />
+            <PaintSelector mainMethods={this.mainMethods} color={this.state.editorData.currSelectedColor} />
           </div>
           <div className="col s5">
             <FontSelector mainMethods={this.mainMethods} masterState={this.masterState} />

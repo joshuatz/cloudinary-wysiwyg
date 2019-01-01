@@ -28,6 +28,7 @@ class App extends Component {
         canvasObj : {},
         isItemSelected : false,
         currSelectedItemType : false,
+        currSelectedItemGenericProps : {},
         images : {
           urls : []
         },
@@ -49,6 +50,7 @@ class App extends Component {
         fetchInstantly : false
       }
     }
+    window.masterState = this.state;
     this.jQuery = window.jQuery;
     this.helpers = new Helpers();
   }
