@@ -4,6 +4,7 @@ import LayersPanel from './panels/LayersPanel';
 import ImageAssets from './panels/ImageAssets';
 import ToolPanel from './panels/ToolPanel';
 import PaintSelector from './panels/PaintSelector';
+import FontSelector from './panels/FontSelector';
 import ImageSelector from './modals/ImageSelector';
 
 class CanvasWrapper extends Component {
@@ -48,6 +49,9 @@ class CanvasWrapper extends Component {
     canvas.on('selection:cleared',()=>{
       this.handleNoSelection();
     });
+    canvas.on('object:selected',()=>{
+      this.mainMethods.canvas.getSelectedObjs();
+    })
     this.canvas = canvas;
   }
 
@@ -57,6 +61,33 @@ class CanvasWrapper extends Component {
   canvasMethods = {
     clear : function(){
       this.state.editorData.canvasObj.clear();
+    },
+    renderAll : function(){
+      let canvas = this.state.editorData.canvasObj;
+      canvas.renderAll();
+    },
+    getSelectedObjs : function(){
+      let selected = [];
+      let canvas = this.state.editorData.canvasObj;
+      if (this.state.editorData.isItemSelected){
+        if (!canvas.getActiveObject()){
+          // Nothing selected
+          this.handleNoSelection();
+        }
+        else if (typeof(canvas.getActiveObject()['_objects'])!=='undefined'){
+          // Group selected
+          selected = canvas.getActiveObject()._objects;
+        }
+        else {
+          selected = [canvas.getActiveObject()];
+          this.appMethods.mergeEditorData('currSelectedItemType',selected[0].get('type'));
+        }
+      }
+      return selected;
+    },
+    handleShapeSelect : function(shape){
+      this.appMethods.mergeEditorData('isItemSelected',true);
+      console.log(shape);
     },
     addRect : function(){
       let canvas = this.state.editorData.canvasObj;
@@ -72,32 +103,6 @@ class CanvasWrapper extends Component {
       rect.on('selected',()=>{
         this.canvasMethods.handleShapeSelect.bind(this)(rect);
       });
-    },
-    renderAll : function(){
-      let canvas = this.state.editorData.canvasObj;
-      canvas.renderAll();
-    },
-    getSelectedObjs : function(){
-      let selected = [];
-      let canvas = this.state.editorData.canvasObj;
-      if (this.state.editorData.isItemSelected){
-        if (!canvas.getActiveObject()){
-          // Nothing selected
-          this.appMethods.mergeEditorData('isItemSelected',false);
-        }
-        else if (typeof(canvas.getActiveObject()['_objects'])!=='undefined'){
-          // Group selected
-          selected = canvas.getActiveObject()._objects;
-        }
-        else {
-          selected = [canvas.getActiveObject()];
-        }
-      }
-      return selected;
-    },
-    handleShapeSelect : function(shape){
-      this.appMethods.mergeEditorData('isItemSelected',true);
-      console.log(shape);
     },
     addImage : function(urlOrImgElem){
       var _this = this;
@@ -132,10 +137,15 @@ class CanvasWrapper extends Component {
         });
         return imgInstance;
       }
+    },
+    addText : function(OPT_fontFamily,OPT_fontSize,OPT_fontColor){
+      let canvas = this.state.editorData.canvasObj;
+      let fabric = this.state.fabric;
     }
   }
   // canvasMethods - END
 
+  // cloudinaryMethods - START
   cloudinaryMethods = {
     /**
      * Note - all cloudinary transformations, including layering, have to fall onto a base layer in order to get a final result. If there really is no base (e.g. no background) you could fake by using a completely transparent PNG or white image.
@@ -297,9 +307,11 @@ class CanvasWrapper extends Component {
       window.open(/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1])
     }
   }
+  // cloudinaryMethods - END
   
   handleNoSelection(){
     this.appMethods.mergeEditorData('isItemSelected',false);
+    this.appMethods.mergeEditorData('currSelectedItemType',false);
   }
   handleColorSelect(color,event){
     console.log(color);
@@ -405,6 +417,9 @@ class CanvasWrapper extends Component {
           </div>
           <div className="col s5">
             <PaintSelector mainMethods={this.mainMethods} startingColor={this.state.editorData.currSelectedColor} />
+          </div>
+          <div className="col s5">
+            <FontSelector mainMethods={this.mainMethods} />
           </div>
           <div className="col s5">
             <LayersPanel />

@@ -27,12 +27,19 @@ class App extends Component {
       editorData : {
         canvasObj : {},
         isItemSelected : false,
+        currSelectedItemType : false,
         images : {
           urls : []
         },
         layers : [],
         currSelectedColor : {
           'hex' : '#4a90e2'
+        },
+        currSelectedFont : {
+          'size' : false,
+          'fontFamily' : false,
+          'color' : false,
+          'style' : false
         },
         updateHooks : [],
         baseImage : null
