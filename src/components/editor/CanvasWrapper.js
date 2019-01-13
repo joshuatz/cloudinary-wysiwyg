@@ -121,7 +121,7 @@ class CanvasWrapper extends Component {
       });
     },
     addImage : function(urlOrImgElem){
-      var _this = this;
+      let _this = this;
       let canvas = this.state.editorData.canvasObj;
       let fabric = this.state.fabric;
       let imageElem = urlOrImgElem;
@@ -154,9 +154,19 @@ class CanvasWrapper extends Component {
         return imgInstance;
       }
     },
-    addText : function(OPT_fontFamily,OPT_fontSize,OPT_fontColor){
+    addText : function(text,OPT_fontFamily,OPT_fontSize,OPT_fontColor){
+      let _this = this;
       let canvas = this.state.editorData.canvasObj;
       let fabric = this.state.fabric;
+      let textInstance = new fabric.Text(text,{
+        left : 100,
+        top : 100
+      });
+      canvas.add(textInstance);
+      textInstance.on('selected',()=>{
+        //
+      });
+      return textInstance;
     }
   }
   // canvasMethods - END
