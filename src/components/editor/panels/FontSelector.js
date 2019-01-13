@@ -7,20 +7,34 @@ class FontSelector extends Component {
     let initialState = {
       googleFontsObj : googleFonts,
       googleFontsArr : Object.keys(googleFonts),
-      currSelectedFont : this.getMasterState().editorData.currSelectedFont
+      currSelectedFont : this.getMasterState().editorData.currSelectedFont,
+      currSelectedFontSyleObj : {}
     }
     this.state = initialState;
   }
 
-  handleFontChange(evt){
+  handleFontFamilyChange(evt){
     let selectedFontName = evt.target.options[evt.target.selectedIndex].value;
     let googleFontObj = this.state.googleFontsObj[selectedFontName];
     let fontFamilyString = "'" + selectedFontName + "', " + googleFontObj.category;
     //let fontFamilyString = googleFontObj.category;
     console.log(fontFamilyString);
-    this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont',{
-      'fontFamily' : fontFamilyString
+    this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.fontFamily',fontFamilyString,()=>{
+      console.log(this.props.mainMethods.appMethods.getMasterState());
     });
+  }
+
+  handleFontOptionToggle(optionPropName,button,evt){
+    button = (button || {});
+    let originalFontProps = this.getCurrSelectedFont();
+    let newFontProps = originalFontProps;
+    newFontProps[optionPropName] = !originalFontProps[optionPropName];
+    this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont',newFontProps,(res)=>{
+      console.log(this.props.mainMethods.appMethods.getMasterState());
+    });
+    if (typeof(button.action)==='function'){
+      button.action.bind(this)();
+    }
   }
 
   getMasterState(){
@@ -28,7 +42,15 @@ class FontSelector extends Component {
   }
 
   getCurrSelectedFont(){
-    return this.getMasterState().editorData.currSelectedFont;
+    let currSelectedFont = this.props.masterState.editorData.currSelectedFont;
+    // Update state if changed
+    let state = this.state;
+    if (state.currSelectedFont !== currSelectedFont){
+      state.currSelectedFont = currSelectedFont;
+      this.setState(state);
+    }
+    // return value
+    return currSelectedFont;
   }
 
   getIsFontSelected(){
@@ -40,39 +62,52 @@ class FontSelector extends Component {
     {
       icon : 'fa-bold',
       text : 'bold',
-      action : function(){
-
-      }
+      currSelectedFontProp : 'bold'
     },
     {
       icon : 'fa-underline',
       text : 'Underline',
+      currSelectedFontProp : 'underline',
       action : function(){
-
+        if (this.state.currSelectedFont.strikethrough===true){
+          this.handleFontOptionToggle('strikethrough');
+        }
       }
     },
     {
       icon : 'fa-strikethrough',
       text : 'Strikethrough',
+      currSelectedFontProp : 'strikethrough',
       action : function(){
-
+        if (this.state.currSelectedFont.underline===true){
+          this.handleFontOptionToggle('underline');
+        }
       }
     }
   ]
 
-  render(){
-    // Check if there is an actively selected font and apply to preview text
+  getPreviewTextStylingObj(){
     let previewTextStyling = {};
-    if (this.getIsFontSelected()){
-      let currSelectedFont = this.getCurrSelectedFont();
-      previewTextStyling = {
-        'fontFamily' : currSelectedFont.fontFamily,
-        'fontSize' : currSelectedFont.size ? currSelectedFont.size : 16,
-        'color' : currSelectedFont.color ? currSelectedFont.color : 'black',
-        'fontStyle' : currSelectedFont.style ? currSelectedFont.style : 'normal'
-      }
-      console.log(previewTextStyling);
+    let currSelectedFont = this.getCurrSelectedFont();
+    previewTextStyling = {
+      'fontFamily' : currSelectedFont.fontFamily ? currSelectedFont.fontFamily : 'Ubuntu',
+      'fontSize' : currSelectedFont.size ? currSelectedFont.size : 16,
+      'color' : currSelectedFont.color ? currSelectedFont.color : 'black',
+      'fontStyle' : currSelectedFont.style ? currSelectedFont.style : 'normal',
+      'fontWeight' : currSelectedFont.bold ? 'bold' : 'normal',
+      'textDecorationLine' : currSelectedFont.underline ? 'underline' : (currSelectedFont.strikethrough ? 'line-through' : 'none')
     }
+    console.log(previewTextStyling);
+    // Update state if changed
+    let newState = this.state;
+    newState.currSelectedFontSyleObj = previewTextStyling;
+    if (newState !== this.state){
+      this.setState(newState);
+    }
+    return previewTextStyling;
+  }
+
+  render(){
     // Build font select <option></option>
     let fontSelectOptions = this.state.googleFontsArr.map((fontName,index)=>{
       if (!this.getIsFontSelected() || this.getCurrSelectedFont().fontFamily!==fontName){
@@ -88,8 +123,9 @@ class FontSelector extends Component {
     }
     // Build font buttons
     let buttonsHTML = this.fontButtons.map((val,index)=>{
+      let propName = val.currSelectedFontProp;
       return (
-          <button className="fontButton" key={'fontb_' + index} onClick={val.action.bind(this)}>
+          <button className={'btn fontButton ' + (this.getCurrSelectedFont()[propName]===true ? 'depressed' : '')} key={'fontb_' + index} onClick={this.handleFontOptionToggle.bind(this,propName,val)}>
             <i className={"fas " + val.icon}></i>{val.name}
           </button>
       )
@@ -97,7 +133,7 @@ class FontSelector extends Component {
     return (
       <div>
         <div className="input-field col s8 fontFamilyPickerDropdown">
-          <select onChange={this.handleFontChange.bind(this)}>
+          <select onChange={this.handleFontFamilyChange.bind(this)}>
             {fontSelectOptions}
           </select>
         </div>
@@ -107,7 +143,7 @@ class FontSelector extends Component {
           </select>
         </div>
         <div className="col s12 fontPickerPreview">
-          <div className="previewText" style={previewTextStyling}>Preview Text</div>
+          <div className="previewText" style={this.getPreviewTextStylingObj()}>Preview Text</div>
         </div>
         <div className="col s12 fontButtonsWrapper">
           {buttonsHTML}

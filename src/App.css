@@ -102,3 +102,15 @@
 .ImageSelectorWrapper .button {
   margin-left: 10px;
 }
+
+/**
+* Font Buttons
+*/
+.fontButton {
+  background-color: white !important;
+  color: black !important;
+}
+.fontButton.depressed {
+  background-color: black !important;
+  color: white !important;
+}

@@ -40,7 +40,10 @@ class App extends Component {
           'size' : false,
           'fontFamily' : false,
           'color' : false,
-          'style' : false
+          'style' : false,
+          'bold' : false,
+          'underline' : false,
+          'strikethrough' : false
         },
         updateHooks : [],
         baseImage : null
