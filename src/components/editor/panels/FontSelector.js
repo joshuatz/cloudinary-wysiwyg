@@ -11,17 +11,30 @@ class FontSelector extends Component {
       currSelectedFontSyleObj : {}
     }
     this.state = initialState;
+    this.$ = window.$;
+  }
+
+  refreshCurrentFontInfo(){
+    let $ = this.$;
+    let fontName = $('.fontFamilyPickerDropdown input.select-dropdown').val();
+    let refreshedData = {
+      'size' : parseInt($('.fontSizePickerDropdown input.select-dropdown').val().replace('px','')),
+      'fontFamily' : "'" + fontName + "'," + this.state.googleFontsObj[fontName].category,
+      'color' : false,
+      'style' : false,
+      'bold' : false,
+      'underline' : false,
+      'strikethrough' : false
+    }
   }
 
   handleFontFamilyChange(evt){
     let selectedFontName = evt.target.options[evt.target.selectedIndex].value;
     let googleFontObj = this.state.googleFontsObj[selectedFontName];
+    debugger;
     let fontFamilyString = "'" + selectedFontName + "', " + googleFontObj.category;
-    //let fontFamilyString = googleFontObj.category;
-    console.log(fontFamilyString);
-    this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.fontFamily',fontFamilyString,()=>{
-      console.log(this.props.mainMethods.appMethods.getMasterState());
-    });
+    this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.fontFamilyFull',fontFamilyString);
+    this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.fontFamilySlim',selectedFontName);
   }
 
   handleFontOptionToggle(optionPropName,button,evt){
@@ -35,6 +48,12 @@ class FontSelector extends Component {
     if (typeof(button.action)==='function'){
       button.action.bind(this)();
     }
+  }
+
+  handleFontSizeChange(){
+    let $ = this.$;
+    let fontSize = parseInt($('.fontSizePickerDropdown input.select-dropdown').val().replace('px',''));
+    this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.size',fontSize);
   }
 
   getMasterState(){
@@ -90,7 +109,7 @@ class FontSelector extends Component {
     let previewTextStyling = {};
     let currSelectedFont = this.getCurrSelectedFont();
     previewTextStyling = {
-      'fontFamily' : currSelectedFont.fontFamily ? currSelectedFont.fontFamily : 'Ubuntu',
+      'fontFamily' : currSelectedFont.fontFamilyFull ? currSelectedFont.fontFamilyFull : 'Ubuntu',
       'fontSize' : currSelectedFont.size ? currSelectedFont.size : 16,
       'color' : currSelectedFont.color ? currSelectedFont.color : 'black',
       'fontStyle' : currSelectedFont.style ? currSelectedFont.style : 'normal',
@@ -118,7 +137,7 @@ class FontSelector extends Component {
     });
     if (this.getIsFontSelected()){
       fontSelectOptions.unshift((
-        <option value={this.getCurrSelectedFont().fontFamily}></option>
+        <option value={this.getCurrSelectedFont().fontFamily}>{this.getCurrSelectedFont().fontFamily}</option>
       ));
     }
     // Build font buttons
@@ -130,6 +149,19 @@ class FontSelector extends Component {
           </button>
       )
     });
+    // Build font size options
+    let currFontSize = this.state.currSelectedFont.size;
+    let fontSizeOptionsArr = [];
+    for (var x=1; x<100; x++){
+      if (x!==currFontSize){
+        fontSizeOptionsArr.push(x);
+      }
+    }
+    let fontSizeOptions = fontSizeOptionsArr.map((val,index)=>{
+      return (
+        <option value={val}>{val + 'px'}</option>
+      )
+    })
     return (
       <div>
         <div className="input-field col s8 fontFamilyPickerDropdown">
@@ -138,8 +170,9 @@ class FontSelector extends Component {
           </select>
         </div>
         <div className="input-field col s4 fontSizePickerDropdown">
-          <select>
+          <select onChange={this.handleFontSizeChange.bind(this)}>
             <option defaultValue="16">16px</option>
+            {fontSizeOptions}
           </select>
         </div>
         <div className="col s12 fontPickerPreview">

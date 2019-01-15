@@ -6,6 +6,7 @@ import ToolPanel from './panels/ToolPanel';
 import PaintSelector from './panels/PaintSelector';
 import FontSelector from './panels/FontSelector';
 import ImageSelector from './modals/ImageSelector';
+import TextEntry from './modals/TextEntry';
 
 class CanvasWrapper extends Component {
   constructor(props){
@@ -158,13 +159,15 @@ class CanvasWrapper extends Component {
       let _this = this;
       let canvas = this.state.editorData.canvasObj;
       let fabric = this.state.fabric;
+      console.log(this.state.editorData.currSelectedFont);
       let textInstance = new fabric.Text(text,{
         left : 100,
-        top : 100
+        top : 100,
+        fontSize : this.state.editorData.currSelectedFont.size
       });
       canvas.add(textInstance);
       textInstance.on('selected',()=>{
-        //
+        // @TODO handle callback to allow editing already added text
       });
       return textInstance;
     }
@@ -230,9 +233,14 @@ class CanvasWrapper extends Component {
      */
     mapCanvasObjPropsToTrans(canvasObj,OPT_trans){
       let transObj = (OPT_trans || {});
+      let width = parseFloat(canvasObj.get('width'));
+      let height = parseFloat(canvasObj.get('height'));
+      // Handle scaling by using x and y factors and multiplying width and height
+      width = width * parseFloat(canvasObj.get('scaleX'));
+      height = height * parseFloat(canvasObj.get('scaleY'));
       let updatedProps = this.helpers.objectMerge(transObj,{
-        width : canvasObj.get('width'),
-        height : canvasObj.get('height'),
+        width : width,
+        height : height,
         x : canvasObj.get('left'),
         y : canvasObj.get('top'),
         gravity : 'north_west'
@@ -241,18 +249,19 @@ class CanvasWrapper extends Component {
     },
     generateFromCanvas : function(canvas){
       let _this = this;
+
+      // Setup cloudinary config and make sure refs are set
       this.cloudinaryMethods.setConfig.bind(this)();
       let cloudinaryInstance = this.cloudinaryInstance;
       let cloudinary = this.cloudinary;
       canvas = typeof(canvas._objects)==='object' ? canvas : this.canvas;
+
       // Start the transformation chain by create the base cloudinary imageTag
-      //debugger;
       let baseImageId = this.cloudinaryMethods.getBaseImage.bind(this)();
       let cloudinaryImageTag = cloudinaryInstance.imageTag(baseImageId);
-      let test = '';
-      //debugger;
-      let canvasObjects = canvas._objects;
 
+      // Get every object on the canvas
+      let canvasObjects = canvas._objects;
       let transformationArr = [];
 
       // The very first step, before even looking at which objects are on the canvas, should be to get the "base" image (i.e. the background) on which all objects will be laid. Should be resized to current canvas size
@@ -271,19 +280,21 @@ class CanvasWrapper extends Component {
       cloudinaryImageTag.transformation().chain().transformation(baseTransformationObj).chain();
       transformationArr.push(baseTransformationObj);
 
+      // MAIN ITERATOR OVER CANVAS OBJECTS
       canvasObjects.forEach((val,index)=>{
         console.log(val);
         let currObj = val;
+        let objType = currObj.get('type');
+        let objMatched = true;
 
         // Generic mapping of canvas object attr to cloudinary transformation attrs
         let genericTransformationObj = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj);
 
         // Create new tranformation
         let tr = cloudinary.Transformation.new();
+        let trObjs = [];
         let trObj = {};
-
-        let objType = currObj.get('type');
-        let objMatched = true;
+        
         if (objType==='rect'){
           // Current way of doing shapes - use a transparent PNG - crop to size, and fill with color
           trObj = _this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid');
@@ -293,12 +304,10 @@ class CanvasWrapper extends Component {
             color : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
             effect : 'colorize'
           }]);
-          transformationArr.push(trObj);
+          trObjs.push(trObj);
           tr = trObj;
         }
         else if (objType==='image'){
-          //tr.overlay(new cloudinary.Layer())
-
           // @TODO - check if image is already uploaded to cloudinary - if so, get publicid instead of using remote fetch
           let useRemote = true;
           let publicId = false;
@@ -306,24 +315,45 @@ class CanvasWrapper extends Component {
           // THIS TOOK A WHILE TO STUMBLE ACROSS - https://cloudinary.com/product_updates/overlay_and_underlay_a_fetched_image - if you want to use fetch in combo with overlay, the id should be "fetch:{{base64-remote-src}}" - so together, the final URL would look something like res.cloudinary.com/demo/image/upload/l_fetch:{{base64_overlay_remote_src}}/{{underlay_image_id}}
           if (useRemote){
             let remoteSrc = currObj._originalElement.currentSrc;
-            tr.overlay({
-              resourceType : 'fetch',
-              url : remoteSrc
-            });
             trObj = {
               overlay : {
                 resourceType : 'fetch',
                 url : remoteSrc
               }
-            }
+            };
+            let trObjSecondary = _this.helpers.objectMerge([genericTransformationObj,{
+              flags : ['layer_apply']
+            }]);
+            trObjs.push(trObj,trObjSecondary);
+
+            // First, apply just the overlay
+            tr.overlay(trObj.overlay);
+            // Then chain with generic size and position
+            tr = tr.chain().transformation(trObjSecondary);
           }
-          trObj.width = currObj.get('width');
-          trObj.height = currObj.get('height');
-          trObj.x = currObj.get('left');
-          trObj.y = currObj.get('top');
           // https://cloudinary.com/documentation/image_transformations#adding_image_overlays
           // https://cloudinary.com/documentation/jquery_image_manipulation#chaining_transformations
           // https://cloudinary.com/documentation/jquery_image_manipulation#adding_text_and_image_overlays
+        }
+        else if (objType==='text'){
+          // Text is technically an overlay layer
+          // Note - Font Family and Font Size are REQUIRED
+          // Note that the space that font takes up is calculated by the font-size, not width and height. If the canvas object is scaled, you should use the ratio (X and Y are the same) to figure out what to multiply the original font size by
+          let fontSize = currObj.fontSize;
+          if (currObj.scaleX > 1){
+            fontSize = parseInt((currObj.scaleX * fontSize));
+          }
+
+          tr.overlay(new cloudinary.TextLayer({
+            fontFamily : 'Roboto',
+            fontSize : fontSize,
+            text : currObj.text
+          }));
+          let trObjSecondary = _this.helpers.objectMerge([genericTransformationObj,{
+            flags : ['layer_apply']
+          }]);
+          trObjs.push(trObj,trObjSecondary);
+          tr = tr.chain().transformation(trObjSecondary);
         }
         else {
           objMatched = false;
@@ -331,9 +361,30 @@ class CanvasWrapper extends Component {
         // If the current canvas object got matched to a known type and triggered a transformation...
         if (objMatched){
           cloudinaryImageTag.transformation().chain().transformation(tr);
-          transformationArr.push(trObj);
+          for (var x=0; x<trObjs.length; x++){
+            transformationArr.push(trObjs[x]);
+          }
         }
       });
+
+      // @TODO
+      if (false){
+        let tr = cloudinary.Transformation.new();
+        for (var x=0; x< transformationArr.length; x++){
+          if (x>0){
+            tr = tr.chain();
+          }
+          let currTransObj = transformationArr[x];
+          if ('overlay' in currTransObj){
+            tr.overlay(currTransObj);
+          }
+          else {
+            tr.transformation(currTransObj);
+          }
+        }
+        // Apply
+        cloudinaryImageTag.transformation().chain().transformation(tr);
+      }
       console.log(transformationArr);
       console.log(cloudinaryImageTag);
       console.log(cloudinaryImageTag.toHtml());
@@ -469,6 +520,7 @@ class CanvasWrapper extends Component {
         {/* Modals */}
         <div className="modals">
           <ImageSelector mainMethods={this.mainMethods} />
+          <TextEntry mainMethods={this.mainMethods} />
         </div>
         {/* Hidden Elements that necessary */}
         <div className="dynamicData hidden">

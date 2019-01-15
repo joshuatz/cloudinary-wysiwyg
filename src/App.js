@@ -37,8 +37,9 @@ class App extends Component {
           'hex' : '#4a90e2'
         },
         currSelectedFont : {
-          'size' : false,
-          'fontFamily' : false,
+          'size' : 16,
+          'fontFamilySlim' : 'Roboto',
+          'fontFamilyFull' : '"Roboto", sans-serif',
           'color' : false,
           'style' : false,
           'bold' : false,
