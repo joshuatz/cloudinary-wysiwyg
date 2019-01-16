@@ -247,17 +247,20 @@ class CanvasWrapper extends Component {
       });
       return updatedProps;
     },
-    generateFromCanvas : function(canvas){
+    generateFromCanvasRaw : function(canvas){
       let _this = this;
-
+      console.log(this);
+      if ('generateFromCanvasRaw' in _this){
+        _this.cloudinaryMethods = _this;
+      }
       // Setup cloudinary config and make sure refs are set
-      this.cloudinaryMethods.setConfig.bind(this)();
+      _this.cloudinaryMethods.setConfig.bind(this)();
       let cloudinaryInstance = this.cloudinaryInstance;
       let cloudinary = this.cloudinary;
       canvas = typeof(canvas._objects)==='object' ? canvas : this.canvas;
 
       // Start the transformation chain by create the base cloudinary imageTag
-      let baseImageId = this.cloudinaryMethods.getBaseImage.bind(this)();
+      let baseImageId = _this.cloudinaryMethods.getBaseImage.bind(this)();
       let cloudinaryImageTag = cloudinaryInstance.imageTag(baseImageId);
 
       // Get every object on the canvas
@@ -339,21 +342,23 @@ class CanvasWrapper extends Component {
           // Text is technically an overlay layer
           // Note - Font Family and Font Size are REQUIRED
           // Note that the space that font takes up is calculated by the font-size, not width and height. If the canvas object is scaled, you should use the ratio (X and Y are the same) to figure out what to multiply the original font size by
+          // Note - for text, x and y position (offset) should be passed directly with the textLayer rather than chaining it as a secondary transformation
           let fontSize = currObj.fontSize;
           if (currObj.scaleX > 1){
             fontSize = parseInt((currObj.scaleX * fontSize));
           }
-
-          tr.overlay(new cloudinary.TextLayer({
-            fontFamily : 'Roboto',
-            fontSize : fontSize,
-            text : currObj.text
-          }));
-          let trObjSecondary = _this.helpers.objectMerge([genericTransformationObj,{
-            flags : ['layer_apply']
-          }]);
-          trObjs.push(trObj,trObjSecondary);
-          tr = tr.chain().transformation(trObjSecondary);
+          trObj = {
+            overlay : new cloudinary.TextLayer({
+              fontFamily : 'Roboto',
+              fontSize : fontSize,
+              text : currObj.text
+            }),
+            x : currObj.get('left'),
+            y : currObj.get('top'),
+            gravity : 'north_west'
+          }
+          tr.chain().transformation(trObj);
+          trObjs.push(trObj);
         }
         else {
           objMatched = false;
@@ -386,9 +391,35 @@ class CanvasWrapper extends Component {
         cloudinaryImageTag.transformation().chain().transformation(tr);
       }
       console.log(transformationArr);
-      console.log(cloudinaryImageTag);
-      console.log(cloudinaryImageTag.toHtml());
-      window.open(/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1])
+      return {
+        open : function(){
+          window.open(/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1])
+        },
+        log : function(){
+          console.group('Cloudinary Output:');
+            console.group('Transformation Array');
+              console.log(transformationArr);
+            console.groupEnd();
+            console.group('Transformation Class');
+              let transformationInstance = cloudinaryImageTag.transformation();
+              console.log(transformationInstance);
+              console.group('Serialized:');
+                console.log(transformationInstance.serialize());
+              console.groupEnd();
+            console.groupEnd();
+            console.log(cloudinaryImageTag);
+            console.log(cloudinaryImageTag.toHtml());
+            console.log((/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1]));
+        }
+      }
+    },
+    generateFromCanvas : {
+      open : function(canvas){
+        this.cloudinaryMethods.generateFromCanvasRaw.bind(this)(canvas).open();
+      },
+      log : function(canvas){
+        this.cloudinaryMethods.generateFromCanvasRaw.bind(this)(canvas).log();
+      }
     }
   }
   // cloudinaryMethods - END
@@ -514,7 +545,7 @@ class CanvasWrapper extends Component {
         {/* Probably move this to separate component - cloudinary buttons */}
         <div className="col s12 center">
           <div className="center">
-            <button className="button btn" onClick={this.mainMethods.cloudinary.generateFromCanvas.bind(this)}>Get Cloudinary</button>
+            <button className="button btn" onClick={this.mainMethods.cloudinary.generateFromCanvas.log.bind(this)}>Get Cloudinary</button>
           </div>
         </div>
         {/* Modals */}
