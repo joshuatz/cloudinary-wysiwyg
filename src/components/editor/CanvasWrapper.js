@@ -27,7 +27,6 @@ class CanvasWrapper extends Component {
     // Note - cloudinary seems to prefer GIF over PNG for working with transparency in fetch layers.
     this.fallbackTransparentPixelSrc = 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png';
     this.fallbackSolidPixelSrc = 'https://via.placeholder.com/1';
-    this.fallbackBasePicId = 'flowers';
     this.masterState = this.props.masterState;
     this.canvasReRenderIp = false;
   }
@@ -192,8 +191,16 @@ class CanvasWrapper extends Component {
     getSolidPixelSrc : function(){
       return typeof(this.state.editorData.solidPixelSrc)==='string' ? this.state.editorData.solidPixelSrc : this.fallbackSolidPixelSrc;
     },
+    getFallbackBasePicId : function(){
+      if (this.state.accountSettings.cloudinaryCloudName==='demo'){
+        return 'flowers';
+      }
+      else {
+        return 'sample';
+      }
+    },
     getBaseImage : function(){
-      return this.state.editorData.baseImage!==null ? this.state.editorData.baseImage : this.fallbackBasePicId;
+      return this.state.editorData.baseImage!==null ? this.state.editorData.baseImage : this.cloudinaryMethods.getFallbackBasePicId.bind(this)();
     },
     getTransformationObj : function(type){
       let perTypes = {
@@ -236,19 +243,23 @@ class CanvasWrapper extends Component {
       let transObj = (OPT_trans || {});
       let width = parseFloat(canvasObj.get('width'));
       let height = parseFloat(canvasObj.get('height'));
+      let angle = parseInt(canvasObj.get('angle'));
       // Handle scaling by using x and y factors and multiplying width and height
       width = width * parseFloat(canvasObj.get('scaleX'));
       height = height * parseFloat(canvasObj.get('scaleY'));
       // Note - X and Y should be integers
       // Note - angle should be an integer
-      let updatedProps = this.helpers.objectMerge(transObj,{
+      let props = {
         width : width,
         height : height,
         x : parseInt(canvasObj.get('left'),10),
         y : parseInt(canvasObj.get('top'),10),
-        angle : parseInt(canvasObj.get('angle')),
         gravity : 'north_west'
-      });
+      };
+      if (angle!==0){
+        props.angle = angle;
+      }
+      let updatedProps = this.helpers.objectMerge(transObj,props);
       return updatedProps;
     },
     generateFromCanvasRaw : function(canvas){
@@ -279,7 +290,7 @@ class CanvasWrapper extends Component {
       };
       // Next, if the base image is set as the default fallback - meaning that the user wants to overlay on top of a solid or transparent background, we should make sure the base image will show that way...
       // @TODO allow for solid fill instead of transparent
-      if (baseImageId === this.fallbackBasePicId){
+      if (baseImageId === _this.mainMethods.cloudinary.getFallbackBasePicId()){
         baseTransformationObj = this.helpers.objectMerge(baseTransformationObj,{
           opacity : 0
         });
