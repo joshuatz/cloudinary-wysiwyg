@@ -113,8 +113,12 @@ class AccountSettingsPanel extends Component {
             </div>
         </div>
         <div className="row center">
-          <div className="col s4 offset-s4 center">
-            <div className="btn red" onClick={this.reset.bind(this)}>Reset</div>
+          
+          <div className="col s4 offset-s2 center">
+            <div className="btn orange" onClick={this.props.appMethods.resetCanvas.bind(this)}>Reset Canvas</div>
+          </div>
+          <div className="col s4 offset-s2 center">
+            <div className="btn red" onClick={this.reset.bind(this)}>Reset Everything</div>
           </div>
         </div>
       </div>

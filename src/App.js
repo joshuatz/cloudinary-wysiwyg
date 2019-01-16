@@ -97,6 +97,9 @@ class App extends Component {
     },callback);
   }
   resetEverything(){
+    this.resetCanvas();
+  }
+  resetCanvas(){
     let canvas = this.state.editorData.canvasObj;
     if (canvas && canvas['targets']){
       canvas.clear();
@@ -105,6 +108,7 @@ class App extends Component {
   appMethods = {
     addMsg : this.addMsg.bind(this),
     resetEverything : this.resetEverything.bind(this),
+    resetCanvas : this.resetCanvas.bind(this),
     mergeMasterState : this.mergeMasterState.bind(this),
     mergeEditorData : this.mergeEditorData.bind(this),
     getMasterState : this.getMasterState.bind(this)

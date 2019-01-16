@@ -163,7 +163,8 @@ class CanvasWrapper extends Component {
         left : 100,
         top : 100,
         fontSize : this.state.editorData.currSelectedFont.size,
-        lockUniScaling : true
+        lockUniScaling : true,
+        fill : this.getCurrSelectedColor().hex
       });
       canvas.add(textInstance);
       textInstance.on('selected',()=>{
@@ -371,7 +372,9 @@ class CanvasWrapper extends Component {
             x : genericTransformationObj.x,
             y : genericTransformationObj.y,
             gravity : genericTransformationObj.gravity,
-            angle : genericTransformationObj.angle
+            angle : genericTransformationObj.angle,
+            effect : 'colorize',
+            color : 'rgb:' + _this.getObjColor(currObj).hex.replace('#','')
           }
           tr.chain().transformation(trObj);
           trObjs.push(trObj);
