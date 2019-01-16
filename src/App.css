@@ -148,3 +148,9 @@
 .switchHeading {
   padding: 5px;
 }
+.instantPreviewWrapper {
+  border: 4px dashed black;
+  margin-left: auto;
+  margin-right: auto;
+  margin: 24px;
+}

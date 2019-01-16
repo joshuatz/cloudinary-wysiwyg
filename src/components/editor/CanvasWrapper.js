@@ -26,7 +26,7 @@ class CanvasWrapper extends Component {
     this.appMethods = this.props.appMethods;
     // Note - cloudinary seems to prefer GIF over PNG for working with transparency in fetch layers.
     this.fallbackTransparentPixelSrc = 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png';
-    this.fallbackSolidPixelSrc = 'https://via.placeholder.com/1';
+    this.fallbackSolidPixelSrc = 'https://via.placeholder.com/2x2';
     this.masterState = this.props.masterState;
     this.canvasReRenderIp = false;
   }
@@ -260,27 +260,29 @@ class CanvasWrapper extends Component {
       let transObj = (OPT_trans || {});
       let width = parseFloat(canvasObj.get('width'));
       let height = parseFloat(canvasObj.get('height'));
-      let angle = parseInt(canvasObj.get('angle'));
+      let angle = parseFloat(canvasObj.get('angle'));
       // Handle scaling by using x and y factors and multiplying width and height
       width = width * parseFloat(canvasObj.get('scaleX'));
       height = height * parseFloat(canvasObj.get('scaleY'));
       // Note - X and Y should be integers
       // Note - angle should be an integer
       let props = {
-        width : width,
-        height : height,
+        width : parseInt(width,10),
+        height : parseInt(height,10),
         x : parseInt(canvasObj.get('left'),10),
         y : parseInt(canvasObj.get('top'),10),
         gravity : 'north_west'
       };
       if (angle!==0){
-        props.angle = angle;
+        props.angle = parseInt(angle,10);
       }
       let updatedProps = this.helpers.objectMerge(transObj,props);
       return updatedProps;
     },
     generateFromCanvasRaw : function(canvas){
       let _this = this;
+      // TESTING
+      let useArr = true;
       console.log(this);
       if ('generateFromCanvasRaw' in _this){
         _this.cloudinaryMethods = _this;
@@ -312,7 +314,9 @@ class CanvasWrapper extends Component {
           opacity : 0
         });
       }
-      cloudinaryImageTag.transformation().chain().transformation(baseTransformationObj).chain();
+      if (!useArr){
+        cloudinaryImageTag.transformation().chain().transformation(baseTransformationObj).chain();
+      }
       transformationArr.push(baseTransformationObj);
 
       // MAIN ITERATOR OVER CANVAS OBJECTS
@@ -332,15 +336,32 @@ class CanvasWrapper extends Component {
         
         if (objType==='rect'){
           // Current way of doing shapes - use a transparent PNG - crop to size, and fill with color
+          // NOTE - order of operations and chaining is important. Size and position should always come first and as separate transformations to avoid conflicts
           trObj = _this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid');
-          // Set fill color, size, and offset
-          trObj = _this.helpers.objectMerge([trObj,genericTransformationObj,{
+          // Set size and offset
+          trObj = _this.helpers.objectMerge([trObj,genericTransformationObj]);
+          // Apply color
+          let trObjSecondary = {
             background : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
             color : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
-            effect : 'colorize'
-          }]);
-          trObjs.push(trObj);
-          tr = trObj;
+            effect : 'colorize',
+            flags : ['layer_apply']
+          }
+          trObjSecondary = _this.helpers.objectMerge([trObjSecondary,genericTransformationObj]);
+          delete trObjSecondary.width;
+          delete trObjSecondary.height;
+          // REMOVE ANGLE FROM TRANSFORMATION - it needs to be chained instead, and after size and color is set and apply with flags. Very picky about this...
+          if (trObj.angle && trObj.angle  > 0){
+            let angle = trObj.angle;
+            delete trObj.angle;
+            // layer_apply flag with angle transformation tells it to apply it to the overlay rather than the entire base (it would rotate the entire image if omitted)
+            trObjSecondary.angle = angle;
+          }
+          trObjs.push(trObj,trObjSecondary);
+          if (!useArr){
+            tr.chain().transformation(trObj);
+            tr = tr.chain().transformation(trObjSecondary);
+          }
         }
         else if (objType==='image'){
           // @TODO - check if image is already uploaded to cloudinary - if so, get publicid instead of using remote fetch
@@ -360,11 +381,12 @@ class CanvasWrapper extends Component {
               flags : ['layer_apply']
             }]);
             trObjs.push(trObj,trObjSecondary);
-
-            // First, apply just the overlay
-            tr.overlay(trObj.overlay);
-            // Then chain with generic size and position
-            tr = tr.chain().transformation(trObjSecondary);
+            if (!useArr){
+              // First, apply just the overlay
+              tr.overlay(trObj.overlay);
+              // Then chain with generic size and position
+              tr = tr.chain().transformation(trObjSecondary);
+            }
           }
           // https://cloudinary.com/documentation/image_transformations#adding_image_overlays
           // https://cloudinary.com/documentation/jquery_image_manipulation#chaining_transformations
@@ -392,38 +414,49 @@ class CanvasWrapper extends Component {
             effect : 'colorize',
             color : 'rgb:' + _this.getObjColor(currObj).hex.replace('#','')
           }
-          tr.chain().transformation(trObj);
           trObjs.push(trObj);
+          if (!useArr){
+            tr.chain().transformation(trObj);
+          }
         }
         else {
           objMatched = false;
         }
         // If the current canvas object got matched to a known type and triggered a transformation...
         if (objMatched){
-          cloudinaryImageTag.transformation().chain().transformation(tr);
           for (var x=0; x<trObjs.length; x++){
             transformationArr.push(trObjs[x]);
+          }
+          if (!useArr){
+            cloudinaryImageTag.transformation().chain().transformation(tr);
           }
         }
       });
 
       // @TODO
-      if (false){
+      if (useArr){
         let tr = cloudinary.Transformation.new();
         for (var x=0; x< transformationArr.length; x++){
           if (x>0){
-            tr = tr.chain();
+            //tr = tr.chain();
           }
           let currTransObj = transformationArr[x];
-          if ('overlay' in currTransObj){
+          if ('resourceType' in currTransObj && currTransObj.resourceType === 'fetch'){
+            debugger;
             tr.overlay(currTransObj);
           }
           else {
+            if (x>0){
+              tr = tr.chain();
+            }
             tr.transformation(currTransObj);
           }
         }
         // Apply
         cloudinaryImageTag.transformation().chain().transformation(tr);
+      }
+      else {
+        
       }
 
       // Extract actual image URL
@@ -454,9 +487,18 @@ class CanvasWrapper extends Component {
           //debugger;
           let shouldUpdateState = (OPT_updateState || true);
           // Compose object to passback
+          let transformationInstance = cloudinaryImageTag.transformation();
           let results = {
-            transformations : {},
-            img : {},
+            transformations : {
+              transformationArr : transformationArr,
+              tranformationClassInstance : transformationInstance,
+              serialized : transformationInstance.serialize()
+            },
+            img : {
+              raw : cloudinaryImageTag,
+              html : cloudinaryImageTag.toHtml(),
+              src : imgSrc
+            },
             imgSrc : imgSrc
           }
           console.log(results);
