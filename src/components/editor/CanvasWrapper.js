@@ -101,6 +101,13 @@ class CanvasWrapper extends Component {
       }
       return selectedArr;
     },
+    deleteSelectedObjs : function(){
+      let canvas = this.state.editorData.canvasObj;
+      this.mainMethods.canvas.getSelectedObjs(true).forEach((obj,index)=>{
+        canvas.remove(obj);
+      });
+      this.mainMethods.canvas.renderAll();
+    },
     handleShapeSelect : function(shape){
       this.appMethods.mergeEditorData('isItemSelected',true);
       console.log(shape);
@@ -544,6 +551,9 @@ class CanvasWrapper extends Component {
         <div className="row">
           <div className="col s7">
             <canvas id="editorCanvas" style={this.canvasStyles}></canvas>
+            <div className="col s12 center canvasObjectButtons">
+              <button className={"button btn red" + (this.state.editorData.isItemSelected ? "" : " hidden")} onClick={this.mainMethods.canvas.deleteSelectedObjs.bind(this)}>Delete Selected</button>
+            </div>
           </div>
           <div className="col s5">
             <ToolPanel editorData={this.state.editorData} mainMethods={this.mainMethods}/>
