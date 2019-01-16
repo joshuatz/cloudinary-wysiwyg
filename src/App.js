@@ -52,9 +52,13 @@ class App extends Component {
       accountSettings : {
         cloudinaryCloudName : 'demo',
         fetchInstantly : false
-      }
+      },
+      output : {
+        imgSrc : ''
+      },
+      lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24)
     }
-    window.masterState = this.state;
+    window.getMasterState = this.getMasterState.bind(this);
     this.jQuery = window.jQuery;
     this.helpers = new Helpers();
   }
@@ -105,13 +109,25 @@ class App extends Component {
       canvas.clear();
     }
   }
+
+  getSecondsSinceLastFetch(){
+    return (this.getMsSinceLastFetch() / 1000);
+  }
+
+  getMsSinceLastFetch(){
+    let msPast = (new Date()).getTime() - this.state.lastFetched;
+    return msPast;
+  }
+
   appMethods = {
     addMsg : this.addMsg.bind(this),
     resetEverything : this.resetEverything.bind(this),
     resetCanvas : this.resetCanvas.bind(this),
     mergeMasterState : this.mergeMasterState.bind(this),
     mergeEditorData : this.mergeEditorData.bind(this),
-    getMasterState : this.getMasterState.bind(this)
+    getMasterState : this.getMasterState.bind(this),
+    getSecondsSinceLastFetch : this.getSecondsSinceLastFetch.bind(this),
+    getMsSinceLastFetch : this.getMsSinceLastFetch.bind(this)
   }
 
   fireUpdateHooks(){

@@ -54,7 +54,11 @@ class CanvasWrapper extends Component {
     });
     canvas.on('object:selected',()=>{
       this.mainMethods.canvas.getSelectedObjs(true);
-    })
+    });
+    canvas.on('object:modified',()=>{
+      console.log('object:modified');
+      this.mainMethods.canvas.renderAll();
+    });
     this.canvas = canvas;
   }
 
@@ -66,10 +70,15 @@ class CanvasWrapper extends Component {
       this.state.editorData.canvasObj.clear();
     },
     renderAll : function(){
+      //debugger;
       let canvas = this.state.editorData.canvasObj;
       this.canvasReRenderIp = true;
       canvas.renderAll();
+      //debugger;
       this.canvasReRenderIp = false;
+      if (this.state.accountSettings.fetchInstantly && this.mainMethods.appMethods.getMsSinceLastFetch() > 250){
+        this.mainMethods.cloudinary.generateFromCanvas.get.bind(this)();
+      }
     },
     // This can be used to retrieve selectd objects on the canvas, but is also called whenever something is selected, as a way to update various state things
     getSelectedObjs : function(triggerUpdates){
@@ -280,7 +289,7 @@ class CanvasWrapper extends Component {
       _this.cloudinaryMethods.setConfig.bind(this)();
       let cloudinaryInstance = this.cloudinaryInstance;
       let cloudinary = this.cloudinary;
-      canvas = typeof(canvas._objects)==='object' ? canvas : this.canvas;
+      canvas = (canvas && typeof(canvas._objects)==='object') ? canvas : this.canvas;
 
       // Start the transformation chain by create the base cloudinary imageTag
       let baseImageId = _this.cloudinaryMethods.getBaseImage.bind(this)();
@@ -416,6 +425,10 @@ class CanvasWrapper extends Component {
         // Apply
         cloudinaryImageTag.transformation().chain().transformation(tr);
       }
+
+      // Extract actual image URL
+      let imgSrc = (/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1]);
+
       console.log(transformationArr);
       return {
         open : function(){
@@ -435,16 +448,36 @@ class CanvasWrapper extends Component {
             console.groupEnd();
             console.log(cloudinaryImageTag);
             console.log(cloudinaryImageTag.toHtml());
-            console.log((/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1]));
+            console.log(imgSrc);
+        },
+        get : function(OPT_updateState){
+          //debugger;
+          let shouldUpdateState = (OPT_updateState || true);
+          // Compose object to passback
+          let results = {
+            transformations : {},
+            img : {},
+            imgSrc : imgSrc
+          }
+          console.log(results);
+          // Update state
+          _this.mainMethods.appMethods.mergeMasterState('output',results);
+          _this.mainMethods.appMethods.mergeMasterState('lastFetched',(new Date()).getTime());
+          // return
+          return results;
         }
       }
     },
     generateFromCanvas : {
       open : function(canvas){
-        this.cloudinaryMethods.generateFromCanvasRaw.bind(this)(canvas).open();
+        this.mainMethods.cloudinary.generateFromCanvasRaw.bind(this)(canvas).open();
       },
       log : function(canvas){
-        this.cloudinaryMethods.generateFromCanvasRaw.bind(this)(canvas).log();
+        this.mainMethods.cloudinary.generateFromCanvasRaw.bind(this)(canvas).log();
+      },
+      get : function(canvas,OPT_updateState){
+        //debugger;
+        this.mainMethods.cloudinary.generateFromCanvasRaw.bind(this)(canvas).get(OPT_updateState);
       }
     }
   }
@@ -558,26 +591,33 @@ class CanvasWrapper extends Component {
             </div>
           </div>
 
-          {/* OPTIONAL - Instant Preview */}
+          {/* OPTIONAL - Instant Preview - Conditional rendering */}
+          {this.state.accountSettings.fetchInstantly &&
+            <div className="instantPreviewWrapper">
+              <img src={
+                (typeof(this.props.masterState.output.imgSrc)==='string' && this.props.masterState.output.imgSrc !== '') ? this.props.masterState.output.imgSrc : 'loading.gif'
+              }></img>
+            </div>
+          }
 
           <div className="sidebar rightSide row">
-            <div className="col 12 toolPanelWrapper">
+            <div className="col 12 toolPanelWrapper sidebarComponent">
               <ToolPanel editorData={this.state.editorData} mainMethods={this.mainMethods}/>
             </div>
 
-            <div className="col s12">
+            <div className="col s12 sidebarComponent">
               <PaintSelector mainMethods={this.mainMethods} color={this.state.editorData.currSelectedColor} />
             </div>
 
-            <div className="col s12">
+            <div className="col s12 sidebarComponent">
               <FontSelector mainMethods={this.mainMethods} masterState={this.masterState} />
             </div>
 
-            <div className="col s12">
+            <div className="col s12 sidebarComponent">
               <LayersPanel />
             </div>
 
-            <div className="col s12">
+            <div className="col s12 sidebarComponent">
               <ImageAssets mainMethods={this.mainMethods} />
             </div>
           </div>
@@ -587,7 +627,7 @@ class CanvasWrapper extends Component {
         {/* Probably move this to separate component - cloudinary buttons */}
         <div className="col s12 center">
           <div className="center">
-            <button className="button btn" onClick={this.mainMethods.cloudinary.generateFromCanvas.log.bind(this)}>Get Cloudinary</button>
+            <button className="button btn" onClick={this.mainMethods.cloudinary.generateFromCanvas.get.bind(this)}>Get Cloudinary</button>
           </div>
         </div>
         {/* Modals */}
