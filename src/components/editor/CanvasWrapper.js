@@ -547,30 +547,43 @@ class CanvasWrapper extends Component {
       return <img className="pseudoImage" key={index} src={val} />
     });
     return(
-      <div className="canvasWrapper">
+      <div className="canvasWrapperWrapper" data-instantpreview={this.state.accountSettings.fetchInstantly.toString()}>
         <div className="row">
-          <div className="col s7">
+
+          <div className="canvasWrapper leftSide">
+            {/* THE ACTUAL CANVAS ELEMENT */}
             <canvas id="editorCanvas" style={this.canvasStyles}></canvas>
             <div className="col s12 center canvasObjectButtons">
               <button className={"button btn red" + (this.state.editorData.isItemSelected ? "" : " hidden")} onClick={this.mainMethods.canvas.deleteSelectedObjs.bind(this)}>Delete Selected</button>
             </div>
           </div>
-          <div className="col s5">
-            <ToolPanel editorData={this.state.editorData} mainMethods={this.mainMethods}/>
+
+          {/* OPTIONAL - Instant Preview */}
+
+          <div className="sidebar rightSide row">
+            <div className="col 12 toolPanelWrapper">
+              <ToolPanel editorData={this.state.editorData} mainMethods={this.mainMethods}/>
+            </div>
+
+            <div className="col s12">
+              <PaintSelector mainMethods={this.mainMethods} color={this.state.editorData.currSelectedColor} />
+            </div>
+
+            <div className="col s12">
+              <FontSelector mainMethods={this.mainMethods} masterState={this.masterState} />
+            </div>
+
+            <div className="col s12">
+              <LayersPanel />
+            </div>
+
+            <div className="col s12">
+              <ImageAssets mainMethods={this.mainMethods} />
+            </div>
           </div>
-          <div className="col s5">
-            <PaintSelector mainMethods={this.mainMethods} color={this.state.editorData.currSelectedColor} />
-          </div>
-          <div className="col s5">
-            <FontSelector mainMethods={this.mainMethods} masterState={this.masterState} />
-          </div>
-          <div className="col s5">
-            <LayersPanel />
-          </div>
-          <div className="col s5">
-            <ImageAssets mainMethods={this.mainMethods} />
-          </div>
+
         </div>
+
         {/* Probably move this to separate component - cloudinary buttons */}
         <div className="col s12 center">
           <div className="center">

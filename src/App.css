@@ -114,3 +114,28 @@
   background-color: black !important;
   color: white !important;
 }
+
+.canvasWrapperWrapper .sidebar {
+  width: auto;
+  max-width: 50%;
+  min-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  display: inline-block;
+}
+.canvasWrapperWrapper .canvasWrapper {
+  width: auto;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  float: left;
+  padding: 25px;
+}
+.canvasWrapper .canvas-container {
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 10px;
+}
+.switchHeading {
+  padding: 5px;
+}

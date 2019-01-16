@@ -98,7 +98,7 @@ class AccountSettingsPanel extends Component {
               <input id="cloudinaryCloudName" type="text" name="cloudinaryCloudName" value={this.state.cloudinaryCloudName} onChange={this.handleChange.bind(this)} onKeyUp={this.handleChange.bind(this)} />
               <label htmlFor="cloudinaryCloudName">Your Cloud Name</label>
             </div>
-            <div className="col s6 offset-s1 center">
+            <div className="col s6 offset-s1 center instantRenderingSwitchWrapper">
               <div className="valign-wrapper">
                 <div className="switchHeading">Instant Rendering</div>
                 <div className="switch">
