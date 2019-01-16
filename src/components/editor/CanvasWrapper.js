@@ -163,7 +163,8 @@ class CanvasWrapper extends Component {
       let textInstance = new fabric.Text(text,{
         left : 100,
         top : 100,
-        fontSize : this.state.editorData.currSelectedFont.size
+        fontSize : this.state.editorData.currSelectedFont.size,
+        lockUniScaling : true
       });
       canvas.add(textInstance);
       textInstance.on('selected',()=>{
@@ -238,11 +239,14 @@ class CanvasWrapper extends Component {
       // Handle scaling by using x and y factors and multiplying width and height
       width = width * parseFloat(canvasObj.get('scaleX'));
       height = height * parseFloat(canvasObj.get('scaleY'));
+      // Note - X and Y should be integers
+      // Note - angle should be an integer
       let updatedProps = this.helpers.objectMerge(transObj,{
         width : width,
         height : height,
-        x : canvasObj.get('left'),
-        y : canvasObj.get('top'),
+        x : parseInt(canvasObj.get('left'),10),
+        y : parseInt(canvasObj.get('top'),10),
+        angle : parseInt(canvasObj.get('angle')),
         gravity : 'north_west'
       });
       return updatedProps;
@@ -353,9 +357,10 @@ class CanvasWrapper extends Component {
               fontSize : fontSize,
               text : currObj.text
             }),
-            x : currObj.get('left'),
-            y : currObj.get('top'),
-            gravity : 'north_west'
+            x : genericTransformationObj.x,
+            y : genericTransformationObj.y,
+            gravity : genericTransformationObj.gravity,
+            angle : genericTransformationObj.angle
           }
           tr.chain().transformation(trObj);
           trObjs.push(trObj);
