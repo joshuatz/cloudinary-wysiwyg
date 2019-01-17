@@ -154,3 +154,9 @@
   margin-right: auto;
   margin: 24px;
 }
+a.disabled, .disabled {
+  cursor: not-allowed !important;
+  background-color: #DFDFDF !important;
+  box-shadow: none;
+  color: #9F9F9F !important;
+}

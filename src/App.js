@@ -61,6 +61,8 @@ class App extends Component {
     }
     window.getMasterState = this.getMasterState.bind(this);
     this.jQuery = window.jQuery;
+    this.$ = this.jQuery;
+    this.Materialize = window.M;
     this.helpers = new Helpers();
   }
 
@@ -101,6 +103,13 @@ class App extends Component {
       logQueue : queue
     },callback);
   }
+
+  materializeInit(){
+    let $ = this.$;
+    this.Materialize.AutoInit();
+    $('[data-tooltip]').tooltip();
+  }
+
   resetEverything(){
     this.resetCanvas();
   }
@@ -144,6 +153,7 @@ class App extends Component {
   }
   componentDidMount(){
     this.fireUpdateHooks.bind(this);
+    this.materializeInit();
   }
   render() {
     return (

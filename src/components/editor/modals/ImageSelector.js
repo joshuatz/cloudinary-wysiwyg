@@ -28,7 +28,9 @@ class ImageSelector extends Component {
               <div className="col s12 center">What type of image do  you want to use?</div>
               <div className="row center">
                 <a className="button btn autoCenter modal-trigger modal-close" href="#hostedImageModal">Hosted Image</a>
-                <a className="button btn autoCenter modal-trigger modal-close" href="#newImageUploadModal">Upload an Image</a>
+                <div className="disabled" style={{display: 'inline-block'}}  data-tooltip="Sorry, this has not yet been implemented" data-position="bottom">
+                  <a className="button btn autoCenter modal-trigger modal-close disabled" href="#newImageUploadModal">Upload an Image</a>
+                </div>
               </div>
             </div>
           </div>

@@ -488,7 +488,7 @@ class CanvasWrapper extends Component {
           }
           let currTransObj = transformationArr[x];
           if ('resourceType' in currTransObj && currTransObj.resourceType === 'fetch'){
-            debugger;
+            //debugger;
             tr.overlay(currTransObj);
           }
           else {

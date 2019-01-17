@@ -137,7 +137,7 @@ class FontSelector extends Component {
     });
     if (this.getIsFontSelected()){
       fontSelectOptions.unshift((
-        <option value={this.getCurrSelectedFont().fontFamily}>{this.getCurrSelectedFont().fontFamily}</option>
+        <option value={this.getCurrSelectedFont().fontFamilySlim}>{this.getCurrSelectedFont().fontFamilySlim}</option>
       ));
     }
     // Build font buttons

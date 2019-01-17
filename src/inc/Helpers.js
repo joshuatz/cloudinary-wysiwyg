@@ -33,7 +33,6 @@ class Helpers {
          if (typeof(instances)==='undefined' || instances ===null){
            instances = Materialize.Modal.init(elems);
          }
-         debugger;
          return instances[0];
        }
       }.bind(this);
