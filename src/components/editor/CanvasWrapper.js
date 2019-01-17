@@ -71,6 +71,18 @@ class CanvasWrapper extends Component {
     clear : function(){
       this.state.editorData.canvasObj.clear();
     },
+    updateLivePreview : function(force){
+      if (force || (this.state.accountSettings.fetchInstantly && this.mainMethods.appMethods.getMsSinceLastFetch() > 250)){
+        // Get updated image src
+        this.mainMethods.cloudinary.generateFromCanvas.get.bind(this)();
+        // Update livePreviewSrc state, which will prompt render of preview
+        this.mainMethods.appMethods.mergeMasterState('livePreviewSrc',this.mainMethods.appMethods.getMasterState().output.imgSrc);
+      }
+      // Also update if livePreview is off, that way state will be ready if live preview is sudddenly opened
+      else if (this.state.accountSettings.fetchInstantly===false){
+        this.mainMethods.canvas.updateLivePreview(true);
+      }
+    },
     renderAll : function(){
       //debugger;
       let canvas = this.state.editorData.canvasObj;
@@ -78,9 +90,7 @@ class CanvasWrapper extends Component {
       canvas.renderAll();
       //debugger;
       this.canvasReRenderIp = false;
-      if (this.state.accountSettings.fetchInstantly && this.mainMethods.appMethods.getMsSinceLastFetch() > 250){
-        this.mainMethods.cloudinary.generateFromCanvas.get.bind(this)();
-      }
+      this.mainMethods.canvas.updateLivePreview();
     },
     // This can be used to retrieve selectd objects on the canvas, but is also called whenever something is selected, as a way to update various state things
     getSelectedObjs : function(triggerUpdates){
@@ -161,6 +171,7 @@ class CanvasWrapper extends Component {
       canvas.add(rect);
       canvas.renderAll();
       canvas.bringToFront(rect);
+      this.mainMethods.canvas.updateLivePreview();
       rect.on('selected',()=>{
         this.canvasMethods.handleShapeSelect.bind(this)(rect);
       });
@@ -195,6 +206,7 @@ class CanvasWrapper extends Component {
         canvas.add(imgInstance);
         canvas.renderAll();
         canvas.bringToFront(imgInstance);
+        this.mainMethods.canvas.updateLivePreview();
         imgInstance.on('selected',()=>{
           //
         });
@@ -219,6 +231,7 @@ class CanvasWrapper extends Component {
         // @TODO handle callback to allow editing already added text
       });
       canvas.bringToFront(textInstance);
+      this.mainMethods.canvas.updateLivePreview();
       return textInstance;
     }
   }
@@ -668,7 +681,7 @@ class CanvasWrapper extends Component {
           {this.state.accountSettings.fetchInstantly &&
             <div className="instantPreviewWrapper">
               <img src={
-                (typeof(this.props.masterState.output.imgSrc)==='string' && this.props.masterState.output.imgSrc !== '') ? this.props.masterState.output.imgSrc : 'loading.gif'
+                (typeof(this.props.masterState.output.imgSrc)==='string' && this.props.masterState.livePreviewSrc !== '') ? this.props.masterState.livePreviewSrc : 'loading.gif'
               }></img>
             </div>
           }

@@ -56,6 +56,7 @@ class App extends Component {
       output : {
         imgSrc : ''
       },
+      livePreviewSrc : '',
       lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24)
     }
     window.getMasterState = this.getMasterState.bind(this);
