@@ -2,10 +2,17 @@ Todo list and misc notes
   Top Priority / WIP:
      - Add more shapes (at least circles)
      - Text entry
-     - Make sure new things added to canvas are immediately stacked on Top
      - Warning about instant rendering
-     - Warning about URL char length
+     - Warning about URL char length (2083 max for IE, so 2K is good guideline if going to use URL for client-facing stuff)
   If time:
      - Layers / grouping - and Z-index associated
      - shareable templates
      - Panel that shows stats (# of transformations, char length of URL, etc.) - as you edit
+     - Looking into saving template as a set of transformations in Cloudinary platform
+
+
+Resources to check out later:
+  https://stackoverflow.com/questions/15032497/layering-canvas-objects-in-fabric-js
+
+Important notes to self:
+   - canvas.renderAll() needs to be called BEFORE .bringToFront() and changing index

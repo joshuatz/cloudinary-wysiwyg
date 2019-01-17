@@ -39,7 +39,8 @@ class CanvasWrapper extends Component {
     let fabric = window.fabric;
     var canvas = new fabric.Canvas('editorCanvas',{
       width : 400,
-      height : 400
+      height : 400,
+      preserveObjectStacking : true
     });
     let editorData = this.state.editorData;
     editorData.canvasObj = canvas;
@@ -143,6 +144,8 @@ class CanvasWrapper extends Component {
         fill : this.getCurrSelectedColor().hex
       });
       canvas.add(rect);
+      canvas.renderAll();
+      canvas.bringToFront(rect);
       rect.on('selected',()=>{
         this.canvasMethods.handleShapeSelect.bind(this)(rect);
       });
@@ -175,6 +178,8 @@ class CanvasWrapper extends Component {
           top : 100
         });
         canvas.add(imgInstance);
+        canvas.renderAll();
+        canvas.bringToFront(imgInstance);
         imgInstance.on('selected',()=>{
           //
         });
@@ -194,9 +199,11 @@ class CanvasWrapper extends Component {
         fill : this.getCurrSelectedColor().hex
       });
       canvas.add(textInstance);
+      canvas.renderAll();
       textInstance.on('selected',()=>{
         // @TODO handle callback to allow editing already added text
       });
+      canvas.bringToFront(textInstance);
       return textInstance;
     }
   }
