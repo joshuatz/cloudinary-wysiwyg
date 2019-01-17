@@ -1,0 +1,11 @@
+Todo list and misc notes
+  Top Priority / WIP:
+     - Add more shapes (at least circles)
+     - Text entry
+     - Make sure new things added to canvas are immediately stacked on Top
+     - Warning about instant rendering
+     - Warning about URL char length
+  If time:
+     - Layers / grouping - and Z-index associated
+     - shareable templates
+     - Panel that shows stats (# of transformations, char length of URL, etc.) - as you edit

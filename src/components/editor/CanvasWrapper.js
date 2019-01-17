@@ -166,7 +166,7 @@ class CanvasWrapper extends Component {
             _this.canvasMethods.addImage.bind(_this)(imageElem);
             _this.canvasMethods.renderAll.bind(_this)();
             console.log(_this.state);
-          },200);
+          },500);
         });
       }
       else {
