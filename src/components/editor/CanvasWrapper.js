@@ -7,6 +7,7 @@ import PaintSelector from './panels/PaintSelector';
 import FontSelector from './panels/FontSelector';
 import ImageSelector from './modals/ImageSelector';
 import TextEntry from './modals/TextEntry';
+import CurrObjectActions from './panels/CurrObjectActions';
 
 class CanvasWrapper extends Component {
   constructor(props){
@@ -111,7 +112,21 @@ class CanvasWrapper extends Component {
       }
       return selectedArr;
     },
-
+    moveSelected : function(direction){
+      let selected = this.mainMethods.canvas.getSelectedObjs(false);
+      let canvas = this.state.editorData.canvasObj;
+      switch (direction) {
+        case 'up':
+          selected.forEach((obj,index)=>{canvas.bringForward(obj)});
+          break;
+        case 'down':
+          selected.forEach((obj,index)=>{canvas.sendBackwards(obj)});
+          break;
+        default:
+          console.warn('moveSelected was called without specifying direction - no action taken.');
+          break;
+      }
+    },
     getCanvObjOriginalLeft : function(obj){
       let left = obj.get('left');
       if (!'angle' in obj || obj.angle === 0){
@@ -646,9 +661,7 @@ class CanvasWrapper extends Component {
           <div className="canvasWrapper leftSide">
             {/* THE ACTUAL CANVAS ELEMENT */}
             <canvas id="editorCanvas" style={this.canvasStyles}></canvas>
-            <div className="col s12 center canvasObjectButtons">
-              <button className={"button btn red" + (this.state.editorData.isItemSelected ? "" : " hidden")} onClick={this.mainMethods.canvas.deleteSelectedObjs.bind(this)}>Delete Selected</button>
-            </div>
+            <CurrObjectActions masterState={this.masterState} mainMethods={this.mainMethods}></CurrObjectActions>
           </div>
 
           {/* OPTIONAL - Instant Preview - Conditional rendering */}
@@ -683,6 +696,8 @@ class CanvasWrapper extends Component {
           </div>
 
         </div>
+
+        
 
         {/* Probably move this to separate component - cloudinary buttons */}
         <div className="col s12 center">
