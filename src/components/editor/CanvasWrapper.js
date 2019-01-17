@@ -110,6 +110,17 @@ class CanvasWrapper extends Component {
       }
       return selectedArr;
     },
+
+    getCanvObjOriginalLeft : function(obj){
+      let left = obj.get('left');
+      if (!'angle' in obj || obj.angle === 0){
+        return left;
+      }
+      else {
+        // @todo - fix this up
+        return obj.aCoords.bl.x;
+      }
+    },
     deleteSelectedObjs : function(){
       let canvas = this.state.editorData.canvasObj;
       this.mainMethods.canvas.getSelectedObjs(true).forEach((obj,index)=>{
@@ -269,7 +280,7 @@ class CanvasWrapper extends Component {
       let props = {
         width : parseInt(width,10),
         height : parseInt(height,10),
-        x : parseInt(canvasObj.get('left'),10),
+        x : parseInt(this.mainMethods.canvas.getCanvObjOriginalLeft(canvasObj),10),
         y : parseInt(canvasObj.get('top'),10),
         gravity : 'north_west'
       };
