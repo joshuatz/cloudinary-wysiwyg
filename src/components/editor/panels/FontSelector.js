@@ -1,17 +1,30 @@
-import React, {Component} from 'react';
+import React, {Component,PureComponent } from 'react';
 let googleFonts = require( 'google-fonts-complete/google-fonts.json');
 
-class FontSelector extends Component {
+class FontSelector extends Component  {
   constructor(props){
     super(props);
     let initialState = {
       googleFontsObj : googleFonts,
       googleFontsArr : Object.keys(googleFonts),
-      currSelectedFont : this.getMasterState().editorData.currSelectedFont,
+      currSelectedFont : {},
       currSelectedFontSyleObj : {}
     }
+    Object.assign(initialState.currSelectedFont,this.getCurrSelectedFont(false));
     this.state = initialState;
     this.$ = window.$;
+    this.fontSelectOptions = this.state.googleFontsArr.map((fontName,index)=>{
+      return (
+        <option value={fontName} key={fontName}>{fontName}</option>
+      )
+    });
+  }
+
+  shouldComponentUpdate(nextProps,nextState){
+    if (JSON.stringify(this.props.currSelectedFont)!==JSON.stringify(nextProps.currSelectedFont)){
+      return true;
+    }
+    return false;
   }
 
   refreshCurrentFontInfo(){
@@ -31,7 +44,6 @@ class FontSelector extends Component {
   handleFontFamilyChange(evt){
     let selectedFontName = evt.target.options[evt.target.selectedIndex].value;
     let googleFontObj = this.state.googleFontsObj[selectedFontName];
-    debugger;
     let fontFamilyString = "'" + selectedFontName + "', " + googleFontObj.category;
     this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.fontFamilyFull',fontFamilyString);
     this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.fontFamilySlim',selectedFontName);
@@ -60,16 +72,20 @@ class FontSelector extends Component {
     return this.props.masterState;
   }
 
-  getCurrSelectedFont(){
-    let currSelectedFont = this.props.masterState.editorData.currSelectedFont;
+  getCurrSelectedFont(updateState){
+    updateState = typeof(updateState)==='boolean' ? updateState : false;
+    let currSelectedFont = this.props.currSelectedFont;
     // Update state if changed
-    let state = this.state;
-    if (state.currSelectedFont !== currSelectedFont){
-      state.currSelectedFont = currSelectedFont;
-      this.setState(state);
+    if (updateState){
+      let state = this.state;
+      if (JSON.stringify(state.currSelectedFont) !== JSON.stringify(currSelectedFont)){
+        debugger;
+        state.currSelectedFont = currSelectedFont;
+        this.setState(state);
+      }
     }
-    // return value
-    return currSelectedFont;
+    // return value, but copy object instead of returning reference
+    return JSON.parse(JSON.stringify(currSelectedFont));
   }
 
   getIsFontSelected(){

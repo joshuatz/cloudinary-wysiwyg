@@ -39,8 +39,8 @@ class CanvasWrapper extends Component {
   componentDidMount(){
     let fabric = window.fabric;
     var canvas = new fabric.Canvas('editorCanvas',{
-      width : 400,
-      height : 400,
+      width : this.state.editorData.canvasDimensions.width,
+      height : this.state.editorData.canvasDimensions.height,
       preserveObjectStacking : true
     });
     let editorData = this.state.editorData;
@@ -56,6 +56,7 @@ class CanvasWrapper extends Component {
     });
     canvas.on('object:selected',()=>{
       this.mainMethods.canvas.getSelectedObjs(true);
+      this.mainMethods.appMethods.addMsg('object:selected');
     });
     canvas.on('object:modified',()=>{
       console.log('object:modified');
@@ -663,15 +664,43 @@ class CanvasWrapper extends Component {
     modals : this.modals,
     cloudinary : (new Helpers()).bindObjectMethod(this.cloudinaryMethods,this)
   }
+
+  getInstantPreviewElement(){
+    let previewWrapperStyle = {
+      minHeight : this.state.editorData.canvasDimensions.height,
+      maxHeight : this.state.editorData.canvasDimensions.height,
+      minWidth : this.state.editorData.canvasDimensions.width,
+    }
+    if (typeof(this.props.masterState.output.imgSrc)==='string' && this.props.masterState.livePreviewSrc !== ''){
+      return (
+        <div className="instantPreview" style={previewWrapperStyle}>
+          <img src={this.props.masterState.livePreviewSrc}></img>
+        </div>
+      )
+    }
+    else {
+      return (
+        <div className="instantPreview" style={previewWrapperStyle}>
+          <div className="valign-wrapper noPreviewToShowContainer">
+            <div style={{textAlign : 'center', width : '100%'}}>Nothing to show...</div>
+          </div>
+        </div>
+      );
+    }
+  }
+
   render(){
     let pseudoImages = this.state.editorData.images.urls.map((val,index)=>{
       return <img className="pseudoImage" key={index} src={val} />
     });
+
+
     return(
       <div className="canvasWrapperWrapper" data-instantpreview={this.state.accountSettings.fetchInstantly.toString()}>
         <div className="row">
 
           <div className="canvasWrapper leftSide">
+            <h3 className="areaTitle">Editor:</h3>
             {/* THE ACTUAL CANVAS ELEMENT */}
             <canvas id="editorCanvas" style={this.canvasStyles}></canvas>
             <CurrObjectActions masterState={this.masterState} mainMethods={this.mainMethods}></CurrObjectActions>
@@ -680,9 +709,8 @@ class CanvasWrapper extends Component {
           {/* OPTIONAL - Instant Preview - Conditional rendering */}
           {this.state.accountSettings.fetchInstantly &&
             <div className="instantPreviewWrapper">
-              <img src={
-                (typeof(this.props.masterState.output.imgSrc)==='string' && this.props.masterState.livePreviewSrc !== '') ? this.props.masterState.livePreviewSrc : 'loading.gif'
-              }></img>
+              <h3 className="areaTitle">Preview:</h3>
+              {this.getInstantPreviewElement()}
             </div>
           }
 
@@ -696,7 +724,7 @@ class CanvasWrapper extends Component {
             </div>
 
             <div className="col s12 sidebarComponent">
-              <FontSelector mainMethods={this.mainMethods} masterState={this.masterState} />
+              <FontSelector mainMethods={this.mainMethods} masterState={this.masterState} currSelectedFont={this.state.editorData.currSelectedFont} />
             </div>
 
             <div className="col s12 sidebarComponent">

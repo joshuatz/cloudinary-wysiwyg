@@ -26,6 +26,10 @@ class App extends Component {
       logQueue : [],
       editorData : {
         canvasObj : {},
+        canvasDimensions : {
+          width : 400,
+          height : 400
+        },
         isItemSelected : false,
         currSelectedItemType : false,
         currSelectedItemGenericProps : {},
@@ -118,6 +122,7 @@ class App extends Component {
     if (canvas && canvas['targets']){
       canvas.clear();
     }
+    this.mergeMasterState('livePreviewSrc','');
   }
 
   getSecondsSinceLastFetch(){
