@@ -1,9 +1,11 @@
 /**
 * Start of create-react-app default CSS
 */
+body {
+  background-color: rgba(179, 229, 252, 0.4);
+}
 .App {
   text-align: center;
-  background-color: rgba(179, 229, 252, 0.4);
   padding-bottom: 20px;
 }
 
