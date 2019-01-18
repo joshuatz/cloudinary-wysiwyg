@@ -150,6 +150,7 @@ body {
   margin-left: auto;
   margin-right: auto;
   border: 4px dashed black;
+  background-color: white;
 }
 .canvasWrapper .CurrObjectActions {
   margin-top: 10px;
@@ -236,4 +237,22 @@ a.disabled, .disabled {
   border-top: 1px dashed black;
   width: 100%;
   margin: 8px 0px;
+}
+
+/* Stats */
+.statsModule {
+  padding: 10px 14px !important;
+}
+.statsModule .title {
+  text-decoration: underline;
+  font-size: 1.3rem;
+}
+.statsModule .key, .statsModule .val {
+  font-size: 12px;
+}
+.statsModule .key {
+  text-align: left;
+}
+.statsModule .val {
+  text-align: center;
 }

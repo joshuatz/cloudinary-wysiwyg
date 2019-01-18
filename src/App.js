@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Init from './components/Init';
 import AccountSettingsPanel from './components/AccountSettingsPanel';
 import LogPanel from './components/LogPanel';
+import StatsPanel from './components/StatsPanel';
 import CanvasWrapper from './components/editor/CanvasWrapper';
 import './App.css';
 import ImageSelector from './components/editor/modals/ImageSelector';
@@ -58,6 +59,14 @@ class App extends Component {
         fetchInstantly : false
       },
       output : {
+        transformations : {
+          transformationArr : []
+        },
+        img : {
+          raw : {},
+          html : '',
+          src : ''
+        },
         imgSrc : ''
       },
       livePreviewSrc : '',
@@ -169,6 +178,7 @@ class App extends Component {
         <CanvasWrapper appMethods={this.appMethods} masterState={this.state} editorData={this.state.editorData} />
         <div className="myDivider"></div>
         <LogPanel logQueue={this.state.logQueue} />
+        <StatsPanel masterState={this.state}></StatsPanel>
       </div>
     );
   }
