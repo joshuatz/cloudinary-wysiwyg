@@ -165,7 +165,9 @@ class App extends Component {
       <div className="App">
         <Init />
         <AccountSettingsPanel appMethods={this.appMethods} masterState={this.state} />
+        <div className="myDivider"></div>
         <CanvasWrapper appMethods={this.appMethods} masterState={this.state} editorData={this.state.editorData} />
+        <div className="myDivider"></div>
         <LogPanel logQueue={this.state.logQueue} />
       </div>
     );

@@ -9,8 +9,10 @@ class LogPanel extends Component {
       return <div className="logMessage" key={"logMessage_" + index}>{val}</div>
     })
     return (
-      <div className="logPanel">
-        {logQueue}
+      <div className="logPanelWrapper roundedWrapper">
+        <div className="logPanel">
+          {logQueue}
+        </div>
       </div>
     )
   }

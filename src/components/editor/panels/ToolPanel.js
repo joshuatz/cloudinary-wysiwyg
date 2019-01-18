@@ -66,7 +66,7 @@ class ToolPanel extends Component {
   render(){
     let buttonsHTML = this.buttons.map((val,index)=>{
       return (
-          <button className={"toolbarButton" + (val.disabled===true ? " disabled" : "")} key={'tlbb_' + index} onClick={val.action.bind(this)} data-tooltip={(val.disabled===true ? "Sorry, this has not yet been implemented." : null)}>
+          <button className={"toolbarButton z-depth-2" + (val.disabled===true ? " disabled" : "")} key={'tlbb_' + index} onClick={val.action.bind(this)} data-tooltip={(val.disabled===true ? "Sorry, this has not yet been implemented." : null)}>
             <i className={"fas " + val.icon}></i>{val.name}
           </button>
       )

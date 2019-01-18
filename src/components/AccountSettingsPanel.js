@@ -93,7 +93,7 @@ class AccountSettingsPanel extends Component {
 
   render() {
     return (
-      <div className="accountSettingsPanelWrapper">
+      <div className="accountSettingsPanelWrapper roundedWrapper">
         <div className="row valign-wrapper">
             <div className="input-field col s5">
               <input id="cloudinaryCloudName" type="text" name="cloudinaryCloudName" value={this.state.cloudinaryCloudName} onChange={this.handleChange.bind(this)} onKeyUp={this.handleChange.bind(this)} />
@@ -116,10 +116,10 @@ class AccountSettingsPanel extends Component {
         <div className="row center">
           
           <div className="col s4 offset-s2 center">
-            <div className="btn orange" onClick={this.props.appMethods.resetCanvas.bind(this)}>Reset Canvas</div>
+            <div className="btn warningColor" onClick={this.props.appMethods.resetCanvas.bind(this)}>Reset Canvas</div>
           </div>
           <div className="col s4 offset-s2 center">
-            <div className="btn red" onClick={this.reset.bind(this)}>Reset Everything</div>
+            <div className="btn dangerColor" onClick={this.reset.bind(this)}>Reset Everything</div>
           </div>
         </div>
       </div>

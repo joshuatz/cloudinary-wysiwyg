@@ -699,7 +699,7 @@ class CanvasWrapper extends Component {
       <div className="canvasWrapperWrapper" data-instantpreview={this.state.accountSettings.fetchInstantly.toString()}>
         <div className="row">
 
-          <div className="canvasWrapper leftSide">
+          <div className="canvasWrapper leftSide roundedWrapper">
             <h3 className="areaTitle">Editor:</h3>
             {/* THE ACTUAL CANVAS ELEMENT */}
             <canvas id="editorCanvas" style={this.canvasStyles}></canvas>
@@ -708,13 +708,13 @@ class CanvasWrapper extends Component {
 
           {/* OPTIONAL - Instant Preview - Conditional rendering */}
           {this.state.accountSettings.fetchInstantly &&
-            <div className="instantPreviewWrapper">
+            <div className="instantPreviewWrapper roundedWrapper">
               <h3 className="areaTitle">Preview:</h3>
               {this.getInstantPreviewElement()}
             </div>
           }
 
-          <div className="sidebar rightSide row">
+          <div className="sidebar rightSide row roundedWrapper">
             <div className="col 12 toolPanelWrapper sidebarComponent">
               <ToolPanel editorData={this.state.editorData} mainMethods={this.mainMethods}/>
             </div>
@@ -743,7 +743,7 @@ class CanvasWrapper extends Component {
         {/* Probably move this to separate component - cloudinary buttons */}
         <div className="col s12 center">
           <div className="center">
-            <button className="button btn" onClick={this.mainMethods.cloudinary.generateFromCanvas.get.bind(this)}>Get Cloudinary</button>
+            <button className="button btn darkPrimaryColor" onClick={this.mainMethods.cloudinary.generateFromCanvas.get.bind(this)}>Get Cloudinary</button>
           </div>
         </div>
         {/* Modals */}
