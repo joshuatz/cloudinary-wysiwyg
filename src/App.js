@@ -14,6 +14,7 @@ import 'blueimp-file-upload/js/jquery.iframe-transport.js';
 import 'blueimp-file-upload/js/jquery.fileupload.js';
 // import * as cloudinary from 'cloudinary-jquery-file-upload/cloudinary-jquery-file-upload.min.js';
 import * as cloudinary from 'cloudinary-jquery-file-upload/cloudinary-jquery-file-upload.js';
+import underscore from 'underscore';
 window.$ = $;
 window.jQuery = $;
 window.cloudinary = cloudinary;
@@ -23,7 +24,7 @@ class App extends Component {
   constructor(){
     super();
     // Using this as top-level state
-    this.state = {
+    let initialState = {
       logQueue : [],
       editorData : {
         canvasObj : {},
@@ -72,6 +73,8 @@ class App extends Component {
       livePreviewSrc : '',
       lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24)
     }
+    initialState.editorData.lastSelectedFont = underscore.clone(initialState.editorData.currSelectedFont);
+    this.state = initialState;
     window.getMasterState = this.getMasterState.bind(this);
     this.jQuery = window.jQuery;
     this.$ = this.jQuery;

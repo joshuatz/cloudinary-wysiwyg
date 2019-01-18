@@ -41,6 +41,14 @@ class FontSelector extends Component  {
     }
   }
 
+  /**
+   * This will update all selected text objects on the canvas to match currently selected font settings
+   * NOTE: The reverse of this function is updateFontSelectorFromCanvasObj
+   */
+  updateSelectedTextObjs(){
+
+  }
+
   handleFontFamilyChange(evt){
     let selectedFontName = evt.target.options[evt.target.selectedIndex].value;
     let googleFontObj = this.state.googleFontsObj[selectedFontName];

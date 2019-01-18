@@ -62,6 +62,10 @@ class Helpers {
     }.bind(this)
   }
 
+  getPlaceholderImage(width,height){
+    return 'https://via.placeholder.com/' + width + 'x' + height;
+  }
+
   //https://stackoverflow.com/a/6394168
   index(obj,is, value) {
     if (typeof is == 'string')

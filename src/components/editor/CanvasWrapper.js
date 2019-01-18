@@ -8,6 +8,7 @@ import FontSelector from './panels/FontSelector';
 import ImageSelector from './modals/ImageSelector';
 import TextEntry from './modals/TextEntry';
 import CurrObjectActions from './panels/CurrObjectActions';
+import underscore from 'underscore';
 
 class CanvasWrapper extends Component {
   constructor(props){
@@ -41,7 +42,9 @@ class CanvasWrapper extends Component {
     var canvas = new fabric.Canvas('editorCanvas',{
       width : this.state.editorData.canvasDimensions.width,
       height : this.state.editorData.canvasDimensions.height,
-      preserveObjectStacking : true
+      preserveObjectStacking : true,
+      /* group selection is disabled, as it is complicated to implement and handle groups of text vs shapes vs images, etc. This should be worked on with layers if want to add */
+      selection : false
     });
     let editorData = this.state.editorData;
     editorData.canvasObj = canvas;
@@ -159,6 +162,9 @@ class CanvasWrapper extends Component {
       this.appMethods.mergeEditorData('isItemSelected',true);
       console.log(shape);
     },
+    handleTextSelect : function(canvasObj){
+      //this.updateFontSelectorFromCanvasObj(canvasObj);
+    },
     addRect : function(){
       let canvas = this.state.editorData.canvasObj;
       let fabric = this.state.fabric;
@@ -177,7 +183,8 @@ class CanvasWrapper extends Component {
         this.canvasMethods.handleShapeSelect.bind(this)(rect);
       });
     },
-    addImage : function(urlOrImgElem){
+    addImage : function(urlOrImgElem,OPT_callback,OPT_macroKey){
+      let callback = (OPT_callback || function(){});
       let _this = this;
       let canvas = this.state.editorData.canvasObj;
       let fabric = this.state.fabric;
@@ -193,17 +200,23 @@ class CanvasWrapper extends Component {
             console.log(_this);
             imageElem = _this.getPseudoImage(url);
             // Callback self
-            _this.canvasMethods.addImage.bind(_this)(imageElem);
+            _this.canvasMethods.addImage.bind(_this)(imageElem,callback,OPT_macroKey);
             _this.canvasMethods.renderAll.bind(_this)();
             console.log(_this.state);
           },500);
         });
       }
       else {
-        let imgInstance = new fabric.Image(imageElem,{
+        let imgProps = {
           left : 100,
-          top : 100
-        });
+          top : 100,
+          isMacro : false
+        }
+        if (typeof(OPT_macroKey)==='string'){
+          imgProps.isMacro = true;
+          imgProps.macroKey = OPT_macroKey;
+        }
+        let imgInstance = new fabric.Image(imageElem,imgProps);
         canvas.add(imgInstance);
         canvas.renderAll();
         canvas.bringToFront(imgInstance);
@@ -211,26 +224,38 @@ class CanvasWrapper extends Component {
         imgInstance.on('selected',()=>{
           //
         });
+        callback(imgInstance);
         return imgInstance;
       }
     },
-    addText : function(text,OPT_fontFamily,OPT_fontSize,OPT_fontColor){
+    addText : function(text,OPT_fontFamily,OPT_fontSize,OPT_fontColor,OPT_macroKey){
       let _this = this;
       let canvas = this.state.editorData.canvasObj;
       let fabric = this.state.fabric;
       console.log(this.state.editorData.currSelectedFont);
-      let textInstance = new fabric.Text(text,{
+      let textProps = {
         left : 100,
         top : 100,
         fontSize : this.state.editorData.currSelectedFont.size,
         lockUniScaling : true,
-        fill : this.getCurrSelectedColor().hex
-      });
+        fill : this.getCurrSelectedColor().hex,
+        myTextObj : underscore.clone(this.state.editorData.currSelectedFont)
+      }
+
+      if (typeof(OPT_macroKey)==='string'){
+        textProps.isMacro = true;
+        textProps.macroKey = OPT_macroKey;
+      }
+      let textInstance = new fabric.Text(text,textProps);
       canvas.add(textInstance);
       canvas.renderAll();
       textInstance.on('selected',()=>{
+        this.canvasMethods.handleTextSelect.bind(this)(textInstance);
         // @TODO handle callback to allow editing already added text
       });
+      textInstance.on('deselected',()=>{
+        this.handleObjectDeselection(textInstance);
+      })
       canvas.bringToFront(textInstance);
       this.mainMethods.canvas.updateLivePreview();
       return textInstance;
@@ -577,6 +602,17 @@ class CanvasWrapper extends Component {
     this.appMethods.mergeEditorData('currSelectedItemType',false);
     this.appMethods.mergeEditorData('currSelectedItemGenericProps',{});
   }
+
+  handleObjectDeselection(canvasObj){
+    // @TODO - update when implementing group selection ability
+    this.mainMethods.appMethods.addMsg('object:deselected');
+    // Check if object that was deselected was text
+    if (canvasObj.get('type')==='text'){
+      // Revert font panel to setting before text was selected
+      this.revertFontSettings();
+    }
+  }
+
   handleColorSelect(color,event){
     console.group('handleColorSelect');
     console.log(color);
@@ -607,8 +643,32 @@ class CanvasWrapper extends Component {
     console.log(this.getObjColor(canvasObj));
     this.appMethods.mergeEditorData('currSelectedColor',this.getObjColor(canvasObj));
   }
-  updateFontSelectorFromCanvasObj(canvasObj){
 
+  revertFontSettings(){
+    // Get current and last selected fonts
+    let currSelectedFont = this.state.editorData.currSelectedFont;
+    let lastSelectedFont = this.state.editorData.lastSelectedFont;
+    // Check for equality of objects
+    debugger;
+    let fontChanged = !underscore.isEqual(currSelectedFont,lastSelectedFont);
+    if (fontChanged){
+      this.mainMethods.appMethods.addMsg('Reverting font');
+      this.mainMethods.appMethods.mergeEditorData('currSelectedFont',lastSelectedFont);
+      return true;
+    }
+    return false
+  }
+
+  updateFontSelectorFromCanvasObj(canvasObj){
+    // @TODO
+    // First, take a snapshot of the currently selected font, so it can be reverted if the object is unselected
+    let currSelectedFont = underscore.clone(this.state.editorData.currSelectedFont);
+    // Now get font settings based on canvasObj
+    let canvasFont = underscore.clone(canvasObj.myTextObj);
+    debugger;
+    // Then map the new settings and the snapshot to state and prompt update
+    this.appMethods.mergeEditorData('currSelectedFont',canvasFont);
+    this.appMethods.mergeEditorData('lastSelectedFont',currSelectedFont);
   }
 
   getObjColor(canvasObj){
