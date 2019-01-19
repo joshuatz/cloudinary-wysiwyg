@@ -71,7 +71,8 @@ class App extends Component {
         imgSrc : ''
       },
       livePreviewSrc : '',
-      lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24)
+      lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24),
+      fetchCount : 0
     }
     initialState.editorData.lastSelectedFont = underscore.clone(initialState.editorData.currSelectedFont);
     this.state = initialState;

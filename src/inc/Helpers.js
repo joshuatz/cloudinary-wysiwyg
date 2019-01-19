@@ -62,6 +62,25 @@ class Helpers {
     }.bind(this)
   }
 
+  toast(msg,style){
+    let styleMappings = {
+      'info' : 'toast toastInfo',
+      'warning' : 'toast toastWarning',
+      'error' : 'toast toastError'
+    }
+    style = (style || 'info');
+    // Construct Materialize toast config
+    let toastConfig = {
+      html : msg,
+      classes : styleMappings[style]
+    }
+    this.Materialize.toast(toastConfig);
+    // @TODO - spruce up
+  }
+  toastWarning(){
+
+  }
+
   getPlaceholderImage(width,height){
     return 'https://via.placeholder.com/' + width + 'x' + height;
   }

@@ -46,7 +46,7 @@ class FontSelector extends Component  {
    * NOTE: The reverse of this function is updateFontSelectorFromCanvasObj
    */
   updateSelectedTextObjs(){
-
+    // @TODO
   }
 
   handleFontFamilyChange(evt){
@@ -87,7 +87,7 @@ class FontSelector extends Component  {
     if (updateState){
       let state = this.state;
       if (JSON.stringify(state.currSelectedFont) !== JSON.stringify(currSelectedFont)){
-        debugger;
+        //debugger;
         state.currSelectedFont = currSelectedFont;
         this.setState(state);
       }

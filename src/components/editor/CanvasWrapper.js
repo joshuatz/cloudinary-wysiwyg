@@ -31,6 +31,7 @@ class CanvasWrapper extends Component {
     this.fallbackSolidPixelSrc = 'https://via.placeholder.com/2x2';
     this.masterState = this.props.masterState;
     this.canvasReRenderIp = false;
+    this.CANVAS_ELEMENT_ID = 'editorCanvas';
   }
 
   canvasStyles = {
@@ -39,7 +40,7 @@ class CanvasWrapper extends Component {
 
   componentDidMount(){
     let fabric = window.fabric;
-    var canvas = new fabric.Canvas('editorCanvas',{
+    var canvas = new fabric.Canvas(this.CANVAS_ELEMENT_ID,{
       width : this.state.editorData.canvasDimensions.width,
       height : this.state.editorData.canvasDimensions.height,
       preserveObjectStacking : true,
@@ -54,16 +55,21 @@ class CanvasWrapper extends Component {
     window.canvas = canvas;
 
     // Attach global event listeners
-    canvas.on('selection:cleared',()=>{
+    canvas.on('selection:cleared',(evt)=>{
       this.handleNoSelection();
     });
-    canvas.on('object:selected',()=>{
+    canvas.on('object:selected',(evt)=>{
       this.mainMethods.canvas.getSelectedObjs(true);
       this.mainMethods.appMethods.addMsg('object:selected');
     });
-    canvas.on('object:modified',()=>{
-      console.log('object:modified');
+    canvas.on('object:modified',(evt)=>{
+      this.mainMethods.appMethods.addMsg('object:modified');
       this.mainMethods.canvas.renderAll();
+    });
+    canvas.on('text:changed',(evt)=>{
+      console.log(evt);
+      // Prevent multi-line text
+      this.mainMethods.canvas.removeMultiLineText(evt.target);
     });
     this.canvas = canvas;
   }
@@ -232,6 +238,7 @@ class CanvasWrapper extends Component {
       let _this = this;
       let canvas = this.state.editorData.canvasObj;
       let fabric = this.state.fabric;
+      text = (text || 'Edit Me!');
       console.log(this.state.editorData.currSelectedFont);
       let textProps = {
         left : 100,
@@ -246,7 +253,7 @@ class CanvasWrapper extends Component {
         textProps.isMacro = true;
         textProps.macroKey = OPT_macroKey;
       }
-      let textInstance = new fabric.Text(text,textProps);
+      let textInstance = new fabric.IText(text,textProps);
       canvas.add(textInstance);
       canvas.renderAll();
       textInstance.on('selected',()=>{
@@ -255,10 +262,20 @@ class CanvasWrapper extends Component {
       });
       textInstance.on('deselected',()=>{
         this.handleObjectDeselection(textInstance);
-      })
+      });
       canvas.bringToFront(textInstance);
       this.mainMethods.canvas.updateLivePreview();
       return textInstance;
+    },
+    removeMultiLineText : function(textObj){
+      let hasMultiLine = /[\r\n]/gm.test(textObj.text);
+      if (hasMultiLine){
+        this.helpers.toast('Multiline text fields are not supported. Please use multiple text objects if you want to span multiple lines','warning');
+        let fixedText = textObj.text.replace(/[\r\n]/gm,'');
+        textObj.set('text',fixedText);
+        // Cursor jumps forward one time with each enter press, so need to move it back
+        textObj._moveCursorLeftOrRight('Left',{});
+      }
     }
   }
   // canvasMethods - END
@@ -464,7 +481,7 @@ class CanvasWrapper extends Component {
           // https://cloudinary.com/documentation/jquery_image_manipulation#chaining_transformations
           // https://cloudinary.com/documentation/jquery_image_manipulation#adding_text_and_image_overlays
         }
-        else if (objType==='text'){
+        else if (objType==='text' || objType==='i-text'){
           // Text is technically an overlay layer
           // Note - Font Family and Font Size are REQUIRED
           // Note that the space that font takes up is calculated by the font-size, not width and height. If the canvas object is scaled, you should use the ratio (X and Y are the same) to figure out what to multiply the original font size by
@@ -493,6 +510,8 @@ class CanvasWrapper extends Component {
         }
         else {
           objMatched = false;
+          console.warn('Unmapped Canvas Object Type encountered - ' + objType);
+          console.log(currObj);
         }
         // If the current canvas object got matched to a known type and triggered a transformation...
         if (objMatched){
@@ -649,7 +668,6 @@ class CanvasWrapper extends Component {
     let currSelectedFont = this.state.editorData.currSelectedFont;
     let lastSelectedFont = this.state.editorData.lastSelectedFont;
     // Check for equality of objects
-    debugger;
     let fontChanged = !underscore.isEqual(currSelectedFont,lastSelectedFont);
     if (fontChanged){
       this.mainMethods.appMethods.addMsg('Reverting font');
@@ -665,7 +683,6 @@ class CanvasWrapper extends Component {
     let currSelectedFont = underscore.clone(this.state.editorData.currSelectedFont);
     // Now get font settings based on canvasObj
     let canvasFont = underscore.clone(canvasObj.myTextObj);
-    debugger;
     // Then map the new settings and the snapshot to state and prompt update
     this.appMethods.mergeEditorData('currSelectedFont',canvasFont);
     this.appMethods.mergeEditorData('lastSelectedFont',currSelectedFont);

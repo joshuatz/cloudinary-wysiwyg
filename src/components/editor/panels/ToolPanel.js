@@ -43,7 +43,7 @@ class ToolPanel extends Component {
       icon : 'fa-font',
       name : 'Add Text',
       action : function(){
-        this.props.mainMethods.canvas.addText('foobar');
+        this.props.mainMethods.canvas.addText('Edit Me!');
       }
     },
     {
