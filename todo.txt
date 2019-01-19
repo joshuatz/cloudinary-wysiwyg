@@ -1,7 +1,11 @@
 Todo list and misc notes
   Top Priority / WIP:
+     - Setting the background
+     - Resizing of entire canvas
      - Add more shapes (at least circles)
-     - Text entry
+     - Add support for transparency / alpha in...
+       - Color picker and applied to shapes
+       - for image or text overlays
      - Warning about instant rendering
      - Warning about URL char length (2083 max for IE, so 2K is good guideline if going to use URL for client-facing stuff)
   If time:

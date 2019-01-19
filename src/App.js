@@ -74,7 +74,7 @@ class App extends Component {
       lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24),
       fetchCount : 0,
       performance : {
-        generationTime : 0
+        generationTimeSec : 0
       }
     }
     initialState.editorData.lastSelectedFont = underscore.clone(initialState.editorData.currSelectedFont);

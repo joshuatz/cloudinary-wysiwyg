@@ -189,6 +189,23 @@ class CanvasWrapper extends Component {
         this.canvasMethods.handleShapeSelect.bind(this)(rect);
       });
     },
+    addCircle : function(){
+      let canvas = this.state.editorData.canvasObj;
+      let fabric = this.state.fabric;
+      let circle = new fabric.Circle({
+        top : 50,
+        left : 50,
+        radius : 80,
+        fill : this.getCurrSelectedColor().hex
+      });
+      canvas.add(circle);
+      canvas.renderAll();
+      canvas.bringToFront(circle);
+      this.mainMethods.canvas.updateLivePreview();
+      circle.on('selected',()=>{
+        this.canvasMethods.handleShapeSelect.bind(this)(circle);
+      });
+    },
     addImage : function(urlOrImgElem,OPT_callback,OPT_macroKey){
       let callback = (OPT_callback || function(){});
       let _this = this;
@@ -346,6 +363,7 @@ class CanvasWrapper extends Component {
      * @param {object} [OPT_trans] - Optional existing tranformation object to augment with the new settings 
      */
     mapCanvasObjPropsToTrans(canvasObj,OPT_trans){
+      let canvasObjType = canvasObj.get('type');
       let transObj = (OPT_trans || {});
       let width = parseFloat(canvasObj.get('width'));
       let height = parseFloat(canvasObj.get('height'));
@@ -364,6 +382,10 @@ class CanvasWrapper extends Component {
       };
       if (angle!==0){
         props.angle = parseInt(angle,10);
+      }
+      if (canvasObjType==='circle'){
+        //debugger;
+        props.radius = parseInt((width*0.5),10)
       }
       let updatedProps = this.helpers.objectMerge(transObj,props);
       return updatedProps;
@@ -427,6 +449,34 @@ class CanvasWrapper extends Component {
         if (objType==='rect'){
           // Current way of doing shapes - use a transparent PNG - crop to size, and fill with color
           // NOTE - order of operations and chaining is important. Size and position should always come first and as separate transformations to avoid conflicts
+          trObj = _this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid');
+          // Set size and offset
+          trObj = _this.helpers.objectMerge([trObj,genericTransformationObj]);
+          // Apply color
+          let trObjSecondary = {
+            background : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
+            color : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
+            effect : 'colorize',
+            flags : ['layer_apply']
+          }
+          trObjSecondary = _this.helpers.objectMerge([trObjSecondary,genericTransformationObj]);
+          delete trObjSecondary.width;
+          delete trObjSecondary.height;
+          // REMOVE ANGLE FROM TRANSFORMATION - it needs to be chained instead, and after size and color is set and apply with flags. Very picky about this...
+          if (trObj.angle && trObj.angle  > 0){
+            let angle = trObj.angle;
+            delete trObj.angle;
+            // layer_apply flag with angle transformation tells it to apply it to the overlay rather than the entire base (it would rotate the entire image if omitted)
+            trObjSecondary.angle = angle;
+          }
+          trObjs.push(trObj,trObjSecondary);
+          if (!useArr){
+            tr.chain().transformation(trObj);
+            tr = tr.chain().transformation(trObjSecondary);
+          }
+        }
+        else if (objType==='circle'){
+          // @TODO
           trObj = _this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid');
           // Set size and offset
           trObj = _this.helpers.objectMerge([trObj,genericTransformationObj]);
@@ -556,8 +606,8 @@ class CanvasWrapper extends Component {
 
       console.log(transformationArr);
 
-      let generationTime = ((performance.now()) - generationStartTime)/1000;
-      this.mainMethods.appMethods.mergeMasterState('performance.generationTime',generationTime);
+      let generationTimeSec = ((performance.now()) - generationStartTime)/1000;
+      this.mainMethods.appMethods.mergeMasterState('performance.generationTimeSec',generationTimeSec);
 
       return {
         open : function(){

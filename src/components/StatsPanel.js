@@ -35,7 +35,7 @@ class StatsPanel extends Component {
             <div className="col s6 statsModule">
               <div className="card-panel z-depth-2 row">
                 <div className="title col s12">Performance</div>
-                <div className="col s8 key">Generation Time:</div><div className="col s4 val">{performanceStats.generationTime.toFixed(3)}s</div>
+                <div className="col s8 key">Generation Time:</div><div className="col s4 val">{performanceStats.generationTimeSec.toFixed(3)}s</div>
               </div>
             </div>
           </div>
