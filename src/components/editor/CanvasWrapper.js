@@ -93,14 +93,14 @@ class CanvasWrapper extends Component {
         this.mainMethods.canvas.updateLivePreview(true);
       }
     },
-    renderAll : function(){
+    renderAll : function(force){
       //debugger;
       let canvas = this.state.editorData.canvasObj;
       this.canvasReRenderIp = true;
       canvas.renderAll();
       //debugger;
       this.canvasReRenderIp = false;
-      this.mainMethods.canvas.updateLivePreview();
+      this.mainMethods.canvas.updateLivePreview(force);
     },
     // This can be used to retrieve selectd objects on the canvas, but is also called whenever something is selected, as a way to update various state things
     getSelectedObjs : function(triggerUpdates){
@@ -162,7 +162,7 @@ class CanvasWrapper extends Component {
       this.mainMethods.canvas.getSelectedObjs(true).forEach((obj,index)=>{
         canvas.remove(obj);
       });
-      this.mainMethods.canvas.renderAll();
+      this.mainMethods.canvas.renderAll(true);
     },
     handleShapeSelect : function(shape){
       this.appMethods.mergeEditorData('isItemSelected',true);
@@ -369,6 +369,7 @@ class CanvasWrapper extends Component {
       return updatedProps;
     },
     generateFromCanvasRaw : function(canvas){
+      let generationStartTime = performance.now();
       let _this = this;
       // TESTING
       let useArr = true;
@@ -554,6 +555,10 @@ class CanvasWrapper extends Component {
       let imgSrc = (/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1]);
 
       console.log(transformationArr);
+
+      let generationTime = ((performance.now()) - generationStartTime)/1000;
+      this.mainMethods.appMethods.mergeMasterState('performance.generationTime',generationTime);
+
       return {
         open : function(){
           window.open(/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1])

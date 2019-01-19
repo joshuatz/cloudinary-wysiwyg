@@ -72,7 +72,10 @@ class App extends Component {
       },
       livePreviewSrc : '',
       lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24),
-      fetchCount : 0
+      fetchCount : 0,
+      performance : {
+        generationTime : 0
+      }
     }
     initialState.editorData.lastSelectedFont = underscore.clone(initialState.editorData.currSelectedFont);
     this.state = initialState;
