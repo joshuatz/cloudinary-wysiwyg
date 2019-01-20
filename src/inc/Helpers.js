@@ -115,6 +115,11 @@ class Helpers {
     return boundObj;
   }
 
+  /**
+   * @param {object||array} objectA - object, or array of objects to merge together
+   * @param {object} [objectB] - object to merge into object A
+   * @returns {object} Merged Object
+   */
   objectMerge = function(objectA,objectB){
     let mergedObj = {};
     if (Array.isArray(objectA)){

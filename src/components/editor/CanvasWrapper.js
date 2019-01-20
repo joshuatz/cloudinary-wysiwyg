@@ -357,6 +357,10 @@ class CanvasWrapper extends Component {
         'get' : perTypes[type].bind(this)
       }
     },
+    mapCanvasObjPropsToTransGeneric(canvasObj){
+
+    },
+
     /**
      * Maps the generic settings that should map almost directly from the canvas to cloudinary transformation (e.g. width, height)
      * @param {object} canvasObj - A fabric.js canvas object (e.g. rectangle, image, etc.)
@@ -364,13 +368,54 @@ class CanvasWrapper extends Component {
      * @param {boolean} OPT_forceBounding - optional setting. If true, forces the object to render inside the bounding box of the overall canvas dimensions. Otherwise, if not applied, an overlay being position overlapping the boundary of the canvas can cause the final cloudinary output to be exceed the dimensions of the canvas.
      */
     mapCanvasObjPropsToTrans(canvasObj,OPT_trans,OPT_forceBounding){
-      let trObjs = [];
-
-      let forceBounding = (OPT_forceBounding || true);
-      let canvas = this.state.editorData.canvasObj;
+      let cloudinary = this.cloudinary;
       let canvasDimensions = this.state.editorData.canvasDimensions;
+      let forceBounding = (OPT_forceBounding || true);
       let canvasObjType = canvasObj.get('type');
-      let transObj = (OPT_trans || {});
+      let trObjs = [];
+      let trObj = (typeof(OPT_trans)==='object' && OPT_trans!==null) ? OPT_trans : {};
+      let chainedTrObj = {};
+
+      const colorProps = ['background','color','effect','flags'];
+      const mappings = {
+        'rect' : {
+          supportsColor : true,
+          supportsAngle : true,
+          type : 'shape',
+          mustChain : colorProps
+        },
+        'circle' : {
+          supportsColor : true,
+          supportsAngle : false,
+          type : 'shape',
+          mustChain : colorProps
+        },
+        'text' : {
+          supportsColor : true,
+          supportsAngle : true,
+          type : 'text'
+        },
+        'i-text' : {
+          supportsColor : true,
+          supportsAngle : true,
+          type : 'text'
+        },
+        'image' : {
+          supportsColor : false,
+          supportsAngle : true,
+          type : 'image',
+          mustChain : ['flags']
+        }
+      };
+      const shapes = ['rect','circle'];
+      const texts = ['text','i-text'];
+
+      let objMatched = typeof(mappings[canvasObjType])==='object' ? true : false;
+      let mapping = objMatched ? mappings[canvasObjType] : {};
+
+      /**
+       * Get Generic Properties
+       */
       let width = parseFloat(canvasObj.get('width'));
       let height = parseFloat(canvasObj.get('height'));
       let angle = parseFloat(canvasObj.get('angle'));
@@ -381,21 +426,93 @@ class CanvasWrapper extends Component {
       height = height * parseFloat(canvasObj.get('scaleY'));
       // Note - X and Y should be integers
       // Note - angle should be an integer
-      let props = {
+      let genericProps = {
         width : parseInt(width,10),
         height : parseInt(height,10),
         x : parseInt(x,10),
         y : parseInt(y,10),
         gravity : 'north_west'
       };
-      if (angle!==0){
-        props.angle = parseInt(angle,10);
+      if (angle!==0 && mapping.supportsAngle){
+        genericProps.angle = parseInt(angle,10);
+        // Make sure angle gets applid to layer, not to overall object
+        genericProps.flags = ['layer_apply'];
       }
-      if (canvasObjType==='circle'){
-        //debugger;
-        props.radius = parseInt((width*0.5),10)
+      // merge generic props into transformation object
+      trObj = this.helpers.objectMerge(trObj,genericProps);
+
+      /**
+       * Colors
+       */
+      if (mapping.supportsColor){
+        trObj = this.helpers.objectMerge(trObj,{
+          background : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
+          color : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
+          effect : 'colorize',
+          flags : ['layer_apply'],
+          x : parseInt(x,10),
+          y : parseInt(y,10)
+        });
+        // A little strange, but 'colorize' needs to be accompanied with coordinates and gravity if chained
+        if (mapping.mustChain.indexOf('color')!==-1){
+          chainedTrObj = this.helpers.objectMerge(chainedTrObj,{
+            x : trObj.x,
+            y : trObj.y,
+            gravity : trObj.gravity
+          });
+        }
       }
-      
+
+      /**
+       * Type Specific Processing
+       */
+      if (mapping.type==='shape'){
+        // Current way of doing shapes - use a transparent PNG - crop to size, and fill with color
+        // NOTE - order of operations and chaining is important. Size and position should always come first and as separate transformations to avoid conflicts
+        trObj = this.helpers.objectMerge(trObj,this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid'));
+        if (canvasObjType==='circle'){
+          //debugger;
+          trObj.radius = parseInt((width*0.5),10)
+        }
+      }
+      else if (mapping.type==='text'){
+        // Text is technically an overlay layer
+        // Note - Font Family and Font Size are REQUIRED
+        // Note that the space that font takes up is calculated by the font-size, not width and height. If the canvas object is scaled, you should use the ratio (X and Y are the same) to figure out what to multiply the original font size by
+        // Note - for text, x and y position (offset) should be passed directly with the textLayer rather than chaining it as a secondary transformation
+        let fontSize = canvasObj.fontSize;
+        if (canvasObj.scaleX > 1){
+          fontSize = parseInt((canvasObj.scaleX * fontSize));
+        }
+        trObj = this.helpers.objectMerge(trObj,{
+          overlay : new cloudinary.TextLayer({
+            fontFamily : 'Roboto',
+            fontSize : fontSize,
+            text : canvasObj.text
+          })
+        });
+
+        // Remove background color and flags
+        delete trObj.background;
+        delete trObj.flags;
+      }
+      else if (mapping.type==='image'){
+        // @TODO - check if image is already uploaded to cloudinary - if so, get publicid instead of using remote fetch
+        let useRemote = true;
+        let publicId = false;
+        // use remote fetch - https://cloudinary.com/documentation/image_transformations#fetching_images_from_remote_locations - chain
+        // THIS TOOK A WHILE TO STUMBLE ACROSS - https://cloudinary.com/product_updates/overlay_and_underlay_a_fetched_image - if you want to use fetch in combo with overlay, the id should be "fetch:{{base64-remote-src}}" - so together, the final URL would look something like res.cloudinary.com/demo/image/upload/l_fetch:{{base64_overlay_remote_src}}/{{underlay_image_id}}
+        if (useRemote){
+          let remoteSrc = canvasObj._originalElement.currentSrc;
+          trObj = this.objectMerge(trObj,{
+            overlay : {
+              resourceType : 'fetch',
+              url : remoteSrc
+            },
+            flags : ['layer_apply']
+          })
+        }
+      }
 
       /**
        * Calculation of boundaries / clipping
@@ -407,29 +524,42 @@ class CanvasWrapper extends Component {
           height : parseInt(height,10)
         };
         if (x + width > canvasDimensions.width){
-          props.width = canvasDimensions.width - x;
+          trObj.width = canvasDimensions.width - x;
           trObjSecondary.width = canvasDimensions.width - x;
         }
         if (y + height > canvasDimensions.height){
-          props.height = canvasDimensions.height - y;
+          trObj.height = canvasDimensions.height - y;
           trObjSecondary.height = canvasDimensions.height - y;
         }
         let doesClip = (x + width > canvasDimensions.width || y + height > canvasDimensions.height);
         if (doesClip){
           // Calculate a crop based on how much of the object does NOT clip past the boundary of the canvas
-          props.crop = 'pad';
-          props.flags = ['layer_apply'];
+          trObj.crop = 'pad';
+          trObj.flags = ['layer_apply'];
           trObjSecondary.crop = 'pad';
           trObjSecondary.flags = ['layer_apply'];
-          // trObjs.push(trObjSecondary);
         }
       }
 
-      let updatedProps = this.helpers.objectMerge(transObj,props);
-      trObjs.push(updatedProps);
-      
-      //return updatedProps;
-      return trObjs;
+      /**
+       * Separate out any props that need to be part of their own transformation / chained
+       */
+      for (var prop in trObj){
+        if (mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1){
+          // Must chain
+          chainedTrObj[prop] = trObj[prop];
+          delete trObj[prop];
+        }
+      }
+
+      // Push results together
+      trObjs.push(trObj,chainedTrObj);
+
+      // Return transformations and mapping info
+      return {
+        trObjs : trObjs,
+        objMatched : objMatched
+      }
     },
     generateFromCanvasRaw : function(canvas){
       let generationStartTime = performance.now();
@@ -476,143 +606,16 @@ class CanvasWrapper extends Component {
       canvasObjects.forEach((val,index)=>{
         console.log(val);
         let currObj = val;
-        let objType = currObj.get('type');
-        let objMatched = true;
 
-        // Generic mapping of canvas object attr to cloudinary transformation attrs
-        // let genericTransformationObj = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj);
-        let genericTransformationObjArr = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj);
-        let genericTransformationObj = genericTransformationObjArr[0];
+        // Get transformation objs from mapper
+        let trInfo = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj);
+        let trObjs = trInfo.trObjs;
 
         // Create new tranformation
         let tr = cloudinary.Transformation.new();
-        let trObjs = [];
-        let trObj = {};
-        
-        if (objType==='rect'){
-          // Current way of doing shapes - use a transparent PNG - crop to size, and fill with color
-          // NOTE - order of operations and chaining is important. Size and position should always come first and as separate transformations to avoid conflicts
-          trObj = _this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid');
-          // Set size and offset
-          // trObj = _this.helpers.objectMerge([trObj,genericTransformationObj]);
-          _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj,trObj).map((tr)=>{
-            trObjs.push(tr);
-          });
-          // Apply color
-          let trObjSecondary = {
-            background : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
-            color : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
-            effect : 'colorize',
-            flags : ['layer_apply']
-          }
-          trObjSecondary = _this.helpers.objectMerge([trObjSecondary,genericTransformationObj]);
-          delete trObjSecondary.width;
-          delete trObjSecondary.height;
-          // REMOVE ANGLE FROM TRANSFORMATION - it needs to be chained instead, and after size and color is set and apply with flags. Very picky about this...
-          if (trObj.angle && trObj.angle  > 0){
-            let angle = trObj.angle;
-            delete trObj.angle;
-            // layer_apply flag with angle transformation tells it to apply it to the overlay rather than the entire base (it would rotate the entire image if omitted)
-            trObjSecondary.angle = angle;
-          }
-          trObjs.push(trObjSecondary);
-          //trObjs.push(trObj,trObjSecondary);
-          if (!useArr){
-            tr.chain().transformation(trObj);
-            tr = tr.chain().transformation(trObjSecondary);
-          }
-        }
-        else if (objType==='circle'){
-          // @TODO
-          trObj = _this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid');
-          // Set size and offset
-          trObj = _this.helpers.objectMerge([trObj,genericTransformationObj]);
-          // Apply color
-          let trObjSecondary = {
-            background : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
-            color : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
-            effect : 'colorize',
-            flags : ['layer_apply']
-          }
-          trObjSecondary = _this.helpers.objectMerge([trObjSecondary,genericTransformationObj]);
-          delete trObjSecondary.width;
-          delete trObjSecondary.height;
-          // REMOVE ANGLE FROM TRANSFORMATION - it needs to be chained instead, and after size and color is set and apply with flags. Very picky about this...
-          if (trObj.angle && trObj.angle  > 0){
-            let angle = trObj.angle;
-            delete trObj.angle;
-            // layer_apply flag with angle transformation tells it to apply it to the overlay rather than the entire base (it would rotate the entire image if omitted)
-            trObjSecondary.angle = angle;
-          }
-          trObjs.push(trObj,trObjSecondary);
-          if (!useArr){
-            tr.chain().transformation(trObj);
-            tr = tr.chain().transformation(trObjSecondary);
-          }
-        }
-        else if (objType==='image'){
-          // @TODO - check if image is already uploaded to cloudinary - if so, get publicid instead of using remote fetch
-          let useRemote = true;
-          let publicId = false;
-          // use remote fetch - https://cloudinary.com/documentation/image_transformations#fetching_images_from_remote_locations - chain
-          // THIS TOOK A WHILE TO STUMBLE ACROSS - https://cloudinary.com/product_updates/overlay_and_underlay_a_fetched_image - if you want to use fetch in combo with overlay, the id should be "fetch:{{base64-remote-src}}" - so together, the final URL would look something like res.cloudinary.com/demo/image/upload/l_fetch:{{base64_overlay_remote_src}}/{{underlay_image_id}}
-          if (useRemote){
-            let remoteSrc = currObj._originalElement.currentSrc;
-            trObj = {
-              overlay : {
-                resourceType : 'fetch',
-                url : remoteSrc
-              }
-            };
-            let trObjSecondary = _this.helpers.objectMerge([genericTransformationObj,{
-              flags : ['layer_apply']
-            }]);
-            trObjs.push(trObj,trObjSecondary);
-            if (!useArr){
-              // First, apply just the overlay
-              tr.overlay(trObj.overlay);
-              // Then chain with generic size and position
-              tr = tr.chain().transformation(trObjSecondary);
-            }
-          }
-          // https://cloudinary.com/documentation/image_transformations#adding_image_overlays
-          // https://cloudinary.com/documentation/jquery_image_manipulation#chaining_transformations
-          // https://cloudinary.com/documentation/jquery_image_manipulation#adding_text_and_image_overlays
-        }
-        else if (objType==='text' || objType==='i-text'){
-          // Text is technically an overlay layer
-          // Note - Font Family and Font Size are REQUIRED
-          // Note that the space that font takes up is calculated by the font-size, not width and height. If the canvas object is scaled, you should use the ratio (X and Y are the same) to figure out what to multiply the original font size by
-          // Note - for text, x and y position (offset) should be passed directly with the textLayer rather than chaining it as a secondary transformation
-          let fontSize = currObj.fontSize;
-          if (currObj.scaleX > 1){
-            fontSize = parseInt((currObj.scaleX * fontSize));
-          }
-          trObj = {
-            overlay : new cloudinary.TextLayer({
-              fontFamily : 'Roboto',
-              fontSize : fontSize,
-              text : currObj.text
-            }),
-            x : genericTransformationObj.x,
-            y : genericTransformationObj.y,
-            gravity : genericTransformationObj.gravity,
-            angle : genericTransformationObj.angle,
-            effect : 'colorize',
-            color : 'rgb:' + _this.getObjColor(currObj).hex.replace('#','')
-          }
-          trObjs.push(trObj);
-          if (!useArr){
-            tr.chain().transformation(trObj);
-          }
-        }
-        else {
-          objMatched = false;
-          console.warn('Unmapped Canvas Object Type encountered - ' + objType);
-          console.log(currObj);
-        }
+
         // If the current canvas object got matched to a known type and triggered a transformation...
-        if (objMatched){
+        if (trInfo.objMatched){
           for (var x=0; x<trObjs.length; x++){
             transformationArr.push(trObjs[x]);
           }
