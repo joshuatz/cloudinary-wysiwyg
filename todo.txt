@@ -1,5 +1,10 @@
 Todo list and misc notes
   Top Priority / WIP:
+     - TOP: Fix output to be constrained by dimensions of canvas
+      - Solutions:
+        - Option A: (costs a transformation step) - add final transformation step that crops output
+        - Option B: When turning a canvas object into a cloudinary transformation, check to see if the object overlaps the bounds of the canvas dimensions. If so, apply a crop as part of the cloudinary transformation to clip it
+     - Add image by Cloudinary public ID as alternative option to providing hosted URL
      - Setting the background
      - Resizing of entire canvas
      - Add more shapes (at least circles)

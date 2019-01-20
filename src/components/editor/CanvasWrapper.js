@@ -361,13 +361,21 @@ class CanvasWrapper extends Component {
      * Maps the generic settings that should map almost directly from the canvas to cloudinary transformation (e.g. width, height)
      * @param {object} canvasObj - A fabric.js canvas object (e.g. rectangle, image, etc.)
      * @param {object} [OPT_trans] - Optional existing tranformation object to augment with the new settings 
+     * @param {boolean} OPT_forceBounding - optional setting. If true, forces the object to render inside the bounding box of the overall canvas dimensions. Otherwise, if not applied, an overlay being position overlapping the boundary of the canvas can cause the final cloudinary output to be exceed the dimensions of the canvas.
      */
-    mapCanvasObjPropsToTrans(canvasObj,OPT_trans){
+    mapCanvasObjPropsToTrans(canvasObj,OPT_trans,OPT_forceBounding){
+      let trObjs = [];
+
+      let forceBounding = (OPT_forceBounding || true);
+      let canvas = this.state.editorData.canvasObj;
+      let canvasDimensions = this.state.editorData.canvasDimensions;
       let canvasObjType = canvasObj.get('type');
       let transObj = (OPT_trans || {});
       let width = parseFloat(canvasObj.get('width'));
       let height = parseFloat(canvasObj.get('height'));
       let angle = parseFloat(canvasObj.get('angle'));
+      let x = this.mainMethods.canvas.getCanvObjOriginalLeft(canvasObj);
+      let y = parseFloat(canvasObj.get('top'));
       // Handle scaling by using x and y factors and multiplying width and height
       width = width * parseFloat(canvasObj.get('scaleX'));
       height = height * parseFloat(canvasObj.get('scaleY'));
@@ -376,8 +384,8 @@ class CanvasWrapper extends Component {
       let props = {
         width : parseInt(width,10),
         height : parseInt(height,10),
-        x : parseInt(this.mainMethods.canvas.getCanvObjOriginalLeft(canvasObj),10),
-        y : parseInt(canvasObj.get('top'),10),
+        x : parseInt(x,10),
+        y : parseInt(y,10),
         gravity : 'north_west'
       };
       if (angle!==0){
@@ -387,8 +395,41 @@ class CanvasWrapper extends Component {
         //debugger;
         props.radius = parseInt((width*0.5),10)
       }
+      
+
+      /**
+       * Calculation of boundaries / clipping
+       */
+      if (forceBounding){
+        // Need to test to see if object protrudes over boundary of canvas, and if so, clip it
+        let trObjSecondary = {
+          width : parseInt(width,10),
+          height : parseInt(height,10)
+        };
+        if (x + width > canvasDimensions.width){
+          props.width = canvasDimensions.width - x;
+          trObjSecondary.width = canvasDimensions.width - x;
+        }
+        if (y + height > canvasDimensions.height){
+          props.height = canvasDimensions.height - y;
+          trObjSecondary.height = canvasDimensions.height - y;
+        }
+        let doesClip = (x + width > canvasDimensions.width || y + height > canvasDimensions.height);
+        if (doesClip){
+          // Calculate a crop based on how much of the object does NOT clip past the boundary of the canvas
+          props.crop = 'pad';
+          props.flags = ['layer_apply'];
+          trObjSecondary.crop = 'pad';
+          trObjSecondary.flags = ['layer_apply'];
+          // trObjs.push(trObjSecondary);
+        }
+      }
+
       let updatedProps = this.helpers.objectMerge(transObj,props);
-      return updatedProps;
+      trObjs.push(updatedProps);
+      
+      //return updatedProps;
+      return trObjs;
     },
     generateFromCanvasRaw : function(canvas){
       let generationStartTime = performance.now();
@@ -439,7 +480,9 @@ class CanvasWrapper extends Component {
         let objMatched = true;
 
         // Generic mapping of canvas object attr to cloudinary transformation attrs
-        let genericTransformationObj = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj);
+        // let genericTransformationObj = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj);
+        let genericTransformationObjArr = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj);
+        let genericTransformationObj = genericTransformationObjArr[0];
 
         // Create new tranformation
         let tr = cloudinary.Transformation.new();
@@ -451,7 +494,10 @@ class CanvasWrapper extends Component {
           // NOTE - order of operations and chaining is important. Size and position should always come first and as separate transformations to avoid conflicts
           trObj = _this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid');
           // Set size and offset
-          trObj = _this.helpers.objectMerge([trObj,genericTransformationObj]);
+          // trObj = _this.helpers.objectMerge([trObj,genericTransformationObj]);
+          _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj,trObj).map((tr)=>{
+            trObjs.push(tr);
+          });
           // Apply color
           let trObjSecondary = {
             background : 'rgb:' + _this.getObjColor(currObj).hex.replace('#',''),
@@ -469,7 +515,8 @@ class CanvasWrapper extends Component {
             // layer_apply flag with angle transformation tells it to apply it to the overlay rather than the entire base (it would rotate the entire image if omitted)
             trObjSecondary.angle = angle;
           }
-          trObjs.push(trObj,trObjSecondary);
+          trObjs.push(trObjSecondary);
+          //trObjs.push(trObj,trObjSecondary);
           if (!useArr){
             tr.chain().transformation(trObj);
             tr = tr.chain().transformation(trObjSecondary);
