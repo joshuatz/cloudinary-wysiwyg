@@ -518,26 +518,36 @@ class CanvasWrapper extends Component {
        * Calculation of boundaries / clipping
        */
       if (forceBounding){
+        let modPrimary = true;
         // Need to test to see if object protrudes over boundary of canvas, and if so, clip it
         let trObjSecondary = {
           width : parseInt(width,10),
           height : parseInt(height,10)
         };
         if (x + width > canvasDimensions.width){
-          trObj.width = canvasDimensions.width - x;
+          if (modPrimary){
+            trObj.width = canvasDimensions.width - x;
+          }
           trObjSecondary.width = canvasDimensions.width - x;
         }
         if (y + height > canvasDimensions.height){
-          trObj.height = canvasDimensions.height - y;
+          if (modPrimary){
+            trObj.height = canvasDimensions.height - y;
+          }
           trObjSecondary.height = canvasDimensions.height - y;
         }
         let doesClip = (x + width > canvasDimensions.width || y + height > canvasDimensions.height);
         if (doesClip){
           // Calculate a crop based on how much of the object does NOT clip past the boundary of the canvas
-          trObj.crop = 'pad';
-          trObj.flags = ['layer_apply'];
-          trObjSecondary.crop = 'pad';
+          if (modPrimary){
+            trObj.crop = 'scale';
+            trObj.flags = ['layer_apply'];
+          }
+          trObjSecondary.crop = 'scale';
           trObjSecondary.flags = ['layer_apply'];
+        }
+        if (!modPrimary){
+          chainedTrObj = this.helpers.objectMerge(chainedTrObj,trObjSecondary);
         }
       }
 
@@ -588,7 +598,7 @@ class CanvasWrapper extends Component {
       let baseTransformationObj = {
         width : canvas.width,
         height : canvas.height,
-        crop : 'pad'
+        crop : 'scale'
       };
       // Next, if the base image is set as the default fallback - meaning that the user wants to overlay on top of a solid or transparent background, we should make sure the base image will show that way...
       // @TODO allow for solid fill instead of transparent
