@@ -553,12 +553,6 @@ class CanvasWrapper extends Component {
 
           if ('radius' in trObj){
             // This is a little more complicated... 
-            /*
-            if (modPrimary){
-              trObj.crop = 'crop';
-              trObj.flags = ['layer_apply'];
-            }
-            */
             // Reset trObjSecondary since crop should be its own transformation
             trObjSecondary = {}
 
@@ -594,17 +588,25 @@ class CanvasWrapper extends Component {
       // Push results together
       trObjs.push(trObj,cropTrObj,chainedTrObj);
 
-      //debugger; 
-
       // Return transformations and mapping info
       return {
         trObjs : trObjs,
         objMatched : objMatched
       }
     },
-    generateFromCanvasRaw : function(canvas){
+    generateFromCanvasRaw : function(canvas,OPT_forceBoundingStyle){
+      // Timing mark
       let generationStartTime = performance.now();
+
       let _this = this;
+
+      // Cropping / Bounding setting
+      const acceptedBoundingStyles = ['perObject','atEnd','off'];
+      let forceBoundingStyle = (OPT_forceBoundingStyle && acceptedBoundingStyles.indexOf(OPT_forceBoundingStyle)!==-1) ? OPT_forceBoundingStyle : 'atEnd';
+      let perObjectBounding = forceBoundingStyle==='perObject' ? true : false;
+
+      let canvasDimensions = this.state.editorData.canvasDimensions;
+
       // TESTING
       let useArr = true;
       console.log(this);
@@ -649,7 +651,7 @@ class CanvasWrapper extends Component {
         let currObj = val;
 
         // Get transformation objs from mapper
-        let trInfo = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj);
+        let trInfo = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj,perObjectBounding);
         let trObjs = trInfo.trObjs;
 
         // Create new tranformation
@@ -662,11 +664,21 @@ class CanvasWrapper extends Component {
               transformationArr.push(trObjs[x]);
             }
           }
+          if (forceBoundingStyle==='atEnd'){
+            transformationArr.push({
+              crop : 'crop',
+              gravity : 'north_west',
+              width : canvasDimensions.width,
+              height : canvasDimensions.height
+            });
+          }
           if (!useArr){
             cloudinaryImageTag.transformation().chain().transformation(tr);
           }
         }
       });
+
+      // @TODO chain bounding last
 
       // @TODO
       if (useArr){
