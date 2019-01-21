@@ -375,6 +375,7 @@ class CanvasWrapper extends Component {
       let trObjs = [];
       let trObj = (typeof(OPT_trans)==='object' && OPT_trans!==null) ? OPT_trans : {};
       let chainedTrObj = {};
+      let cropTrObj = {};
 
       const colorProps = ['background','color','effect','flags'];
       const mappings = {
@@ -519,35 +520,63 @@ class CanvasWrapper extends Component {
        */
       if (forceBounding){
         let modPrimary = true;
+        let doesClip = false;
+        let croppedWidth = width;
+        let croppedHeight = height;
         // Need to test to see if object protrudes over boundary of canvas, and if so, clip it
         let trObjSecondary = {
           width : parseInt(width,10),
-          height : parseInt(height,10)
+          height : parseInt(height,10),
+          gravity : 'north_west'
         };
+        cropTrObj = {
+          width : parseInt(width,10),
+          height : parseInt(height,10)
+        }
         if (x + width > canvasDimensions.width){
-          if (modPrimary){
-            trObj.width = canvasDimensions.width - x;
-          }
-          trObjSecondary.width = canvasDimensions.width - x;
+          doesClip = true;
+          croppedWidth = canvasDimensions.width - x;
+          cropTrObj.width = croppedWidth;
+          trObjSecondary.width = croppedWidth;
         }
         if (y + height > canvasDimensions.height){
-          if (modPrimary){
-            trObj.height = canvasDimensions.height - y;
-          }
-          trObjSecondary.height = canvasDimensions.height - y;
+          doesClip = true;
+          croppedHeight = canvasDimensions.height - y;
+          cropTrObj.height = croppedHeight;
+          trObjSecondary.height = croppedHeight;
         }
-        let doesClip = (x + width > canvasDimensions.width || y + height > canvasDimensions.height);
+        
         if (doesClip){
           // Calculate a crop based on how much of the object does NOT clip past the boundary of the canvas
-          if (modPrimary){
-            trObj.crop = 'scale';
-            trObj.flags = ['layer_apply'];
-          }
           trObjSecondary.crop = 'scale';
           trObjSecondary.flags = ['layer_apply'];
+
+          if ('radius' in trObj){
+            // This is a little more complicated... 
+            /*
+            if (modPrimary){
+              trObj.crop = 'crop';
+              trObj.flags = ['layer_apply'];
+            }
+            */
+            // Reset trObjSecondary since crop should be its own transformation
+            trObjSecondary = {}
+
+            // To crop to a specific region (the region not overlapping) I need to manually set the crop region by offseting x and y from 0,0 (top left) of the original image
+            // https://cloudinary.com/cookbook/crop_pictures_by_custom_coordinates
+            cropTrObj.x = parseInt((width - croppedWidth),10);
+            cropTrObj.y = parseInt((height - croppedHeight),10);
+            cropTrObj.crop = 'crop';
+            cropTrObj.gravity = 'south_east';
+            modPrimary = false;
+          }
         }
-        if (!modPrimary){
+        
+        if (modPrimary===false){
           chainedTrObj = this.helpers.objectMerge(chainedTrObj,trObjSecondary);
+        }
+        else {
+          trObj = this.helpers.objectMerge(trObj,cropTrObj);
         }
       }
 
@@ -563,7 +592,9 @@ class CanvasWrapper extends Component {
       }
 
       // Push results together
-      trObjs.push(trObj,chainedTrObj);
+      trObjs.push(trObj,cropTrObj,chainedTrObj);
+
+      //debugger; 
 
       // Return transformations and mapping info
       return {
@@ -627,7 +658,9 @@ class CanvasWrapper extends Component {
         // If the current canvas object got matched to a known type and triggered a transformation...
         if (trInfo.objMatched){
           for (var x=0; x<trObjs.length; x++){
-            transformationArr.push(trObjs[x]);
+            if (Object.keys(trObjs[x]).length > 0){
+              transformationArr.push(trObjs[x]);
+            }
           }
           if (!useArr){
             cloudinaryImageTag.transformation().chain().transformation(tr);
