@@ -370,7 +370,7 @@ class CanvasWrapper extends Component {
     mapCanvasObjPropsToTrans(canvasObj,OPT_trans,OPT_forceBounding){
       let cloudinary = this.cloudinary;
       let canvasDimensions = this.state.editorData.canvasDimensions;
-      let forceBounding = (OPT_forceBounding || true);
+      let forceBounding = typeof(OPT_forceBounding)==='boolean' ? OPT_forceBounding : true;
       let canvasObjType = canvasObj.get('type');
       let trObjs = [];
       let trObj = (typeof(OPT_trans)==='object' && OPT_trans!==null) ? OPT_trans : {};
@@ -455,7 +455,7 @@ class CanvasWrapper extends Component {
           y : parseInt(y,10)
         });
         // A little strange, but 'colorize' needs to be accompanied with coordinates and gravity if chained
-        if (mapping.mustChain.indexOf('color')!==-1){
+        if (mapping.mustChain && mapping.mustChain.indexOf('color')!==-1){
           chainedTrObj = this.helpers.objectMerge(chainedTrObj,{
             x : trObj.x,
             y : trObj.y,
@@ -496,6 +496,9 @@ class CanvasWrapper extends Component {
         // Remove background color and flags
         delete trObj.background;
         delete trObj.flags;
+        // Remove width and height since that is best controlled through font size
+        delete trObj.width;
+        delete trObj.height;
       }
       else if (mapping.type==='image'){
         // @TODO - check if image is already uploaded to cloudinary - if so, get publicid instead of using remote fetch
@@ -588,11 +591,14 @@ class CanvasWrapper extends Component {
       // Push results together
       trObjs.push(trObj,cropTrObj,chainedTrObj);
 
-      // Return transformations and mapping info
-      return {
+      let retInfo = {
         trObjs : trObjs,
         objMatched : objMatched
       }
+      console.log(retInfo);
+
+      // Return transformations and mapping info
+      return retInfo;
     },
     generateFromCanvasRaw : function(canvas,OPT_forceBoundingStyle){
       // Timing mark
@@ -651,7 +657,7 @@ class CanvasWrapper extends Component {
         let currObj = val;
 
         // Get transformation objs from mapper
-        let trInfo = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj,perObjectBounding);
+        let trInfo = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj,null,perObjectBounding);
         let trObjs = trInfo.trObjs;
 
         // Create new tranformation
@@ -677,8 +683,6 @@ class CanvasWrapper extends Component {
           }
         }
       });
-
-      // @TODO chain bounding last
 
       // @TODO
       if (useArr){
