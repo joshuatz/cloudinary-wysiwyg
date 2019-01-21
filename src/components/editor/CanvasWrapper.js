@@ -251,20 +251,29 @@ class CanvasWrapper extends Component {
         return imgInstance;
       }
     },
+    getTextPropsFromFontPanel : function(){
+      let currSelectedFont = this.state.editorData.currSelectedFont;
+      return {
+        fontSize : currSelectedFont.size,
+        fill : this.getCurrSelectedColor().hex,
+        myTextObj : underscore.clone(currSelectedFont),
+        fontWeight : currSelectedFont.bold===true ? 'bold' : 'normal',
+        underline : currSelectedFont.underline,
+        linethrough : currSelectedFont.strikethrough
+      }
+    },
     addText : function(text,OPT_fontFamily,OPT_fontSize,OPT_fontColor,OPT_macroKey){
       let _this = this;
       let canvas = this.state.editorData.canvasObj;
       let fabric = this.state.fabric;
+      let currSelectedFont = this.state.editorData.currSelectedFont;
       text = (text || 'Edit Me!');
-      console.log(this.state.editorData.currSelectedFont);
-      let textProps = {
+      console.log(currSelectedFont);
+      let textProps = this.helpers.objectMerge(this.mainMethods.canvas.getTextPropsFromFontPanel(),{
         left : 100,
         top : 100,
-        fontSize : this.state.editorData.currSelectedFont.size,
         lockUniScaling : true,
-        fill : this.getCurrSelectedColor().hex,
-        myTextObj : underscore.clone(this.state.editorData.currSelectedFont)
-      }
+      });
 
       if (typeof(OPT_macroKey)==='string'){
         textProps.isMacro = true;
@@ -481,6 +490,7 @@ class CanvasWrapper extends Component {
         // Note - Font Family and Font Size are REQUIRED
         // Note that the space that font takes up is calculated by the font-size, not width and height. If the canvas object is scaled, you should use the ratio (X and Y are the same) to figure out what to multiply the original font size by
         // Note - for text, x and y position (offset) should be passed directly with the textLayer rather than chaining it as a secondary transformation
+        let textConfig = canvasObj.myTextObj;
         let fontSize = canvasObj.fontSize;
         if (canvasObj.scaleX > 1){
           fontSize = parseInt((canvasObj.scaleX * fontSize));
@@ -489,10 +499,14 @@ class CanvasWrapper extends Component {
           overlay : new cloudinary.TextLayer({
             fontFamily : 'Roboto',
             fontSize : fontSize,
-            text : canvasObj.text
+            text : canvasObj.text,
+            fontWeight : textConfig.bold===true ? 'bold' : 'normal',
+            textDecoration : textConfig.underline===true ? 'underline' : (textConfig.strikethrough===true ? 'strikethrough' : 'normal')
           })
         });
-
+        // Set text decoration flag
+        //debugger;
+        // @TODO
         // Remove background color and flags
         delete trObj.background;
         delete trObj.flags;

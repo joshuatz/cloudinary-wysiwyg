@@ -46,7 +46,24 @@ class FontSelector extends Component  {
    * NOTE: The reverse of this function is updateFontSelectorFromCanvasObj
    */
   updateSelectedTextObjs(){
-    // @TODO
+    // Iterate over all canvas objects
+    let matches = 0;
+    this.props.mainMethods.canvas.getSelectedObjs(false).map((canvasObj,index)=>{
+      if(canvasObj.get('type')==='i-text'||canvasObj.get('type')==='text'){
+        matches++;
+        // Merge settings
+        let updatedProps = this.props.mainMethods.canvas.getTextPropsFromFontPanel();
+        for (var prop in updatedProps){
+          if (prop in canvasObj){
+            canvasObj.set(prop,updatedProps[prop]);
+          }
+        }
+      }
+    },this);
+    // Re-render canvas if updates
+    if (matches > 0){
+      this.props.mainMethods.canvas.renderAll();
+    }
   }
 
   handleFontFamilyChange(evt){
@@ -55,6 +72,7 @@ class FontSelector extends Component  {
     let fontFamilyString = "'" + selectedFontName + "', " + googleFontObj.category;
     this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.fontFamilyFull',fontFamilyString);
     this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.fontFamilySlim',selectedFontName);
+    this.updateSelectedTextObjs();
   }
 
   handleFontOptionToggle(optionPropName,button,evt){
@@ -68,12 +86,14 @@ class FontSelector extends Component  {
     if (typeof(button.action)==='function'){
       button.action.bind(this)();
     }
+    this.updateSelectedTextObjs();
   }
 
   handleFontSizeChange(){
     let $ = this.$;
     let fontSize = parseInt($('.fontSizePickerDropdown input.select-dropdown').val().replace('px',''));
     this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.size',fontSize);
+    this.updateSelectedTextObjs();
   }
 
   getMasterState(){
