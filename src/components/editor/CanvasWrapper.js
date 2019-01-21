@@ -531,7 +531,7 @@ class CanvasWrapper extends Component {
         // THIS TOOK A WHILE TO STUMBLE ACROSS - https://cloudinary.com/product_updates/overlay_and_underlay_a_fetched_image - if you want to use fetch in combo with overlay, the id should be "fetch:{{base64-remote-src}}" - so together, the final URL would look something like res.cloudinary.com/demo/image/upload/l_fetch:{{base64_overlay_remote_src}}/{{underlay_image_id}}
         if (useRemote){
           let remoteSrc = canvasObj._originalElement.currentSrc;
-          trObj = this.objectMerge(trObj,{
+          trObj = this.helpers.objectMerge(trObj,{
             overlay : {
               resourceType : 'fetch',
               url : remoteSrc

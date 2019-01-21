@@ -27,38 +27,34 @@ class ImageSelector extends Component {
             <div className="row">
               <div className="col s12 center">What type of image do  you want to use?</div>
               <div className="row center">
-                <a className="button btn autoCenter modal-trigger modal-close" href="#hostedImageModal">Hosted Image</a>
-                <div className="disabled" style={{display: 'inline-block'}}  data-tooltip="Sorry, this has not yet been implemented" data-position="bottom">
-                  <a className="button btn autoCenter modal-trigger modal-close disabled" href="#newImageUploadModal">Upload an Image</a>
+                {/* Tab Select */}
+                <ul className="tabs">
+                  <li className="tab col s3"><a href="#hostedImageSelect">Hosted Image</a></li>
+                  <li className="tab col s3 disabled" data-tooltip="Sorry, this has not yet been implemented" data-position="bottom"><a href="#newImageUploadSelect">Upload</a></li>
+                </ul>
+              </div>
+
+              {/* Tab Content */}
+              <div id="hostedImageSelect">
+                <div className="tabContent">
+                  <div className="row">
+                    <div className="input-field col s8 offset-s1">
+                      <input type="url" className="validate" id="hostedImageUrl_1" defaultValue="https://picsum.photos/200/300" />
+                      <label htmlFor="hostedImageUrl_1">Hosted Image URL:</label>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="button btn modal-trigger modal-close" onClick={this.hostedImageUrlAdd.bind(this)}>Add Image</div>
+                  </div>
                 </div>
               </div>
+              <div id="newImageUploadSelect">Sorry, this has not yet been implemented...</div>
+
+              {/* End Tab Content */}
+
             </div>
           </div>
-        </div>
-
-        {/* Hosted Image Options */}
-        <div className="hostedImageModal modal" id="hostedImageModal">
-          <div className="modal-content">
-            <h3>Hosted Image Options:</h3>
-            <div className="modal-content">
-              <div className="row">
-                <div className="input-field col s8 offset-s1">
-                  <input type="url" className="validate" id="hostedImageUrl_1" defaultValue="https://picsum.photos/200/300" />
-                  <label htmlFor="hostedImageUrl_1">Hosted Image URL:</label>
-                </div>
-              </div>
-              <div className="row">
-                <div className="button btn modal-trigger modal-close" onClick={this.hostedImageUrlAdd.bind(this)}>Add Image</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* New Image Upload Options */}
-        <div className="newImageUploadModal modal" id="newImageUploadModal">
-          <div className="modal-content">
-          </div>
-        </div>
+        </div> {/* End Modal */}
       </div>
     )
   }
