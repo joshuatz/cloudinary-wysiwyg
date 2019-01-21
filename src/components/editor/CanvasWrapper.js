@@ -53,6 +53,7 @@ class CanvasWrapper extends Component {
       editorData : editorData
     });
     window.canvas = canvas;
+    window.mainMethods = this.mainMethods;
 
     // Attach global event listeners
     canvas.on('selection:cleared',(evt)=>{
@@ -189,21 +190,29 @@ class CanvasWrapper extends Component {
         this.canvasMethods.handleShapeSelect.bind(this)(rect);
       });
     },
-    addCircle : function(){
+    addCircle : function(OPT_props){
       let canvas = this.state.editorData.canvasObj;
       let fabric = this.state.fabric;
-      let circle = new fabric.Circle({
+      let props = {
         top : 50,
         left : 50,
         radius : 80,
         fill : this.getCurrSelectedColor().hex
-      });
+      };
+      props = typeof(OPT_props)==='object' ? this.helpers.objectMerge(props,OPT_props) : props;
+      let circle = new fabric.Circle(props);
       canvas.add(circle);
       canvas.renderAll();
       canvas.bringToFront(circle);
       this.mainMethods.canvas.updateLivePreview();
       circle.on('selected',()=>{
         this.canvasMethods.handleShapeSelect.bind(this)(circle);
+      });
+    },
+    addOval : function(){
+      // It is much simpler just to use scaleX and scaleY on a circle, rather than switching to the ellipse canvasObj type
+      this.mainMethods.canvas.addCircle({
+        scaleX : 0.5
       });
     },
     addImage : function(urlOrImgElem,OPT_callback,OPT_macroKey){
