@@ -4,6 +4,10 @@ class ImageSelector extends Component {
   constructor(props){
     super(props);
     this.$ = window.jQuery;
+    let initialState = {
+      psuedoImages : []
+    }
+    this.state = initialState;
   }
 
   addImageByUrl(url){
@@ -16,7 +20,28 @@ class ImageSelector extends Component {
     this.addImageByUrl(hostedImageUrl);
   }
 
+  addImageById(){
+    let cloudinaryPublicId = this.$('#cloudinaryPublicIdInput').val();
+    if (cloudinaryPublicId.length > 0){
+      // Add image to DOM
+      let imgSrc = this.props.mainMethods.cloudinary.getImageSrcFromPublicId(cloudinaryPublicId);
+      let updatedState = this.state;
+      updatedState.psuedoImages.push(imgSrc);
+      this.setState(updatedState,()=>{
+
+      });
+    }
+    else {
+      // @TODO
+    }
+  }
+
   render(){
+    let pseudoImageElements = this.state.psuedoImages.map((imgSrc,index)=>{
+      return (
+        <img src={imgSrc}></img>
+      )
+    });
     return(
       <div className="ImageSelectorWrapper">
 
@@ -30,7 +55,11 @@ class ImageSelector extends Component {
                 {/* Tab Select */}
                 <ul className="tabs">
                   <li className="tab col s3"><a href="#hostedImageSelect">Hosted Image</a></li>
+
+                  <li className="tab col s3"><a href="#macroImageSelect">Placeholder / Macro</a></li>
+
                   <li className="tab col s3"><a href="#cloudinaryPublicIdSelect">Cloudinary Public ID</a></li>
+                  
                   <li className="tab col s3 disabled" data-tooltip="Sorry, this has not yet been implemented" data-position="bottom"><a href="#newImageUploadSelect">Upload</a></li>
                 </ul>
               </div>
@@ -39,24 +68,48 @@ class ImageSelector extends Component {
               <div id="hostedImageSelect">
                 <div className="tabContent">
                   <div className="row">
-                    <div className="input-field col s8 offset-s1">
-                      <input type="url" className="validate" id="hostedImageUrl_1" defaultValue="https://picsum.photos/200/300" />
+                    <div className="input-field col s6 offset-s1">
+                      <input type="url" className="validate" id="hostedImageUrl_1" placeholder="https://picsum.photos/200/300" />
                       <label htmlFor="hostedImageUrl_1">Hosted Image URL:</label>
                     </div>
-                  </div>
-                  <div className="row">
-                    <div className="button btn modal-trigger modal-close" onClick={this.hostedImageUrlAdd.bind(this)}>Add Image</div>
+                    <div className="col s4">
+                      <div className="button btn modal-trigger modal-close" onClick={this.hostedImageUrlAdd.bind(this)}>Add Image</div>
+                    </div>
                   </div>
                 </div>
               </div>
+
               <div id="newImageUploadSelect">Sorry, this has not yet been implemented...</div>
-              <div id="cloudinaryPublicIdSelect"></div>
+
+              <div id="cloudinaryPublicIdSelect">
+                <div className="tabContent row">
+                  <div className="col s6 offset-s1 input-field">
+                    <input type="text" id="cloudinaryPublicIdInput" placeholder="foobar"></input>
+                    <label htmlFor="cloudinaryPublicIdInput">Cloudinary Public ID:</label>
+                  </div>
+                  <div className="col s4">
+                    <div className="button btn modal-trigger modal-close" onClick={this.addImageById.bind(this)}>Add Image</div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="macroImageSelect">
+                <div className="tabContent row">
+                  
+                </div>
+              </div>
 
               {/* End Tab Content */}
 
             </div>
           </div>
         </div> {/* End Modal */}
+
+        {/* Pseudo images */}
+        <div className="pseudoImageWrapper hidden">
+          {pseudoImageElements}
+        </div>
+
       </div>
     )
   }

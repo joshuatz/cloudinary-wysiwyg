@@ -44,7 +44,7 @@ class OutputResults extends Component {
             <h3>Cloudinary Results:</h3>
             <div className="row">
               <div className="col s10 offset-s1">
-                <img className="responsive-img z-depth-2" src={output.imgSrc}></img>
+                <img className="responsive-img z-depth-2" src={imgSrc}></img>
               </div>
             </div>
             <div className="row">

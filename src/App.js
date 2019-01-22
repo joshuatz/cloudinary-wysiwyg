@@ -58,7 +58,9 @@ class App extends Component {
       },
       accountSettings : {
         cloudinaryCloudName : 'demo',
-        fetchInstantly : false
+        fetchInstantly : false,
+        width : 400,
+        height : 400
       },
       output : {
         transformations : {

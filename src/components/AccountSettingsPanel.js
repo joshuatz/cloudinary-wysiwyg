@@ -33,7 +33,9 @@ class AccountSettingsPanel extends Component {
     return {
       cloudinaryCloudName : 'demo',
       fetchInstantly : false,
-      lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24)
+      lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24),
+      width : 400,
+      height : 400
     }
     return this.props.masterState[MASTER_STATE_KEY];
   }
@@ -50,19 +52,6 @@ class AccountSettingsPanel extends Component {
 
     // Get value dependent on type of input
     let value = (e.target.type==='checkbox' ? e.target.checked : e.target.value);
-    /*
-    if (this.state[settingKey]!==value){
-      // Make sure to use callback!
-      this.setState({
-        [settingKey] : value
-      },()=>{
-        console.group('state');
-          console.log(this.state);
-        console.groupEnd();
-        this.saveItDown();
-      });
-    }
-    */
 
     let stateCopy = this.getAccountSettingsState();
     if (stateCopy[settingKey]!==value){

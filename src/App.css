@@ -256,3 +256,12 @@ a.disabled, .disabled {
 .statsModule .val {
   text-align: center;
 }
+
+/**
+* Tabs
+*/
+ul.tabs > li.tab {
+  border-top: 1px dotted black;
+  border-right: 0.5px dotted black;
+  border-left: 0.5px dotted black;
+}

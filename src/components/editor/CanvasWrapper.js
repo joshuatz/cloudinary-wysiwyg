@@ -329,6 +329,9 @@ class CanvasWrapper extends Component {
         this.cloudinaryInstance.config({'cloud_name' : this.state.accountSettings.cloudinaryCloudName});
       }
     },
+    getImageSrcFromPublicId : function(publicId){
+      return 'https://res.cloudinary.com/' + this.state.accountSettings.cloudinaryCloudName + '/image/upload/' + publicId;
+    },
     getTransparentPixelSrc : function(){
       return typeof(this.state.editorData.transparentPixelSrc)==='string' ? this.state.editorData.transparentPixelSrc : this.fallbackTransparentPixelSrc;
     },
@@ -378,10 +381,6 @@ class CanvasWrapper extends Component {
         'get' : perTypes[type].bind(this)
       }
     },
-    mapCanvasObjPropsToTransGeneric(canvasObj){
-
-    },
-
     /**
      * Maps the generic settings that should map almost directly from the canvas to cloudinary transformation (e.g. width, height)
      * @param {object} canvasObj - A fabric.js canvas object (e.g. rectangle, image, etc.)
