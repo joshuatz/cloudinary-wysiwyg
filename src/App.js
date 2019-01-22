@@ -6,6 +6,7 @@ import StatsPanel from './components/StatsPanel';
 import CanvasWrapper from './components/editor/CanvasWrapper';
 import './App.css';
 import ImageSelector from './components/editor/modals/ImageSelector';
+import OutputResults from './components/editor/modals/OutputResults';
 import Helpers from './inc/Helpers';
 import $ from 'jquery';
 import 'jquery-ui';

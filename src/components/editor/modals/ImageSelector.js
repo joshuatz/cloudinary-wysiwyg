@@ -30,6 +30,7 @@ class ImageSelector extends Component {
                 {/* Tab Select */}
                 <ul className="tabs">
                   <li className="tab col s3"><a href="#hostedImageSelect">Hosted Image</a></li>
+                  <li className="tab col s3"><a href="#cloudinaryPublicIdSelect">Cloudinary Public ID</a></li>
                   <li className="tab col s3 disabled" data-tooltip="Sorry, this has not yet been implemented" data-position="bottom"><a href="#newImageUploadSelect">Upload</a></li>
                 </ul>
               </div>
@@ -49,6 +50,7 @@ class ImageSelector extends Component {
                 </div>
               </div>
               <div id="newImageUploadSelect">Sorry, this has not yet been implemented...</div>
+              <div id="cloudinaryPublicIdSelect"></div>
 
               {/* End Tab Content */}
 

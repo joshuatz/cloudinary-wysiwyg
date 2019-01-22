@@ -7,6 +7,7 @@ import PaintSelector from './panels/PaintSelector';
 import FontSelector from './panels/FontSelector';
 import ImageSelector from './modals/ImageSelector';
 import TextEntry from './modals/TextEntry';
+import OutputResults from './modals/OutputResults';
 import CurrObjectActions from './panels/CurrObjectActions';
 import underscore from 'underscore';
 
@@ -32,6 +33,8 @@ class CanvasWrapper extends Component {
     this.masterState = this.props.masterState;
     this.canvasReRenderIp = false;
     this.CANVAS_ELEMENT_ID = 'editorCanvas';
+    // Refs
+    this.outputResultsClass = React.createRef();
   }
 
   canvasStyles = {
@@ -791,14 +794,18 @@ class CanvasWrapper extends Component {
     generateFromCanvas : {
       open : function(canvas){
         this.mainMethods.cloudinary.generateFromCanvasRaw.bind(this)(canvas).open();
-      },
+      }.bind(this),
       log : function(canvas){
         this.mainMethods.cloudinary.generateFromCanvasRaw.bind(this)(canvas).log();
-      },
+      }.bind(this),
       get : function(canvas,OPT_updateState){
         //debugger;
-        this.mainMethods.cloudinary.generateFromCanvasRaw.bind(this)(canvas).get(OPT_updateState);
-      }
+        return this.mainMethods.cloudinary.generateFromCanvasRaw.bind(this)(canvas).get(OPT_updateState);
+      }.bind(this)
+    },
+    showResultsModal : function(){
+      this.outputResultsClass.current.refresh();
+      this.helpers.mtz.modal('.outputResultModal').open();
     }
   }
   // cloudinaryMethods - END
@@ -1007,13 +1014,15 @@ class CanvasWrapper extends Component {
         {/* Probably move this to separate component - cloudinary buttons */}
         <div className="col s12 center">
           <div className="center">
-            <button className="button btn darkPrimaryColor" onClick={this.mainMethods.cloudinary.generateFromCanvas.get.bind(this)}>Get Cloudinary</button>
+            <button className="button btn darkPrimaryColor" onClick={this.mainMethods.cloudinary.showResultsModal.bind(this)}>Get Cloudinary</button>
+            <button className="button btn darkPrimaryColor" onClick={this.mainMethods.cloudinary.generateFromCanvas.open.bind(this)}>Open Cloudinary</button>
           </div>
         </div>
         {/* Modals */}
         <div className="modals">
           <ImageSelector mainMethods={this.mainMethods} />
           <TextEntry mainMethods={this.mainMethods} />
+          <OutputResults ref={this.outputResultsClass} mainMethods={this.mainMethods} />
         </div>
         {/* Hidden Elements that necessary */}
         <div className="dynamicData hidden">
