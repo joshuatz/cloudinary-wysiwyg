@@ -78,6 +78,14 @@ class CanvasWrapper extends Component {
     this.canvas = canvas;
   }
 
+  componentDidUpdate(prevProps,prevState){
+    // Check for canvas dimensions change
+    if (prevState.editorData.canvasDimensions.width!==this.state.editorData.canvasObj.width || prevState.editorData.canvasDimensions.height!==this.state.editorData.canvasObj.height){
+      console.log('canvas dimensions changed');
+      this.mainMethods.canvas.updateDimensions();
+    }
+  }
+
   /**
    * canvasMethods - START
    */
@@ -342,6 +350,15 @@ class CanvasWrapper extends Component {
         // Cursor jumps forward one time with each enter press, so need to move it back
         textObj._moveCursorLeftOrRight('Left',{});
       }
+    },
+    updateDimensions : function(){
+      let width = this.state.editorData.canvasDimensions.width;
+      let height = this.state.editorData.canvasDimensions.height;
+      // Update dimensions
+      this.state.editorData.canvasObj.setHeight(height);
+      this.state.editorData.canvasObj.setWidth(width);
+      // Prompt re-render with force
+      this.mainMethods.canvas.renderAll(true);
     }
   }
   // canvasMethods - END

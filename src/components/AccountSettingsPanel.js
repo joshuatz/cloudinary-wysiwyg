@@ -60,7 +60,9 @@ class AccountSettingsPanel extends Component {
       // Force to number
       value = parseInt(value);
       // Copy dimension to canvas settings
-      this.props.appMethods.mergeMasterState('editorData.canvasDimensions.' + settingKey.replace('editor','').toLowerCase(),value);
+      this.props.appMethods.mergeMasterState('editorData.canvasDimensions.' + settingKey.replace('editor','').toLowerCase(),value,()=>{
+        //
+      });
     }
 
     
