@@ -101,7 +101,12 @@ class CanvasWrapper extends Component {
       //debugger;
       let canvas = this.state.editorData.canvasObj;
       this.canvasReRenderIp = true;
-      canvas.renderAll();
+      if (force){
+        canvas.renderAndReset();
+      }
+      else {
+        canvas.renderAll();
+      }
       //debugger;
       this.canvasReRenderIp = false;
       this.mainMethods.canvas.updateLivePreview(force);
@@ -186,7 +191,7 @@ class CanvasWrapper extends Component {
         fill : this.getCurrSelectedColor().hex
       });
       canvas.add(rect);
-      canvas.renderAll();
+      this.mainMethods.canvas.renderAll();
       canvas.bringToFront(rect);
       this.mainMethods.canvas.updateLivePreview();
       rect.on('selected',()=>{
@@ -205,7 +210,7 @@ class CanvasWrapper extends Component {
       props = typeof(OPT_props)==='object' ? this.helpers.objectMerge(props,OPT_props) : props;
       let circle = new fabric.Circle(props);
       canvas.add(circle);
-      canvas.renderAll();
+      this.mainMethods.canvas.renderAll();
       canvas.bringToFront(circle);
       this.mainMethods.canvas.updateLivePreview();
       circle.on('selected',()=>{
@@ -223,6 +228,7 @@ class CanvasWrapper extends Component {
       let callback = typeof(OPT_callback)==='function' ? OPT_callback : function(){};
       let _this = this;
       let canvas = this.state.editorData.canvasObj;
+      let canvasDimensions = this.state.editorData.canvasDimensions;
       let fabric = this.state.fabric;
       let imageElem = urlOrImgElem;
       if (typeof(urlOrImgElem)==='string'){
@@ -244,28 +250,29 @@ class CanvasWrapper extends Component {
       }
       else {
         let imgProps = {
-          left : 100,
-          top : 100,
+          left : parseInt(canvasDimensions.width*0.1,10),
+          top : parseInt(canvasDimensions.height*0.1,10),
           isMacro : false
         }
         if (constrain){
-          let canvasDimensions = this.state.editorData.canvasDimensions;
           if (imageElem.width > canvasDimensions.width || imageElem.height > canvasDimensions.height){
             let scaledWidth = imageElem.width;
             let scaledHeight = imageElem.height;
             // Which side is longer?
             let widthIsLonger = imageElem.width > imageElem.height;
-            // Calculate new dimensions based on fitting longest side to canvas - 10%
+            // Calculate new dimensions based on fitting longest side to canvas - 20%
             if (widthIsLonger){
-              scaledWidth = (canvasDimensions.width * 0.9);
+              scaledWidth = (canvasDimensions.width * 0.8);
               scaledHeight = (scaledWidth * imageElem.height) / imageElem.width;
+              imgProps.scaleX = (scaledWidth / imageElem.width);
+              imgProps.scaleY = imgProps.scaleX;
             }
             else {
-              scaledHeight = (canvasDimensions.height * 0.9);
+              scaledHeight = (canvasDimensions.height * 0.8);
               scaledWidth = (scaledHeight * imageElem.width) / imageElem.height;
+              imgProps.scaleY = (scaledHeight / imageElem.height);
+              imgProps.scaleX = imgProps.scaleY;
             }
-            imgProps.width = scaledWidth;
-            imgProps.height = scaledHeight;
           }
         }
         if (typeof(OPT_macroKey)==='string'){
@@ -274,7 +281,7 @@ class CanvasWrapper extends Component {
         }
         let imgInstance = new fabric.Image(imageElem,imgProps);
         canvas.add(imgInstance);
-        canvas.renderAll();
+        this.mainMethods.canvas.renderAll();
         canvas.bringToFront(imgInstance);
         this.mainMethods.canvas.updateLivePreview();
         imgInstance.on('selected',()=>{
@@ -314,7 +321,7 @@ class CanvasWrapper extends Component {
       }
       let textInstance = new fabric.IText(text,textProps);
       canvas.add(textInstance);
-      canvas.renderAll();
+      this.mainMethods.canvas.renderAll();
       textInstance.on('selected',()=>{
         this.canvasMethods.handleTextSelect.bind(this)(textInstance);
         // @TODO handle callback to allow editing already added text

@@ -25,13 +25,25 @@ class ImageSelector extends Component {
     if (cloudinaryPublicId.length > 0){
       // Add image to DOM
       let imgSrc = this.props.mainMethods.cloudinary.getImageSrcFromPublicId(cloudinaryPublicId);
+      // Canvas is going to need the URL suffixed with a file type
+      if (/\.[A-Za-z]{1,10}$/.test(imgSrc)===false){
+        imgSrc = imgSrc + '.jpg';
+      }
       let updatedState = this.state;
       updatedState.psuedoImages.push(imgSrc);
       this.setState(updatedState,()=>{
         let renderedImage = this.$('img[src="' + imgSrc + '"]')[0];
         setTimeout(()=>{
           if (renderedImage.width > 0){
-            this.props.mainMethods.canvas.addImage(renderedImage);
+            this.props.mainMethods.canvas.addImage(renderedImage,()=>{
+              // Not sure what is going on here - I think canvas is having some issue with large image rendering
+              // @TODO
+              setTimeout(()=>{
+                this.props.mainMethods.canvas.renderAll(true);
+              },1000);
+              // Delete the psuedo image
+              renderedImage.remove();
+            });
           }
           else {
             //@TODO
