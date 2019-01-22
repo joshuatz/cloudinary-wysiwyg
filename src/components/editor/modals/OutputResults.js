@@ -19,6 +19,7 @@ class OutputResults extends Component {
       }
     };
     this.state = initialState;
+    this.$ = window.jQuery;
   }
 
   refresh(){
@@ -32,6 +33,10 @@ class OutputResults extends Component {
   render(){
     let output = this.state.output;
     let imgSrc = output.imgSrc!=='' ? output.imgSrc : 'loading.gif';
+    setTimeout(()=>{
+      window.Materialize.updateTextFields();
+      window.Materialize.textareaAutoResize(this.$('#imgHtmlTag'));
+    },300);
     return (
       <div className="outputResultsModalWrapper">
         <div className="outputResultModal modal">
@@ -40,6 +45,18 @@ class OutputResults extends Component {
             <div className="row">
               <div className="col s10 offset-s1">
                 <img className="responsive-img z-depth-2" src={output.imgSrc}></img>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col s11 offset-s1 input-field">
+                <input id="imgSrcUrl" value={output.img.src} type="text" className="active"></input>
+                <label htmlFor="imgSrcUrl">Image URL:</label>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col s11 offset-s1 input-field">
+                <textarea id="imgHtmlTag" className="materialize-textarea active" value={output.img.html}></textarea>
+                <label htmlFor="imgHtmlTag">HTML IMG Tag</label>
               </div>
             </div>
           </div>

@@ -84,6 +84,8 @@ class App extends Component {
     this.jQuery = window.jQuery;
     this.$ = this.jQuery;
     this.Materialize = window.M;
+    window.Materialize = window.M;
+
     this.helpers = new Helpers();
   }
 
