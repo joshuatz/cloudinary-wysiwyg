@@ -28,7 +28,15 @@ class ImageSelector extends Component {
       let updatedState = this.state;
       updatedState.psuedoImages.push(imgSrc);
       this.setState(updatedState,()=>{
-
+        let renderedImage = this.$('img[src="' + imgSrc + '"]')[0];
+        setTimeout(()=>{
+          if (renderedImage.width > 0){
+            this.props.mainMethods.canvas.addImage(renderedImage);
+          }
+          else {
+            //@TODO
+          }
+        },400);
       });
     }
     else {

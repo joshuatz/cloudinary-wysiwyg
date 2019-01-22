@@ -218,8 +218,9 @@ class CanvasWrapper extends Component {
         scaleX : 0.5
       });
     },
-    addImage : function(urlOrImgElem,OPT_callback,OPT_macroKey){
-      let callback = (OPT_callback || function(){});
+    addImage : function(urlOrImgElem,OPT_callback,OPT_macroKey,OPT_constrain){
+      let constrain = (typeof(OPT_constrain)==='boolean') ? OPT_constrain : true;
+      let callback = typeof(OPT_callback)==='function' ? OPT_callback : function(){};
       let _this = this;
       let canvas = this.state.editorData.canvasObj;
       let fabric = this.state.fabric;
@@ -238,7 +239,7 @@ class CanvasWrapper extends Component {
             _this.canvasMethods.addImage.bind(_this)(imageElem,callback,OPT_macroKey);
             _this.canvasMethods.renderAll.bind(_this)();
             console.log(_this.state);
-          },500);
+          },400);
         });
       }
       else {
@@ -246,6 +247,26 @@ class CanvasWrapper extends Component {
           left : 100,
           top : 100,
           isMacro : false
+        }
+        if (constrain){
+          let canvasDimensions = this.state.editorData.canvasDimensions;
+          if (imageElem.width > canvasDimensions.width || imageElem.height > canvasDimensions.height){
+            let scaledWidth = imageElem.width;
+            let scaledHeight = imageElem.height;
+            // Which side is longer?
+            let widthIsLonger = imageElem.width > imageElem.height;
+            // Calculate new dimensions based on fitting longest side to canvas - 10%
+            if (widthIsLonger){
+              scaledWidth = (canvasDimensions.width * 0.9);
+              scaledHeight = (scaledWidth * imageElem.height) / imageElem.width;
+            }
+            else {
+              scaledHeight = (canvasDimensions.height * 0.9);
+              scaledWidth = (scaledHeight * imageElem.width) / imageElem.height;
+            }
+            imgProps.width = scaledWidth;
+            imgProps.height = scaledHeight;
+          }
         }
         if (typeof(OPT_macroKey)==='string'){
           imgProps.isMacro = true;
