@@ -34,8 +34,8 @@ class AccountSettingsPanel extends Component {
       cloudinaryCloudName : 'demo',
       fetchInstantly : false,
       lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24),
-      width : 400,
-      height : 400
+      editorWidth : 400,
+      editorHeight : 400
     }
     return this.props.masterState[MASTER_STATE_KEY];
   }
@@ -46,6 +46,8 @@ class AccountSettingsPanel extends Component {
 
   handleChange(e){
     console.log(e.target);
+    // Get state
+    let stateCopy = this.getAccountSettingsState();
 
     // Use the id of the input as the storage key
     let settingKey = e.target.id;
@@ -53,7 +55,15 @@ class AccountSettingsPanel extends Component {
     // Get value dependent on type of input
     let value = (e.target.type==='checkbox' ? e.target.checked : e.target.value);
 
-    let stateCopy = this.getAccountSettingsState();
+    // Special - Dimensions
+    if (settingKey==='editorWidth' || settingKey === 'editorHeight'){
+      // Force to number
+      value = parseInt(value);
+      // Copy dimension to canvas settings
+      this.props.appMethods.mergeMasterState('editorData.canvasDimensions.' + settingKey.replace('editor','').toLowerCase(),value);
+    }
+
+    
     if (stateCopy[settingKey]!==value){
       // Update copy
       stateCopy[settingKey]=value;
@@ -65,6 +75,13 @@ class AccountSettingsPanel extends Component {
         this.saveItDown();
       });
     }
+  }
+
+  updateCanvasDimensions(){
+    this.props.mainMethods.appMethods.mergeMasterState('editorData.canvasDimensions',{
+      width : this.state.editorWidth,
+      height : this.state.editorHeight
+    });
   }
   
   saveItDown(){
@@ -101,6 +118,16 @@ class AccountSettingsPanel extends Component {
                 </div>
               </div>
             </div>
+        </div>
+        <div className="row">
+          <div className="col s4 offset-s1 input-field">
+            <input id="editorWidth" type="number" min="2" max="800" step="1" value={this.state.editorWidth} onChange={this.handleChange.bind(this)}></input>
+            <label htmlFor="#editorWidth">Editor Width:</label>
+          </div>
+          <div className="col s4 offset-s1 input-field">
+            <input id="editorHeight" type="number" min="2" max="800" step="1" value={this.state.editorHeight} onChange={this.handleChange.bind(this)}></input>
+            <label htmlFor="#editorHeight">Editor Height:</label>
+          </div>
         </div>
         <div className="row center">
           
