@@ -22,11 +22,15 @@ class AccountSettingsPanel extends Component {
       });
       // Merge back up
       this.props.appMethods.mergeMasterState(MASTER_STATE_KEY,newState);
-      //this.state = newState;
     }
 
     // Attach this components state to master
     this.state = this.props.masterState[MASTER_STATE_KEY];
+    this.copyDimensionsToCanvas();
+  }
+  
+  componentDidMount(){
+    //
   }
 
   getDefaultState(){
@@ -42,6 +46,13 @@ class AccountSettingsPanel extends Component {
 
   getAccountSettingsState(){
     return this.props.masterState[MASTER_STATE_KEY];
+  }
+
+  copyDimensionsToCanvas(){
+    this.props.appMethods.mergeMasterState('editorData.canvasDimensions',{
+      width : this.state.editorWidth,
+      height : this.state.editorHeight
+    });
   }
 
   handleChange(e){
