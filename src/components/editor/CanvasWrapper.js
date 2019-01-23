@@ -231,7 +231,8 @@ class CanvasWrapper extends Component {
         scaleX : 0.5
       });
     },
-    addImage : function(urlOrImgElem,OPT_callback,OPT_macroKey,OPT_constrain){
+    addImage : function(urlOrImgElem,OPT_callback,OPT_macroKey,OPT_constrain,OPT_cloudinaryPublicId){
+      let cloudinaryPublicId = typeof(OPT_cloudinaryPublicId)==='string' && OPT_cloudinaryPublicId.length > 0 ? OPT_cloudinaryPublicId : false;
       let constrain = (typeof(OPT_constrain)==='boolean') ? OPT_constrain : true;
       let callback = typeof(OPT_callback)==='function' ? OPT_callback : function(){};
       let _this = this;
@@ -260,7 +261,8 @@ class CanvasWrapper extends Component {
         let imgProps = {
           left : parseInt(canvasDimensions.width*0.1,10),
           top : parseInt(canvasDimensions.height*0.1,10),
-          isMacro : false
+          isMacro : false,
+          cloudinaryPublicId : cloudinaryPublicId
         }
         if (constrain){
           if (imageElem.width > canvasDimensions.width || imageElem.height > canvasDimensions.height){
@@ -573,9 +575,10 @@ class CanvasWrapper extends Component {
       else if (mapping.type==='image'){
         // @TODO - check if image is already uploaded to cloudinary - if so, get publicid instead of using remote fetch
         let useRemote = true;
-        let publicId = false;
-        // use remote fetch - https://cloudinary.com/documentation/image_transformations#fetching_images_from_remote_locations - chain
-        // THIS TOOK A WHILE TO STUMBLE ACROSS - https://cloudinary.com/product_updates/overlay_and_underlay_a_fetched_image - if you want to use fetch in combo with overlay, the id should be "fetch:{{base64-remote-src}}" - so together, the final URL would look something like res.cloudinary.com/demo/image/upload/l_fetch:{{base64_overlay_remote_src}}/{{underlay_image_id}}
+        let publicId = canvasObj.cloudinaryPublicId;
+        if (typeof(publicId)==='string' && publicId.length > 0){
+          useRemote = false;
+        }
         if (useRemote){
           let remoteSrc = canvasObj._originalElement.currentSrc;
           trObj = this.helpers.objectMerge(trObj,{
@@ -584,7 +587,15 @@ class CanvasWrapper extends Component {
               url : remoteSrc
             },
             flags : ['layer_apply']
-          })
+          });
+        }
+        else {
+          trObj = this.helpers.objectMerge(trObj,{
+            overlay : {
+              publicId : publicId
+            },
+            flags : ['layer_apply']
+          });
         }
       }
 

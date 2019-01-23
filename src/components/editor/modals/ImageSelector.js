@@ -43,7 +43,7 @@ class ImageSelector extends Component {
               },1000);
               // Delete the psuedo image
               renderedImage.remove();
-            });
+            },null,null,cloudinaryPublicId);
           }
           else {
             //@TODO
