@@ -14,6 +14,8 @@ Todo list and misc notes
      - Panel that shows stats (# of transformations, char length of URL, etc.) - as you edit
      - Looking into saving template as a set of transformations in Cloudinary platform
      - Built in spreadsheet generator that lets you use macros
+      - Undo button / CTRL+Z combo
+      - Copy / clone button
 
 
 Resources to check out later:

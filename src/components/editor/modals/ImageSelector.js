@@ -27,7 +27,7 @@ class ImageSelector extends Component {
       let imgSrc = this.props.mainMethods.cloudinary.getImageSrcFromPublicId(cloudinaryPublicId);
       // Canvas is going to need the URL suffixed with a file type
       if (/\.[A-Za-z]{1,10}$/.test(imgSrc)===false){
-        imgSrc = imgSrc + '.jpg';
+        imgSrc = imgSrc + '.png';
       }
       let updatedState = this.state;
       updatedState.psuedoImages.push(imgSrc);
@@ -104,7 +104,7 @@ class ImageSelector extends Component {
               <div id="cloudinaryPublicIdSelect">
                 <div className="tabContent row">
                   <div className="col s6 offset-s1 input-field">
-                    <input type="text" id="cloudinaryPublicIdInput" placeholder="foobar"></input>
+                    <input type="text" id="cloudinaryPublicIdInput" placeholder="flowers"></input>
                     <label htmlFor="cloudinaryPublicIdInput">Cloudinary Public ID:</label>
                   </div>
                   <div className="col s4">

@@ -445,7 +445,7 @@ class CanvasWrapper extends Component {
       let cropTrObj = {};
       let somethingClippedPast = false;
 
-      const colorProps = ['background','color','effect','flags','x','y'];
+      const colorProps = ['background','color','effect','flags','x','y','radius'];
       const mappings = {
         'rect' : {
           supportsColor : true,
@@ -473,7 +473,7 @@ class CanvasWrapper extends Component {
           supportsColor : false,
           supportsAngle : true,
           type : 'image',
-          mustChain : ['flags']
+          mustChain : ['flags','x','y','gravity']
         }
       };
       const shapes = ['rect','circle'];
@@ -549,7 +549,7 @@ class CanvasWrapper extends Component {
         // Note - Font Family and Font Size are REQUIRED
         // Note that the space that font takes up is calculated by the font-size, not width and height. If the canvas object is scaled, you should use the ratio (X and Y are the same) to figure out what to multiply the original font size by
         // Note - for text, x and y position (offset) should be passed directly with the textLayer rather than chaining it as a secondary transformation
-        let textConfig = canvasObj.myTextObj;
+        let textConfig = typeof(canvasObj.myTextObj)==='object' ? canvasObj.myTextObj : {};
         let fontSize = canvasObj.fontSize;
         if (canvasObj.scaleX > 1){
           fontSize = parseInt((canvasObj.scaleX * fontSize));
@@ -574,28 +574,30 @@ class CanvasWrapper extends Component {
         delete trObj.height;
       }
       else if (mapping.type==='image'){
+        // NOTE - X and Y should be chained as a separate transformation, with the "layer_apply" flag, while width and height can be passed directly with image
+        // c_scale,h_188,l_fetch:...,w_215/x_34,y_107,g_north_west,fl_layer_apply/
         // @TODO - check if image is already uploaded to cloudinary - if so, get publicid instead of using remote fetch
         let useRemote = true;
         let publicId = canvasObj.cloudinaryPublicId;
         if (typeof(publicId)==='string' && publicId.length > 0){
           useRemote = false;
         }
+        trObj.crop = 'scale';
+        trObj.flags = ['layer_apply'];
         if (useRemote){
           let remoteSrc = canvasObj._originalElement.currentSrc;
           trObj = this.helpers.objectMerge(trObj,{
             overlay : {
               resourceType : 'fetch',
               url : remoteSrc
-            },
-            flags : ['layer_apply']
+            }
           });
         }
         else {
           trObj = this.helpers.objectMerge(trObj,{
             overlay : {
               publicId : publicId
-            },
-            flags : ['layer_apply']
+            }
           });
         }
       }
@@ -673,6 +675,7 @@ class CanvasWrapper extends Component {
 
       // Push results together
       trObjs.push(trObj,cropTrObj,chainedTrObj);
+      //debugger;
 
       let retInfo = {
         trObjs : trObjs,
@@ -738,7 +741,6 @@ class CanvasWrapper extends Component {
       // MAIN ITERATOR OVER CANVAS OBJECTS
       let outputNeedsCropping = false;
       canvasObjects.forEach((val,index)=>{
-        console.log(val);
         let currObj = val;
 
         // Get transformation objs from mapper
@@ -748,18 +750,12 @@ class CanvasWrapper extends Component {
           outputNeedsCropping = true;
         }
 
-        // Create new tranformation
-        let tr = cloudinary.Transformation.new();
-
         // If the current canvas object got matched to a known type and triggered a transformation...
         if (trInfo.objMatched){
           for (var x=0; x<trObjs.length; x++){
             if (Object.keys(trObjs[x]).length > 0){
               transformationArr.push(trObjs[x]);
             }
-          }
-          if (!useArr){
-            cloudinaryImageTag.transformation().chain().transformation(tr);
           }
         }
       });
@@ -776,15 +772,13 @@ class CanvasWrapper extends Component {
       if (useArr){
         let tr = cloudinary.Transformation.new();
         for (var x=0; x< transformationArr.length; x++){
-          if (x>0){
-            //tr = tr.chain();
-          }
           let currTransObj = transformationArr[x];
           if ('resourceType' in currTransObj && currTransObj.resourceType === 'fetch'){
             //debugger;
             tr.overlay(currTransObj);
           }
           else {
+            //debugger;
             if (x>0){
               tr = tr.chain();
             }
@@ -793,9 +787,6 @@ class CanvasWrapper extends Component {
         }
         // Apply
         cloudinaryImageTag.transformation().chain().transformation(tr);
-      }
-      else {
-        
       }
 
       // Extract actual image URL
