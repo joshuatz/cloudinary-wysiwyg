@@ -1,7 +1,6 @@
 Todo list and misc notes
   Top Priority / WIP:
-     - Optimize transformation chain:
-         - Looks like the final crop dimensions keep getting re-applied!
+     - Optimize transformation chain as much as possible
      - Setting the background
      - Add more shapes (at least circles)
      - Add support for transparency / alpha in...

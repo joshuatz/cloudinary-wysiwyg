@@ -443,8 +443,9 @@ class CanvasWrapper extends Component {
       let trObj = (typeof(OPT_trans)==='object' && OPT_trans!==null) ? OPT_trans : {};
       let chainedTrObj = {};
       let cropTrObj = {};
+      let somethingClippedPast = false;
 
-      const colorProps = ['background','color','effect','flags'];
+      const colorProps = ['background','color','effect','flags','x','y'];
       const mappings = {
         'rect' : {
           supportsColor : true,
@@ -602,6 +603,7 @@ class CanvasWrapper extends Component {
       /**
        * Calculation of boundaries / clipping
        */
+      somethingClippedPast = ((x + width > canvasDimensions.width) || (y + height > canvasDimensions.height));
       if (forceBounding){
         let modPrimary = true;
         let doesClip = false;
@@ -674,7 +676,8 @@ class CanvasWrapper extends Component {
 
       let retInfo = {
         trObjs : trObjs,
-        objMatched : objMatched
+        objMatched : objMatched,
+        somethingClippedPast : somethingClippedPast
       }
       console.log(retInfo);
 
@@ -733,6 +736,7 @@ class CanvasWrapper extends Component {
       transformationArr.push(baseTransformationObj);
 
       // MAIN ITERATOR OVER CANVAS OBJECTS
+      let outputNeedsCropping = false;
       canvasObjects.forEach((val,index)=>{
         console.log(val);
         let currObj = val;
@@ -740,6 +744,9 @@ class CanvasWrapper extends Component {
         // Get transformation objs from mapper
         let trInfo = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj,null,perObjectBounding);
         let trObjs = trInfo.trObjs;
+        if (trInfo.somethingClippedPast === true){
+          outputNeedsCropping = true;
+        }
 
         // Create new tranformation
         let tr = cloudinary.Transformation.new();
@@ -751,19 +758,19 @@ class CanvasWrapper extends Component {
               transformationArr.push(trObjs[x]);
             }
           }
-          if (forceBoundingStyle==='atEnd'){
-            transformationArr.push({
-              crop : 'crop',
-              gravity : 'north_west',
-              width : canvasDimensions.width,
-              height : canvasDimensions.height
-            });
-          }
           if (!useArr){
             cloudinaryImageTag.transformation().chain().transformation(tr);
           }
         }
       });
+      if (forceBoundingStyle==='atEnd' && outputNeedsCropping===true){
+        transformationArr.push({
+          crop : 'crop',
+          gravity : 'north_west',
+          width : canvasDimensions.width,
+          height : canvasDimensions.height
+        });
+      }
 
       // @TODO
       if (useArr){
