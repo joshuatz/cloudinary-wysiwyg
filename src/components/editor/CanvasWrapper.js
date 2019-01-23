@@ -445,6 +445,7 @@ class CanvasWrapper extends Component {
       let cropTrObj = {};
       let somethingClippedPast = false;
 
+      const chainTogether = ['effect','color','flags','x','y','radius','gravity'];
       const colorProps = ['background','color','effect','flags','x','y','radius'];
       const mappings = {
         'rect' : {
@@ -564,11 +565,9 @@ class CanvasWrapper extends Component {
           })
         });
         // Set text decoration flag
-        //debugger;
         // @TODO
-        // Remove background color and flags
+        // Remove background color
         delete trObj.background;
-        delete trObj.flags;
         // Remove width and height since that is best controlled through font size
         delete trObj.width;
         delete trObj.height;
@@ -666,7 +665,7 @@ class CanvasWrapper extends Component {
        * Separate out any props that need to be part of their own transformation / chained
        */
       for (var prop in trObj){
-        if (mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1){
+        if (mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1 || chainTogether.indexOf(prop)!==-1){
           // Must chain
           chainedTrObj[prop] = trObj[prop];
           delete trObj[prop];
