@@ -33,6 +33,9 @@ class AccountSettingsPanel extends Component {
     //
   }
 
+  /**
+   * Gets the "default" state of account settings - used for reset() function
+   */
   getDefaultState(){
     return {
       cloudinaryCloudName : 'demo',
@@ -41,9 +44,11 @@ class AccountSettingsPanel extends Component {
       editorWidth : 400,
       editorHeight : 400
     }
-    return this.props.masterState[MASTER_STATE_KEY];
   }
 
+  /**
+   * Get the account settings JSON from state
+   */
   getAccountSettingsState(){
     return this.props.masterState[MASTER_STATE_KEY];
   }
@@ -97,13 +102,17 @@ class AccountSettingsPanel extends Component {
     });
   }
   
+  /**
+   * Saves accounts settings JSON to localstorage
+   */
   saveItDown(){
-    //localStorage.setItem(this.LOCALSTORAGEKEY,JSON.stringify(this.state));
     localStorage.setItem(this.LOCALSTORAGEKEY,JSON.stringify(this.props.masterState[MASTER_STATE_KEY]));
   }
 
+  /**
+   * Resets account settings to the default state
+   */
   reset(){
-    //this.setState(this.getDefaultState());
     this.props.appMethods.mergeMasterState(MASTER_STATE_KEY,this.getDefaultState());
     localStorage.removeItem(this.LOCALSTORAGEKEY);
     this.props.appMethods.addMsg('Reset Settings');

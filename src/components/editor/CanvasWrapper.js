@@ -26,7 +26,6 @@ class CanvasWrapper extends Component {
     this.cloudinary = window.cloudinary;
     this.cloudinaryInstance = window.cloudinaryInstance;
     this.helpers = new Helpers();
-    this.appMethods = this.props.appMethods;
     // Note - cloudinary seems to prefer GIF over PNG for working with transparency in fetch layers.
     this.fallbackTransparentPixelSrc = 'https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png';
     this.fallbackSolidPixelSrc = 'https://via.placeholder.com/2x2';
@@ -35,10 +34,6 @@ class CanvasWrapper extends Component {
     this.CANVAS_ELEMENT_ID = 'editorCanvas';
     // Refs
     this.outputResultsClass = React.createRef();
-  }
-
-  canvasStyles = {
-    // width : '100%'
   }
 
   componentDidMount(){
@@ -64,10 +59,10 @@ class CanvasWrapper extends Component {
     });
     canvas.on('object:selected',(evt)=>{
       this.mainMethods.canvas.getSelectedObjs(true);
-      this.mainMethods.appMethods.addMsg('object:selected');
+      this.mainMethods.app.addMsg('object:selected');
     });
     canvas.on('object:modified',(evt)=>{
-      this.mainMethods.appMethods.addMsg('object:modified');
+      this.mainMethods.app.addMsg('object:modified');
       this.mainMethods.canvas.renderAll();
     });
     canvas.on('text:changed',(evt)=>{
@@ -90,15 +85,22 @@ class CanvasWrapper extends Component {
    * canvasMethods - START
    */
   canvasMethods = {
+    reset : function(){
+      let canvas = this.state.editorData.canvasObj;
+      if (canvas && canvas['targets']){
+        canvas.clear();
+      }
+      this.mainMethods.app.mergeMasterState('livePreviewSrc','');
+    },
     clear : function(){
       this.state.editorData.canvasObj.clear();
     },
     updateLivePreview : function(force){
-      if (force || (this.state.accountSettings.fetchInstantly && this.mainMethods.appMethods.getMsSinceLastFetch() > 250)){
+      if (force || (this.state.accountSettings.fetchInstantly && this.mainMethods.app.getMsSinceLastFetch() > 250)){
         // Get updated image src
         this.mainMethods.cloudinary.generateFromCanvas.get.bind(this)();
         // Update livePreviewSrc state, which will prompt render of preview
-        this.mainMethods.appMethods.mergeMasterState('livePreviewSrc',this.mainMethods.appMethods.getMasterState().output.imgSrc);
+        this.mainMethods.app.mergeMasterState('livePreviewSrc',this.mainMethods.app.getMasterState().output.imgSrc);
       }
       // Also update if livePreview is off, that way state will be ready if live preview is sudddenly opened
       else if (this.state.accountSettings.fetchInstantly===false){
@@ -106,7 +108,6 @@ class CanvasWrapper extends Component {
       }
     },
     renderAll : function(force){
-      //debugger;
       let canvas = this.state.editorData.canvasObj;
       this.canvasReRenderIp = true;
       if (force){
@@ -115,7 +116,6 @@ class CanvasWrapper extends Component {
       else {
         canvas.renderAll();
       }
-      //debugger;
       this.canvasReRenderIp = false;
       this.mainMethods.canvas.updateLivePreview(force);
     },
@@ -126,21 +126,20 @@ class CanvasWrapper extends Component {
 
       if (!canvas.getActiveObject()){
         // Nothing selected
-        this.appMethods.mergeEditorData('isItemSelected',false);
+        this.mainMethods.app.mergeEditorData('isItemSelected',false);
         this.handleNoSelection();
       }
       else {
-        this.appMethods.mergeEditorData('isItemSelected',true);
+        this.mainMethods.app.mergeEditorData('isItemSelected',true);
         if (typeof(canvas.getActiveObject()['_objects'])!=='undefined'){
           // Group selected
           selectedArr = canvas.getActiveObject()._objects;
         }
         else {
           // Single thing selected
-          //debugger;
           let selectedObj = canvas.getActiveObject()
           selectedArr = [selectedObj];
-          this.appMethods.mergeEditorData('currSelectedItemType',selectedObj.get('type'));
+          this.mainMethods.app.mergeEditorData('currSelectedItemType',selectedObj.get('type'));
           if (triggerUpdates){
             // Update input panels from selected object
             this.updateInputPanelFromCanvasObj(selectedObj);
@@ -182,7 +181,7 @@ class CanvasWrapper extends Component {
       this.mainMethods.canvas.renderAll(true);
     },
     handleShapeSelect : function(shape){
-      this.appMethods.mergeEditorData('isItemSelected',true);
+      this.mainMethods.app.mergeEditorData('isItemSelected',true);
       console.log(shape);
     },
     handleTextSelect : function(canvasObj){
@@ -245,7 +244,7 @@ class CanvasWrapper extends Component {
         // Need to create IMG element. Update state and wil prompt re-render and creation of element
         let currImages = this.state.editorData.images;
         currImages.urls.push(url);
-        this.appMethods.mergeEditorData('images',currImages,(newState)=>{
+        this.mainMethods.app.mergeEditorData('images',currImages,(newState)=>{
           //@TODO refactor this to use a componentDidUpdate hook or something else to make sure image is now in DOM and can use, instead of timeout
           setTimeout(()=>{
             console.log(_this);
@@ -371,7 +370,6 @@ class CanvasWrapper extends Component {
      * Note - all cloudinary transformations, including layering, have to fall onto a base layer in order to get a final result. If there really is no base (e.g. no background) you could fake by using a completely transparent PNG or white image.
      */
     setConfig : function(){
-      //debugger;
       if (this.state.accountSettings.cloudinaryCloudName!==''){
         this.cloudinaryInstance.config({'cloud_name' : this.state.accountSettings.cloudinaryCloudName});
       }
@@ -541,7 +539,6 @@ class CanvasWrapper extends Component {
         // NOTE - order of operations and chaining is important. Size and position should always come first and as separate transformations to avoid conflicts
         trObj = this.helpers.objectMerge(trObj,this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid'));
         if (canvasObjType==='circle'){
-          //debugger;
           trObj.radius = parseInt((width*0.5),10)
         }
       }
@@ -674,7 +671,6 @@ class CanvasWrapper extends Component {
 
       // Push results together
       trObjs.push(trObj,cropTrObj,chainedTrObj);
-      //debugger;
 
       let retInfo = {
         trObjs : trObjs,
@@ -773,11 +769,9 @@ class CanvasWrapper extends Component {
         for (var x=0; x< transformationArr.length; x++){
           let currTransObj = transformationArr[x];
           if ('resourceType' in currTransObj && currTransObj.resourceType === 'fetch'){
-            //debugger;
             tr.overlay(currTransObj);
           }
           else {
-            //debugger;
             if (x>0){
               tr = tr.chain();
             }
@@ -794,7 +788,7 @@ class CanvasWrapper extends Component {
       console.log(transformationArr);
 
       let generationTimeSec = ((performance.now()) - generationStartTime)/1000;
-      this.mainMethods.appMethods.mergeMasterState('performance.generationTimeSec',generationTimeSec);
+      this.mainMethods.app.mergeMasterState('performance.generationTimeSec',generationTimeSec);
 
       return {
         open : function(){
@@ -817,7 +811,6 @@ class CanvasWrapper extends Component {
             console.log(imgSrc);
         },
         get : function(OPT_updateState){
-          //debugger;
           let shouldUpdateState = (OPT_updateState || true);
           // Compose object to passback
           let transformationInstance = cloudinaryImageTag.transformation();
@@ -836,8 +829,8 @@ class CanvasWrapper extends Component {
           }
           console.log(results);
           // Update state
-          _this.mainMethods.appMethods.mergeMasterState('output',results);
-          _this.mainMethods.appMethods.mergeMasterState('lastFetched',(new Date()).getTime());
+          _this.mainMethods.app.mergeMasterState('output',results);
+          _this.mainMethods.app.mergeMasterState('lastFetched',(new Date()).getTime());
           // return
           return results;
         }
@@ -851,7 +844,6 @@ class CanvasWrapper extends Component {
         this.mainMethods.cloudinary.generateFromCanvasRaw.bind(this)(canvas).log();
       }.bind(this),
       get : function(canvas,OPT_updateState){
-        //debugger;
         return this.mainMethods.cloudinary.generateFromCanvasRaw.bind(this)(canvas).get(OPT_updateState);
       }.bind(this)
     },
@@ -862,15 +854,18 @@ class CanvasWrapper extends Component {
   }
   // cloudinaryMethods - END
   
+  /**
+   * What should occur when the user goes from an active selection to everything deselected
+   */
   handleNoSelection(){
-    this.appMethods.mergeEditorData('isItemSelected',false);
-    this.appMethods.mergeEditorData('currSelectedItemType',false);
-    this.appMethods.mergeEditorData('currSelectedItemGenericProps',{});
+    this.mainMethods.app.mergeEditorData('isItemSelected',false);
+    this.mainMethods.app.mergeEditorData('currSelectedItemType',false);
+    this.mainMethods.app.mergeEditorData('currSelectedItemGenericProps',{});
   }
 
   handleObjectDeselection(canvasObj){
     // @TODO - update when implementing group selection ability
-    this.mainMethods.appMethods.addMsg('object:deselected');
+    this.mainMethods.app.addMsg('object:deselected');
     // Check if object that was deselected was text
     if (canvasObj.get('type')==='text'){
       // Revert font panel to setting before text was selected
@@ -906,7 +901,7 @@ class CanvasWrapper extends Component {
 
   updateColorSelectorFromCanvasObj(canvasObj){
     console.log(this.getObjColor(canvasObj));
-    this.appMethods.mergeEditorData('currSelectedColor',this.getObjColor(canvasObj));
+    this.mainMethods.app.mergeEditorData('currSelectedColor',this.getObjColor(canvasObj));
   }
 
   revertFontSettings(){
@@ -916,8 +911,8 @@ class CanvasWrapper extends Component {
     // Check for equality of objects
     let fontChanged = !underscore.isEqual(currSelectedFont,lastSelectedFont);
     if (fontChanged){
-      this.mainMethods.appMethods.addMsg('Reverting font');
-      this.mainMethods.appMethods.mergeEditorData('currSelectedFont',lastSelectedFont);
+      this.mainMethods.app.addMsg('Reverting font');
+      this.mainMethods.app.mergeEditorData('currSelectedFont',lastSelectedFont);
       return true;
     }
     return false
@@ -930,8 +925,8 @@ class CanvasWrapper extends Component {
     // Now get font settings based on canvasObj
     let canvasFont = underscore.clone(canvasObj.myTextObj);
     // Then map the new settings and the snapshot to state and prompt update
-    this.appMethods.mergeEditorData('currSelectedFont',canvasFont);
-    this.appMethods.mergeEditorData('lastSelectedFont',currSelectedFont);
+    this.mainMethods.app.mergeEditorData('currSelectedFont',canvasFont);
+    this.mainMethods.app.mergeEditorData('lastSelectedFont',currSelectedFont);
   }
 
   getObjColor(canvasObj){
@@ -979,7 +974,7 @@ class CanvasWrapper extends Component {
   }
 
   mainMethods = {
-    appMethods : this.props.appMethods,
+    app : this.props.appMethods,
     colors : {
       handleColorSelect : this.handleColorSelect.bind(this)
     },
@@ -1025,7 +1020,7 @@ class CanvasWrapper extends Component {
           <div className="canvasWrapper leftSide roundedWrapper">
             <h3 className="areaTitle">Editor:</h3>
             {/* THE ACTUAL CANVAS ELEMENT */}
-            <canvas id="editorCanvas" style={this.canvasStyles}></canvas>
+            <canvas id="editorCanvas"></canvas>
             <CurrObjectActions masterState={this.masterState} mainMethods={this.mainMethods}></CurrObjectActions>
           </div>
 

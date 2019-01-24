@@ -70,8 +70,8 @@ class FontSelector extends Component  {
     let selectedFontName = evt.target.options[evt.target.selectedIndex].value;
     let googleFontObj = this.state.googleFontsObj[selectedFontName];
     let fontFamilyString = "'" + selectedFontName + "', " + googleFontObj.category;
-    this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.fontFamilyFull',fontFamilyString);
-    this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.fontFamilySlim',selectedFontName);
+    this.props.mainMethods.app.mergeEditorData('currSelectedFont.fontFamilyFull',fontFamilyString);
+    this.props.mainMethods.app.mergeEditorData('currSelectedFont.fontFamilySlim',selectedFontName);
     this.updateSelectedTextObjs();
   }
 
@@ -80,8 +80,8 @@ class FontSelector extends Component  {
     let originalFontProps = this.getCurrSelectedFont();
     let newFontProps = originalFontProps;
     newFontProps[optionPropName] = !originalFontProps[optionPropName];
-    this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont',newFontProps,(res)=>{
-      console.log(this.props.mainMethods.appMethods.getMasterState());
+    this.props.mainMethods.app.mergeEditorData('currSelectedFont',newFontProps,(res)=>{
+      console.log(this.props.mainMethods.app.getMasterState());
     });
     if (typeof(button.action)==='function'){
       button.action.bind(this)();
@@ -92,7 +92,7 @@ class FontSelector extends Component  {
   handleFontSizeChange(){
     let $ = this.$;
     let fontSize = parseInt($('.fontSizePickerDropdown input.select-dropdown').val().replace('px',''));
-    this.props.mainMethods.appMethods.mergeEditorData('currSelectedFont.size',fontSize);
+    this.props.mainMethods.app.mergeEditorData('currSelectedFont.size',fontSize);
     this.updateSelectedTextObjs();
   }
 

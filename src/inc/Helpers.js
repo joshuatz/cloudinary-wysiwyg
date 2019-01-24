@@ -10,6 +10,7 @@ class Helpers {
       let $ = this.$;
       $(document).ready(function(){
         this.Materialize.AutoInit();
+        $('[data-tooltip]').tooltip();
       }.bind(this));
     }.bind(this),
     modal : function(selector){

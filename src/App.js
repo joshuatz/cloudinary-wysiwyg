@@ -129,12 +129,6 @@ class App extends Component {
     },callback);
   }
 
-  materializeInit(){
-    let $ = this.$;
-    this.Materialize.AutoInit();
-    $('[data-tooltip]').tooltip();
-  }
-
   resetEverything(){
     this.resetCanvas();
   }
@@ -179,7 +173,7 @@ class App extends Component {
   }
   componentDidMount(){
     this.fireUpdateHooks.bind(this);
-    this.materializeInit();
+    this.helpers.mtz.init();
   }
   render() {
     return (
