@@ -1,4 +1,4 @@
-import React, {Component,PureComponent } from 'react';
+import React, {Component} from 'react';
 let googleFonts = require( 'google-fonts-complete/google-fonts.json');
 
 class FontSelector extends Component  {
