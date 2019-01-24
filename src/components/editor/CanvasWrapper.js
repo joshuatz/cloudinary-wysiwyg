@@ -557,8 +557,8 @@ class CanvasWrapper extends Component {
             fontFamily : 'Roboto',
             fontSize : fontSize,
             text : canvasObj.text,
-            fontWeight : textConfig.bold===true ? 'bold' : 'normal',
-            textDecoration : textConfig.underline===true ? 'underline' : (textConfig.strikethrough===true ? 'strikethrough' : 'normal')
+            fontWeight : (textConfig.bold===true || canvasObj.fontWeight==='bold') ? 'bold' : 'normal',
+            textDecoration : (textConfig.underline===true || canvasObj.underline===true) ? 'underline' : ((textConfig.strikethrough===true || canvasObj.linethrough===true) ? 'strikethrough' : 'normal')
           })
         });
         // Set text decoration flag
