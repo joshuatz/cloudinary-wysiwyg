@@ -40,6 +40,13 @@ class ToolPanel extends Component {
       disabled : false
     },
     {
+      icon : 'fa-caret-up',
+      name : 'Triangle Shape',
+      action : function(){
+        this.props.mainMethods.canvas.addTriangle();
+      }
+    },
+    {
       icon : 'fa-file-image',
       name : 'Add Image',
       action : function(){

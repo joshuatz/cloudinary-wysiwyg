@@ -230,6 +230,25 @@ class CanvasWrapper extends Component {
         scaleX : 0.5
       });
     },
+    addTriangle : function(){
+      // Make sure you add a perfect equilateral triangle. The user can scale it to be other types, but the original element should have equal sides to make math easier for transformations
+      let canvas = this.state.editorData.canvasObj;
+      let fabric = this.state.fabric;
+      let triangle = new fabric.Triangle({
+        width : 50,
+        height : 50,
+        fill : this.getCurrSelectedColor().hex,
+        left : 60,
+        top : 30
+      });
+      canvas.add(triangle);
+      this.mainMethods.canvas.renderAll();
+      canvas.bringToFront(triangle);
+      this.mainMethods.canvas.updateLivePreview();
+      triangle.on('selected',()=>{
+        this.canvasMethods.handleShapeSelect.bind(this)(triangle);
+      });
+    },
     addImage : function(urlOrImgElem,OPT_callback,OPT_macroKey,OPT_constrain,OPT_cloudinaryPublicId){
       let cloudinaryPublicId = typeof(OPT_cloudinaryPublicId)==='string' && OPT_cloudinaryPublicId.length > 0 ? OPT_cloudinaryPublicId : false;
       let constrain = (typeof(OPT_constrain)==='boolean') ? OPT_constrain : true;
@@ -438,12 +457,14 @@ class CanvasWrapper extends Component {
       let forceBounding = typeof(OPT_forceBounding)==='boolean' ? OPT_forceBounding : true;
       let canvasObjType = canvasObj.get('type');
       let trObjs = [];
+      let chainLast = [];
+      let chainLastButMerge = [];
       let trObj = (typeof(OPT_trans)==='object' && OPT_trans!==null) ? OPT_trans : {};
       let chainedTrObj = {};
       let cropTrObj = {};
       let somethingClippedPast = false;
 
-      const chainTogether = ['effect','color','flags','x','y','radius','gravity'];
+      const chainTogether = ['effect','color','flags','x','y','radius','gravity','angle'];
       const colorProps = ['background','color','effect','flags','x','y','radius'];
       const mappings = {
         'rect' : {
@@ -455,6 +476,12 @@ class CanvasWrapper extends Component {
         'circle' : {
           supportsColor : true,
           supportsAngle : false,
+          type : 'shape',
+          mustChain : colorProps
+        },
+        'triangle' : {
+          supportsColor : true,
+          supportsAngle : true,
           type : 'shape',
           mustChain : colorProps
         },
@@ -489,14 +516,16 @@ class CanvasWrapper extends Component {
       let angle = parseFloat(canvasObj.get('angle'));
       let x = this.mainMethods.canvas.getCanvObjOriginalLeft(canvasObj);
       let y = parseFloat(canvasObj.get('top'));
+      let scaleX = parseFloat(canvasObj.get('scaleX'));
+      let scaleY = parseFloat(canvasObj.get('scaleY'));
       // Handle scaling by using x and y factors and multiplying width and height
-      width = width * parseFloat(canvasObj.get('scaleX'));
-      height = height * parseFloat(canvasObj.get('scaleY'));
+      let scaledWidth = width * scaleX;
+      let scaledHeight = height * scaleY;
       // Note - X and Y should be integers
       // Note - angle should be an integer
       let genericProps = {
-        width : parseInt(width,10),
-        height : parseInt(height,10),
+        width : parseInt(scaledWidth,10),
+        height : parseInt(scaledHeight,10),
         x : parseInt(x,10),
         y : parseInt(y,10),
         gravity : 'north_west'
@@ -535,11 +564,57 @@ class CanvasWrapper extends Component {
        * Type Specific Processing
        */
       if (mapping.type==='shape'){
-        // Current way of doing shapes - use a transparent PNG - crop to size, and fill with color
         // NOTE - order of operations and chaining is important. Size and position should always come first and as separate transformations to avoid conflicts
+        // Current way of doing shapes - use a transparent PNG - crop to size, and fill with color
         trObj = this.helpers.objectMerge(trObj,this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid'));
         if (canvasObjType==='circle'){
-          trObj.radius = parseInt((width*0.5),10)
+          trObj.radius = parseInt((scaledWidth*0.5),10)
+        }
+        else if (canvasObjType==='triangle'){
+          /** This is a little complicated... currently my way to this is to rotate a rect, and then cut off at a 45 degree angle
+           *    An alternative to explore later would be using the "distort" effect and/or shear - https://cloudinary.com/documentation/image_transformation_reference#effect_parameter
+           */
+          let method = 'sliceRect';
+          if (method==='sliceRect'){
+            /**
+             * Math:
+             *  We gonna go old school for this - good ol' pythag - A^2 + B^2 = C^2
+             *    If you divide the triangle into two smaller right triangles, than the width is really 2 x the bottom, and the height is the side joined to the bottom by the right angle. The hypotenuse is unknown, but when calculated, will give us the dimensions for the sides of the rectangle
+             * Before the triangle is rotated by the user, assuming it is facing up, you can think of it being half a rectangle with a skew, where the top of the triangle is the top left of the rectangle, and the bottom left of the triangle is the bottom left of the rectangle. So before even touched by the user, there should already be a 45 degree angle applied
+             *   Normally, you would have to "skew" that rectangle if you wanted to get a triangle that is NOT a perfect 90 degrees out of half of it, but the same thing can be achieved by also futzing with the scale... normally I take scale out and just compute a new height and width, but for this I want to do the opposite and add it back
+             */
+            angle = 45 + angle;
+            let base = (0.5 * width);
+            // C = Square Root of (A^2 + B^2)
+            let hypotenuse = Math.sqrt((base * base) + (height * height));
+            console.log(hypotenuse);
+            // Lets reset a bunch of trObj props
+            trObj = this.helpers.objectMerge(trObj,{
+              width : parseInt((hypotenuse),10),
+              height : parseInt((hypotenuse),10),
+              angle : parseInt(angle,10)
+            });
+            // Add scale by passing adjusted width and height with crop set to scale in secondary
+            let trObjSecondary = this.helpers.objectMerge(trObjSecondary,{
+              width : parseInt((hypotenuse * scaleX),10),
+              height : parseInt((hypotenuse * scaleY),10),
+              crop : 'scale',
+              flags : ['layer_apply']
+            });
+            chainLastButMerge.push(trObjSecondary);
+            // OK, now we should have skew and size correct, but have 2 of the triangles put together - essentially a parallelogram - so we need to slice it down the middle. However, this need to be chained, since it has a different crop method, and can't be combined with the skewing / sizing above
+            let trObjThird = {
+              height : parseInt(((hypotenuse * scaleX) * 0.5),10),
+              width : trObjSecondary.width,
+              crop : 'crop',
+              gravity : 'north',
+              flags : ['layer_apply']
+            };
+            chainLast.push(trObjThird);
+          }
+          else if (method==='distort'){
+            // @TODO
+          }
         }
       }
       else if (mapping.type==='text'){
@@ -549,8 +624,8 @@ class CanvasWrapper extends Component {
         // Note - for text, x and y position (offset) should be passed directly with the textLayer rather than chaining it as a secondary transformation
         let textConfig = typeof(canvasObj.myTextObj)==='object' ? canvasObj.myTextObj : {};
         let fontSize = canvasObj.fontSize;
-        if (canvasObj.scaleX > 1){
-          fontSize = parseInt((canvasObj.scaleX * fontSize));
+        if (scaleX> 1){
+          fontSize = parseInt((scaleX * fontSize));
         }
         trObj = this.helpers.objectMerge(trObj,{
           overlay : new cloudinary.TextLayer({
@@ -601,29 +676,29 @@ class CanvasWrapper extends Component {
       /**
        * Calculation of boundaries / clipping
        */
-      somethingClippedPast = ((x + width > canvasDimensions.width) || (y + height > canvasDimensions.height));
+      somethingClippedPast = ((x + scaledWidth > canvasDimensions.width) || (y + scaledHeight > canvasDimensions.height));
       if (forceBounding){
         let modPrimary = true;
         let doesClip = false;
-        let croppedWidth = width;
-        let croppedHeight = height;
+        let croppedWidth = scaledWidth;
+        let croppedHeight = scaledHeight;
         // Need to test to see if object protrudes over boundary of canvas, and if so, clip it
         let trObjSecondary = {
-          width : parseInt(width,10),
-          height : parseInt(height,10),
+          width : parseInt(scaledWidth,10),
+          height : parseInt(scaledHeight,10),
           gravity : 'north_west'
         };
         cropTrObj = {
-          width : parseInt(width,10),
-          height : parseInt(height,10)
+          width : parseInt(scaledWidth,10),
+          height : parseInt(scaledHeight,10)
         }
-        if (x + width > canvasDimensions.width){
+        if (x + scaledWidth > canvasDimensions.width){
           doesClip = true;
           croppedWidth = canvasDimensions.width - x;
           cropTrObj.width = croppedWidth;
           trObjSecondary.width = croppedWidth;
         }
-        if (y + height > canvasDimensions.height){
+        if (y + scaledHeight > canvasDimensions.height){
           doesClip = true;
           croppedHeight = canvasDimensions.height - y;
           cropTrObj.height = croppedHeight;
@@ -670,7 +745,13 @@ class CanvasWrapper extends Component {
       }
 
       // Push results together
+      chainLastButMerge.forEach((el)=>{
+        chainedTrObj = this.helpers.objectMerge(chainedTrObj,el);
+      });
       trObjs.push(trObj,cropTrObj,chainedTrObj);
+      chainLast.reverse();
+      chainLast.forEach((el)=>{trObjs.push(el)});
+      
 
       let retInfo = {
         trObjs : trObjs,
