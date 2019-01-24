@@ -20,25 +20,16 @@ class FontSelector extends Component  {
     });
   }
 
+  /**
+   * I'm overriding shouldComponentUpdate because I was finding this was chewing up resources re-rending way too often because of how I linked the master state to it. Easier to just check if the current font has changed, since that is what matters.
+   * @param {object} nextProps 
+   * @param {object} nextState 
+   */
   shouldComponentUpdate(nextProps,nextState){
     if (JSON.stringify(this.props.currSelectedFont)!==JSON.stringify(nextProps.currSelectedFont)){
       return true;
     }
     return false;
-  }
-
-  refreshCurrentFontInfo(){
-    let $ = this.$;
-    let fontName = $('.fontFamilyPickerDropdown input.select-dropdown').val();
-    let refreshedData = {
-      'size' : parseInt($('.fontSizePickerDropdown input.select-dropdown').val().replace('px','')),
-      'fontFamily' : "'" + fontName + "'," + this.state.googleFontsObj[fontName].category,
-      'color' : false,
-      'style' : false,
-      'bold' : false,
-      'underline' : false,
-      'strikethrough' : false
-    }
   }
 
   /**
@@ -66,6 +57,10 @@ class FontSelector extends Component  {
     }
   }
 
+  /**
+   * Triggers when the font family is changed.
+   * @param {SyntheticEvent} evt - React's SyntheticEvent passed by listener
+   */
   handleFontFamilyChange(evt){
     let selectedFontName = evt.target.options[evt.target.selectedIndex].value;
     let googleFontObj = this.state.googleFontsObj[selectedFontName];
@@ -75,6 +70,13 @@ class FontSelector extends Component  {
     this.updateSelectedTextObjs();
   }
 
+  /**
+   * Triggers when any font option (such as bold, underline, etc.) is changed
+   * Updates state, as well as triggers any custom callbacks that have been specified by button configs
+   * @param {string} optionPropName - name of the option property - used as key to store value in settings
+   * @param {object} button - config for the button
+   * @param {SyntheticEvent} evt - React's SyntheticEvent passed by listener
+   */
   handleFontOptionToggle(optionPropName,button,evt){
     button = (button || {});
     let originalFontProps = this.getCurrSelectedFont();
@@ -89,6 +91,9 @@ class FontSelector extends Component  {
     this.updateSelectedTextObjs();
   }
 
+  /**
+   * Triggers when the font size is changed
+   */
   handleFontSizeChange(){
     let $ = this.$;
     let fontSize = parseInt($('.fontSizePickerDropdown input.select-dropdown').val().replace('px',''));
@@ -100,6 +105,11 @@ class FontSelector extends Component  {
     return this.props.masterState;
   }
 
+  /**
+   * Gets the currently selected font details
+   * @param {boolean} updateState - Should the state be updated if the current selected font has changed?
+   * @returns {object} details about the currently selected font
+   */
   getCurrSelectedFont(updateState){
     updateState = typeof(updateState)==='boolean' ? updateState : false;
     let currSelectedFont = this.props.currSelectedFont;
@@ -148,6 +158,10 @@ class FontSelector extends Component  {
     }
   ]
 
+  /**
+   * Returns CSS to style text based on the current selected font settings - returns as object so it can be used as inline CSS with JSX
+   * @returns {object} previewTextStyling CSS Object
+   */
   getPreviewTextStylingObj(){
     let previewTextStyling = {};
     let currSelectedFont = this.getCurrSelectedFont();
@@ -159,7 +173,6 @@ class FontSelector extends Component  {
       'fontWeight' : currSelectedFont.bold ? 'bold' : 'normal',
       'textDecorationLine' : currSelectedFont.underline ? 'underline' : (currSelectedFont.strikethrough ? 'line-through' : 'none')
     }
-    console.log(previewTextStyling);
     // Update state if changed
     let newState = this.state;
     newState.currSelectedFontSyleObj = previewTextStyling;

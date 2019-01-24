@@ -7,10 +7,6 @@ class PaintSelector extends Component {
     super(props);
   }
 
-  componentDidMount(){
-    //
-  }
-
   handleChangeComplete = (color, event) => {
     this.props.mainMethods.colors.handleColorSelect(color,event);
   }
