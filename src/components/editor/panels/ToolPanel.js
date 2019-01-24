@@ -10,7 +10,6 @@ class ToolPanel extends Component {
 
   componentDidMount(){
     console.log(this.props);
-    //debugger;
     this.setState({
       editorData : this.props.editorData,
       canvasObj : this.props.editorData.canvasObj,

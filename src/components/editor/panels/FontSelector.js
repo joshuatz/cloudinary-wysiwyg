@@ -107,7 +107,6 @@ class FontSelector extends Component  {
     if (updateState){
       let state = this.state;
       if (JSON.stringify(state.currSelectedFont) !== JSON.stringify(currSelectedFont)){
-        //debugger;
         state.currSelectedFont = currSelectedFont;
         this.setState(state);
       }

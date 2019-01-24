@@ -173,7 +173,6 @@ class App extends Component {
   }
   componentDidMount(){
     this.fireUpdateHooks.bind(this);
-    this.helpers.mtz.init();
   }
   render() {
     return (
