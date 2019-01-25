@@ -61,6 +61,9 @@ class OutputResults extends Component {
                 <textarea id="imgHtmlTag" className="materialize-textarea active" value={output.img.html}></textarea>
                 <label htmlFor="imgHtmlTag">HTML IMG Tag</label>
               </div>
+              <div className="col s4 offset-s3 input-field">
+                <button className="button btn darkPrimaryColor" data-clipboard-target="#imgHtmlTag">Copy to Clipboard</button>
+              </div>
             </div>
           </div>
         </div>

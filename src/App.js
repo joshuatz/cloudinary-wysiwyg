@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Warnings from './components/Warnings';
 import Init from './components/Init';
 import AccountSettingsPanel from './components/AccountSettingsPanel';
 import LogPanel from './components/LogPanel';
@@ -175,13 +176,16 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <Init />
-        <AccountSettingsPanel appMethods={this.appMethods} masterState={this.state} />
-        <div className="myDivider"></div>
-        <CanvasWrapper appMethods={this.appMethods} masterState={this.state} editorData={this.state.editorData} />
-        <div className="myDivider"></div>
-        <LogPanel logQueue={this.state.logQueue} />
-        <StatsPanel masterState={this.state}></StatsPanel>
+        <Warnings masterState={this.state} />
+        <div className="mainContainer">
+          <Init />
+          <AccountSettingsPanel appMethods={this.appMethods} masterState={this.state} />
+          <div className="myDivider"></div>
+          <CanvasWrapper appMethods={this.appMethods} masterState={this.state} editorData={this.state.editorData} />
+          <div className="myDivider"></div>
+          <LogPanel logQueue={this.state.logQueue} />
+          <StatsPanel masterState={this.state}></StatsPanel>
+        </div>
       </div>
     );
   }
