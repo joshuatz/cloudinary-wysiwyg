@@ -828,9 +828,11 @@ class CanvasWrapper extends Component {
             imgSrc : imgSrc
           }
           console.log(results);
-          // Update state
-          _this.mainMethods.app.mergeMasterState('output',results);
-          _this.mainMethods.app.mergeMasterState('lastFetched',(new Date()).getTime());
+          if (shouldUpdateState){
+            // Update state
+            _this.mainMethods.app.mergeMasterState('output',results);
+            _this.mainMethods.app.mergeMasterState('lastFetched',(new Date()).getTime());
+          }
           // return
           return results;
         }
@@ -1060,7 +1062,7 @@ class CanvasWrapper extends Component {
 
         {/* Probably move this to separate component - cloudinary buttons */}
         <div className="col s12 center">
-          <div className="center">
+          <div className="center cloudinaryActionButtons">
             <button className="button btn darkPrimaryColor" onClick={this.mainMethods.cloudinary.showResultsModal.bind(this)}>Get Cloudinary</button>
             <button className="button btn darkPrimaryColor" onClick={this.mainMethods.cloudinary.generateFromCanvas.open.bind(this)}>Open Cloudinary</button>
           </div>

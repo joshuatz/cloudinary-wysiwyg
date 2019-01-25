@@ -174,7 +174,7 @@ class App extends Component {
   }
   render() {
     return (
-      <div className="App container">
+      <div className="App">
         <Init />
         <AccountSettingsPanel appMethods={this.appMethods} masterState={this.state} />
         <div className="myDivider"></div>

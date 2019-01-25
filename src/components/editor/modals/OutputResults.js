@@ -52,6 +52,9 @@ class OutputResults extends Component {
                 <input id="imgSrcUrl" value={output.img.src} type="text" className="active"></input>
                 <label htmlFor="imgSrcUrl">Image URL:</label>
               </div>
+              <div className="col s4 offset-s3 input-field">
+                <button className="button btn darkPrimaryColor" data-clipboard-target="#imgSrcUrl">Copy to Clipboard</button>
+              </div>
             </div>
             <div className="row">
               <div className="col s11 offset-s1 input-field">
