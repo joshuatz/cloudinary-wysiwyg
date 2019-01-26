@@ -1,49 +1,14 @@
-/**
-* Start of create-react-app default CSS
-*/
 body {
   background-color: rgba(179, 229, 252, 0.4);
 }
-.App {
+.mainContainer {
   text-align: center;
   padding-bottom: 20px;
+  width: 95%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-/**
-* END of create-react-app default CSS
-*/
-
-/**
-* Start of my custom CSS
-*/
 .accountSettingsPanelWrapper {
   width: 99%;
   margin: 10px auto;
@@ -133,13 +98,15 @@ body {
   float: none;
 }
 .canvasWrapperWrapper[data-instantpreview="true"] .sidebar > .sidebarComponent {
-  max-width: 33%;
   min-width: 220px;
   margin-right: 10px;
 }
+.canvasWrapperWrapper .sidebar.rightSide {
+  max-width: 50%;
+}
 .canvasWrapperWrapper .sidebar, .canvasWrapperWrapper .instantPreviewWrapper, .canvasWrapperWrapper .canvasWrapper {
   width: auto;
-  max-width: 50%;
+  /* max-width: 50%; */
   min-width: 440px;
   margin-left: auto;
   margin-right: auto;
@@ -221,9 +188,11 @@ a.disabled, .disabled {
 }
 .dangerColor {
   background-color: #D7263D !important;
+  color : white;
 }
 .warningColor {
   background-color: #FE4A49 !important;
+  color : white;
 }
 
 .roundedWrapper {
@@ -264,4 +233,48 @@ ul.tabs > li.tab {
   border-top: 1px dotted black;
   border-right: 0.5px dotted black;
   border-left: 0.5px dotted black;
+}
+
+/**
+* Bottom buttons
+*/
+.cloudinaryActionButtons > button {
+  margin-right: 6px;
+}
+
+/**
+* Warnings / Info bar
+*/
+.warningsWrapper {
+  width : 100%;
+  position: fixed;
+  top: 0px;
+  background: rgba(2, 137, 209, 0.476);
+  z-index: 99;
+}
+.warningsWrapper .warningBar {
+  background: rgba(254, 73, 73, 0.578);
+  border-radius: 30px;
+  width: 90%;
+  padding: 2px;
+  margin: 10px 0px 10px 5%;
+}
+.warningsWrapper .warningTitle {
+  width: 90%;
+  float: left;
+  display: inline-block;
+  text-align: center;
+}
+.warningsWrapper .warningMoreInfo {
+  max-width: 10%;
+}
+.warningsWrapper .warningMoreInfo, .warningsWrapper .warningMoreInfo i {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+/* Offset the whole body by some space to allow for fixed bar at top */
+.mainContainer {
+  margin-top: 40px;
 }

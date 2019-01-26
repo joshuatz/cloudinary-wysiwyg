@@ -65,9 +65,10 @@ class Helpers {
 
   toast(msg,style){
     let styleMappings = {
-      'info' : 'toast toastInfo',
-      'warning' : 'toast toastWarning',
-      'error' : 'toast toastError'
+      'info' : 'toast toastInfo defaultPrimaryColor',
+      'success' : 'toast toastSuccess green',
+      'warning' : 'toast toastWarning warningColor',
+      'error' : 'toast toastError dangerColor'
     }
     style = (style || 'info');
     // Construct Materialize toast config
@@ -77,9 +78,6 @@ class Helpers {
     }
     this.Materialize.toast(toastConfig);
     // @TODO - spruce up
-  }
-  toastWarning(){
-
   }
 
   getPlaceholderImage(width,height){

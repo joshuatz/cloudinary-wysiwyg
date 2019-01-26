@@ -6,7 +6,6 @@ import ToolPanel from './panels/ToolPanel';
 import PaintSelector from './panels/PaintSelector';
 import FontSelector from './panels/FontSelector';
 import ImageSelector from './modals/ImageSelector';
-import TextEntry from './modals/TextEntry';
 import OutputResults from './modals/OutputResults';
 import CurrObjectActions from './panels/CurrObjectActions';
 import underscore from 'underscore';
@@ -96,6 +95,7 @@ class CanvasWrapper extends Component {
       this.state.editorData.canvasObj.clear();
     },
     updateLivePreview : function(force){
+      force = typeof(force)==='boolean' ? force : false;
       if (force || (this.state.accountSettings.fetchInstantly && this.mainMethods.app.getMsSinceLastFetch() > 250)){
         // Get updated image src
         this.mainMethods.cloudinary.generateFromCanvas.get.bind(this)();
@@ -107,7 +107,8 @@ class CanvasWrapper extends Component {
         this.mainMethods.canvas.updateLivePreview(true);
       }
     },
-    renderAll : function(force){
+    renderAll : function(force,OPT_skipCloudinaryGeneration){
+      let skipGen = typeof(OPT_skipCloudinaryGeneration)==='boolean' ? OPT_skipCloudinaryGeneration : false;
       let canvas = this.state.editorData.canvasObj;
       this.canvasReRenderIp = true;
       if (force){
@@ -117,7 +118,9 @@ class CanvasWrapper extends Component {
         canvas.renderAll();
       }
       this.canvasReRenderIp = false;
-      this.mainMethods.canvas.updateLivePreview(force);
+      if (!skipGen){
+        this.mainMethods.canvas.updateLivePreview(force);
+      }
     },
     // This can be used to retrieve selectd objects on the canvas, but is also called whenever something is selected, as a way to update various state things
     getSelectedObjs : function(triggerUpdates){
@@ -163,6 +166,13 @@ class CanvasWrapper extends Component {
           break;
       }
     },
+    bringToFront(canvasObj){
+      // You have to re-render canvas object before moving it to front
+      let canvas = this.state.editorData.canvasObj;
+      this.mainMethods.canvas.renderAll(false,true);
+      canvas.bringToFront(canvasObj);
+      this.mainMethods.canvas.renderAll(false,false);
+    },
     getCanvObjOriginalLeft : function(obj){
       let left = obj.get('left');
       if (!'angle' in obj || obj.angle === 0){
@@ -198,9 +208,7 @@ class CanvasWrapper extends Component {
         fill : this.getCurrSelectedColor().hex
       });
       canvas.add(rect);
-      this.mainMethods.canvas.renderAll();
-      canvas.bringToFront(rect);
-      this.mainMethods.canvas.updateLivePreview();
+      this.mainMethods.canvas.bringToFront(rect);
       rect.on('selected',()=>{
         this.canvasMethods.handleShapeSelect.bind(this)(rect);
       });
@@ -217,9 +225,7 @@ class CanvasWrapper extends Component {
       props = typeof(OPT_props)==='object' ? this.helpers.objectMerge(props,OPT_props) : props;
       let circle = new fabric.Circle(props);
       canvas.add(circle);
-      this.mainMethods.canvas.renderAll();
-      canvas.bringToFront(circle);
-      this.mainMethods.canvas.updateLivePreview();
+      this.mainMethods.canvas.bringToFront(circle);
       circle.on('selected',()=>{
         this.canvasMethods.handleShapeSelect.bind(this)(circle);
       });
@@ -309,9 +315,7 @@ class CanvasWrapper extends Component {
         }
         let imgInstance = new fabric.Image(imageElem,imgProps);
         canvas.add(imgInstance);
-        this.mainMethods.canvas.renderAll();
-        canvas.bringToFront(imgInstance);
-        this.mainMethods.canvas.updateLivePreview();
+        this.mainMethods.canvas.bringToFront(imgInstance);
         imgInstance.on('selected',()=>{
           //
         });
@@ -349,7 +353,7 @@ class CanvasWrapper extends Component {
       }
       let textInstance = new fabric.IText(text,textProps);
       canvas.add(textInstance);
-      this.mainMethods.canvas.renderAll();
+      this.mainMethods.canvas.bringToFront(textInstance);
       textInstance.on('selected',()=>{
         this.canvasMethods.handleTextSelect.bind(this)(textInstance);
         // @TODO handle callback to allow editing already added text
@@ -357,8 +361,6 @@ class CanvasWrapper extends Component {
       textInstance.on('deselected',()=>{
         this.handleObjectDeselection(textInstance);
       });
-      canvas.bringToFront(textInstance);
-      this.mainMethods.canvas.updateLivePreview();
       return textInstance;
     },
     removeMultiLineText : function(textObj){
@@ -867,9 +869,9 @@ class CanvasWrapper extends Component {
       let imgSrc = (/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1]);
 
       console.log(transformationArr);
-
       let generationTimeSec = ((performance.now()) - generationStartTime)/1000;
       this.mainMethods.app.mergeMasterState('performance.generationTimeSec',generationTimeSec);
+      this.mainMethods.app.addMsg('Canvas-to-Cloudinary generation complete || Time = ' + generationTimeSec.toFixed(4) + 's || transformations = ' + transformationArr.length);
 
       return {
         open : function(){
@@ -909,9 +911,11 @@ class CanvasWrapper extends Component {
             imgSrc : imgSrc
           }
           console.log(results);
-          // Update state
-          _this.mainMethods.app.mergeMasterState('output',results);
-          _this.mainMethods.app.mergeMasterState('lastFetched',(new Date()).getTime());
+          if (shouldUpdateState){
+            // Update state
+            _this.mainMethods.app.mergeMasterState('output',results);
+            _this.mainMethods.app.mergeMasterState('lastFetched',(new Date()).getTime());
+          }
           // return
           return results;
         }
@@ -1141,7 +1145,7 @@ class CanvasWrapper extends Component {
 
         {/* Probably move this to separate component - cloudinary buttons */}
         <div className="col s12 center">
-          <div className="center">
+          <div className="center cloudinaryActionButtons">
             <button className="button btn darkPrimaryColor" onClick={this.mainMethods.cloudinary.showResultsModal.bind(this)}>Get Cloudinary</button>
             <button className="button btn darkPrimaryColor" onClick={this.mainMethods.cloudinary.generateFromCanvas.open.bind(this)}>Open Cloudinary</button>
           </div>
@@ -1149,7 +1153,6 @@ class CanvasWrapper extends Component {
         {/* Modals */}
         <div className="modals">
           <ImageSelector mainMethods={this.mainMethods} />
-          <TextEntry mainMethods={this.mainMethods} />
           <OutputResults ref={this.outputResultsClass} mainMethods={this.mainMethods} />
         </div>
         {/* Hidden Elements that necessary */}
