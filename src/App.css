@@ -98,7 +98,6 @@ body {
   float: none;
 }
 .canvasWrapperWrapper[data-instantpreview="true"] .sidebar > .sidebarComponent {
-  max-width: 33%;
   min-width: 220px;
   margin-right: 10px;
 }
