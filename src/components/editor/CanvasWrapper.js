@@ -435,9 +435,13 @@ class CanvasWrapper extends Component {
     getBaseImage : function(){
       return this.state.editorData.baseImage!==null ? this.state.editorData.baseImage : this.cloudinaryMethods.getFallbackBasePicId.bind(this)();
     },
+    /**
+     * Generates a final cloudinary hosted URL based on an array of transformations
+     * @param {array} trObjs - array of transformation objects
+     * @returns {string} cloudinary Image URL
+     */
     generateUrlFromTrans(trObjs){
-      // Use solid pixel as base
-      // let cloudinaryImageInstance = this.cloudinaryInstance.imageTag(this.mainMethods.cloudinary.getSolidPixelSrc());
+      // Base has to be an actual cloudinary resource, so use settings for base
       let cloudinaryImageInstance = this.cloudinaryInstance.imageTag(this.mainMethods.cloudinary.getFallbackBasePicId());
       // Modify base to be 1x1 transparent
       trObjs.unshift({
@@ -451,6 +455,11 @@ class CanvasWrapper extends Component {
       // Return just the URL
       return cloudinaryImageInstance.getAttr('src');
     },
+    /**
+     * Generates an overlay fetchlayer based on an array of transformations
+     * @param {array} trObjs - array of transformation objects to apply on top of empty base to generate fetchlayer
+     * @returns {object} overlay / fetchlayer config
+     */
     generateFetchLayerFromTrans(trObjs){
       return {
         overlay : {
@@ -935,21 +944,6 @@ class CanvasWrapper extends Component {
 
       // @TODO
       if (useArr){
-        // let tr = cloudinary.Transformation.new();
-        // for (var x=0; x< transformationArr.length; x++){
-        //   let currTransObj = transformationArr[x];
-        //   if ('resourceType' in currTransObj && currTransObj.resourceType === 'fetch'){
-        //     tr.overlay(currTransObj);
-        //   }
-        //   else {
-        //     if (x>0){
-        //       tr = tr.chain();
-        //     }
-        //     tr.transformation(currTransObj);
-        //   }
-        // }
-        // // Apply
-        // cloudinaryImageTag.transformation().chain().transformation(tr);
         cloudinaryImageTag = this.mainMethods.cloudinary.applyTrArrayToCloudinaryImgTag(transformationArr,cloudinaryImageTag);
       }
 
