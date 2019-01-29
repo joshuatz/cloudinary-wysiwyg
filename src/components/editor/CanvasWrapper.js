@@ -657,12 +657,12 @@ class CanvasWrapper extends Component {
               height : parseInt((hypotenuse * scaleY * 2),10),
               crop : 'scale',
               flags : ['layer_apply'],
-              format : 'png'
+              fetch_format : 'png'
             });
+            // Since we are generating the overlay separately, to chain as a fetchlayer, we should position at 0,0 so we just get the triangle itself and not any padding
             trObjSecondary.x = 0;
             trObjSecondary.y = 0;
             chainLastButMerge.push(trObjSecondary);
-            //debugger;
             // OK, now we should have skew and size correct, but have 2 of the triangles put together - essentially a parallelogram - so we need to slice it down the middle. However, this need to be chained, since it has a different crop method, and can't be combined with the skewing / sizing above
             // ISSUE: you can't chain multiple crops without having a layer inbetween (i.e. you can't chain multiple fl_layer_apply) - workaround - take transformations so far and shove into cloudinary URL, then use that as a fetchlayer
             trObjs = processTrObjs();
@@ -676,9 +676,9 @@ class CanvasWrapper extends Component {
               flags : ['layer_apply'],
               keepInPrimary : ['gravity']
             });
-            //debugger;
             // Reset
             resetTrObjs();
+            // Need to set position of the (now sliced) triangle overlay
             let trObjThird = {
               x : parseInt(x,10),
               y : parseInt(y,10),
@@ -841,7 +841,6 @@ class CanvasWrapper extends Component {
         return finalTrObjs;
       }
       trObjs = processTrObjs();
-      //debugger;
 
       let retInfo = {
         trObjs : trObjs,
