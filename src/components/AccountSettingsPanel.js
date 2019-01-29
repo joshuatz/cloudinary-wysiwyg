@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import LogPanel from './LogPanel';
 const MASTER_STATE_KEY = 'accountSettings';
 
 class AccountSettingsPanel extends Component {

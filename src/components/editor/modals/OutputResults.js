@@ -35,33 +35,36 @@ class OutputResults extends Component {
     let imgSrc = output.imgSrc!=='' ? output.imgSrc : 'loading.gif';
     setTimeout(()=>{
       window.Materialize.updateTextFields();
-      window.Materialize.textareaAutoResize(this.$('#imgHtmlTag'));
+      document.querySelectorAll('.outputResultModal .materialize-textarea').forEach((el)=>{
+        window.Materialize.textareaAutoResize(this.$(el));
+      });
     },300);
     return (
       <div className="outputResultsModalWrapper">
         <div className="outputResultModal modal">
           <div className="modal-content">
-            <h3>Cloudinary Results:</h3>
+            <h3 className="modalTitle">Cloudinary Results:</h3>
             <div className="row">
               <div className="col s10 offset-s1">
-                <img className="responsive-img z-depth-2" src={imgSrc}></img>
+                <img className="responsive-img z-depth-2 resultsPanelPreviewImage" src={imgSrc}></img>
               </div>
             </div>
             <div className="row">
-              <div className="col s11 offset-s1 input-field">
-                <input id="imgSrcUrl" value={output.img.src} type="text" className="active"></input>
+              <div className="col s7 input-field">
+                <textarea id="imgSrcUrl" value={output.img.src} className="materialize-textarea active" readOnly></textarea>
                 <label htmlFor="imgSrcUrl">Image URL:</label>
               </div>
-              <div className="col s4 offset-s3 input-field">
+              <div className="col s4 input-field">
                 <button className="button btn darkPrimaryColor" data-clipboard-target="#imgSrcUrl">Copy to Clipboard</button>
               </div>
             </div>
+            <div className="divider"></div>
             <div className="row">
-              <div className="col s11 offset-s1 input-field">
-                <textarea id="imgHtmlTag" className="materialize-textarea active" value={output.img.html}></textarea>
+              <div className="col s7 input-field">
+                <textarea id="imgHtmlTag" className="materialize-textarea active" value={output.img.html} readOnly></textarea>
                 <label htmlFor="imgHtmlTag">HTML IMG Tag</label>
               </div>
-              <div className="col s4 offset-s3 input-field">
+              <div className="col s4 input-field">
                 <button className="button btn darkPrimaryColor" data-clipboard-target="#imgHtmlTag">Copy to Clipboard</button>
               </div>
             </div>

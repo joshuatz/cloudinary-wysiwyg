@@ -37,7 +37,7 @@ REPLACEME
 ###
 
 ## Additional Resources:
- -  [https://joshuatz.com/posts/tag/cloudinary/](https://joshuatz.com/posts/tag/cloudinary/)
+ -  [https://joshuatz.com/tag/cloudinary/](https://joshuatz.com/tag/cloudinary/)
 ###
 ---
 ###

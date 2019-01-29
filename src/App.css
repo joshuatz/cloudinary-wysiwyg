@@ -115,7 +115,7 @@ body {
 .canvasWrapperWrapper .sidebar, .canvasWrapperWrapper .instantPreviewWrapper, .canvasWrapperWrapper .canvasWrapper {
   width: auto;
   /* max-width: 50%; */
-  min-width: 440px;
+  /* min-width: 440px; */
   margin-left: auto;
   margin-right: auto;
   display: inline-block;
@@ -285,4 +285,29 @@ ul.tabs > li.tab {
 /* Offset the whole body by some space to allow for fixed bar at top */
 .mainContainer {
   margin-top: 40px;
+}
+
+/**
+* MaterializeCSS overrides
+*/
+.row .col.input-field {
+  padding: 0 0.25rem;
+}
+.input-field.col label {
+  left: .40rem !important;
+}
+.modal {
+  max-height: 85% !important;
+  top : 5% !important;
+  min-width: 85% !important;
+}
+
+/**
+* Output Results Modal
+*/
+.outputResultModal .outputResultModal,.outputResultModal h3 {
+  font-size: 2rem !important;
+}
+.outputResultModal .resultsPanelPreviewImage {
+  max-height: 200px !important;
 }

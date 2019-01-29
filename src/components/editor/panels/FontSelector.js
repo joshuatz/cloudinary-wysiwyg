@@ -187,13 +187,13 @@ class FontSelector extends Component  {
     let fontSelectOptions = this.state.googleFontsArr.map((fontName,index)=>{
       if (!this.getIsFontSelected() || this.getCurrSelectedFont().fontFamily!==fontName){
         return (
-          <option value={fontName} key={fontName}>{fontName}</option>
+          <option value={fontName} key={fontName + '_' + index}>{fontName}</option>
         )
       }
     });
     if (this.getIsFontSelected()){
       fontSelectOptions.unshift((
-        <option value={this.getCurrSelectedFont().fontFamilySlim}>{this.getCurrSelectedFont().fontFamilySlim}</option>
+        <option value={this.getCurrSelectedFont().fontFamilySlim} key={this.getCurrSelectedFont().fontFamilySlim}>{this.getCurrSelectedFont().fontFamilySlim}</option>
       ));
     }
     // Build font buttons
@@ -215,7 +215,7 @@ class FontSelector extends Component  {
     }
     let fontSizeOptions = fontSizeOptionsArr.map((val,index)=>{
       return (
-        <option value={val}>{val + 'px'}</option>
+        <option value={val} key={val}>{val + 'px'}</option>
       )
     })
     return (

@@ -16,31 +16,9 @@ class Helpers {
     modal : function(selector){
       let $ = this.$;
       var Materialize = this.Materialize;
-
-      let getInstance = function(element){
-        /*
-        if (typeof(elemOrSelector)==='string'){
-          let selector = elemOrSelector;
-          return this.Materialize.Modal.getInstance($(selector));
-        }
-        else {
-          let elem = elemOrSelector;
-          return this.Materialize.Modal.getInstance(elem);
-        }
-        */
-       if ($(selector).length > 0){
-         let elems = $(selector);
-         let instances = Materialize.Modal.getInstance(elems);
-         if (typeof(instances)==='undefined' || instances ===null){
-           instances = Materialize.Modal.init(elems);
-         }
-         return instances[0];
-       }
-      }.bind(this);
       
       // Should return jQuery iterable object
       let getInstances = function(){
-        console.log(Materialize);
         var instances = $(selector).map((index,val)=>{
           var elem = val;
           let instance = Materialize.Modal.getInstance(elem);
