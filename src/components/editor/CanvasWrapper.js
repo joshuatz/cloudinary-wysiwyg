@@ -404,6 +404,26 @@ class CanvasWrapper extends Component {
     getSolidPixelSrc : function(){
       return typeof(this.state.editorData.solidPixelSrc)==='string' ? this.state.editorData.solidPixelSrc : this.fallbackSolidPixelSrc;
     },
+    applyTrArrayToCloudinaryImgTag(trObjs,cloudinaryImageTag){
+      let tr = this.cloudinary.Transformation.new();
+      for (var x=0; x< trObjs.length; x++){
+        let currTransObj = trObjs[x];
+        if (Object.keys(currTransObj).length > 0){
+          if ('resourceType' in currTransObj && currTransObj.resourceType === 'fetch'){
+            tr.overlay(currTransObj);
+          }
+          else {
+            if (x>0){
+              tr = tr.chain();
+            }
+            tr.transformation(currTransObj);
+          }
+        }
+      }
+      // Apply
+      cloudinaryImageTag.transformation().chain().transformation(tr);
+      return cloudinaryImageTag;
+    },
     getFallbackBasePicId : function(){
       if (this.state.accountSettings.cloudinaryCloudName==='demo'){
         return 'flowers';
@@ -414,6 +434,30 @@ class CanvasWrapper extends Component {
     },
     getBaseImage : function(){
       return this.state.editorData.baseImage!==null ? this.state.editorData.baseImage : this.cloudinaryMethods.getFallbackBasePicId.bind(this)();
+    },
+    generateUrlFromTrans(trObjs){
+      // Use solid pixel as base
+      // let cloudinaryImageInstance = this.cloudinaryInstance.imageTag(this.mainMethods.cloudinary.getSolidPixelSrc());
+      let cloudinaryImageInstance = this.cloudinaryInstance.imageTag(this.mainMethods.cloudinary.getFallbackBasePicId());
+      // Modify base to be 1x1 transparent
+      trObjs.unshift({
+        width : 1,
+        height : 1,
+        opacity : 0,
+        crop : 'scale'
+      });
+      // Apply transformations
+      cloudinaryImageInstance = this.mainMethods.cloudinary.applyTrArrayToCloudinaryImgTag(trObjs,cloudinaryImageInstance);
+      // Return just the URL
+      return cloudinaryImageInstance.getAttr('src');
+    },
+    generateFetchLayerFromTrans(trObjs){
+      return {
+        overlay : {
+          resourceType : 'fetch',
+          url : this.mainMethods.cloudinary.generateUrlFromTrans(trObjs)
+        }
+      }
     },
     getTransformationObj : function(type){
       let perTypes = {
@@ -454,6 +498,7 @@ class CanvasWrapper extends Component {
      * @param {boolean} OPT_forceBounding - optional setting. If true, forces the object to render inside the bounding box of the overall canvas dimensions. Otherwise, if not applied, an overlay being position overlapping the boundary of the canvas can cause the final cloudinary output to be exceed the dimensions of the canvas.
      */
     mapCanvasObjPropsToTrans(canvasObj,OPT_trans,OPT_forceBounding){
+      let _this = this;
       let cloudinary = this.cloudinary;
       let canvasDimensions = this.state.editorData.canvasDimensions;
       let forceBounding = typeof(OPT_forceBounding)==='boolean' ? OPT_forceBounding : true;
@@ -465,6 +510,14 @@ class CanvasWrapper extends Component {
       let chainedTrObj = {};
       let cropTrObj = {};
       let somethingClippedPast = false;
+
+      function resetTrObjs(){
+        trObjs = [];
+        chainLast = [];
+        chainLastButMerge = [];
+        chainedTrObj = {};
+        cropTrObj = {};
+      }
 
       const chainTogether = ['effect','color','flags','x','y','radius','gravity','angle'];
       const colorProps = ['background','color','effect','flags','x','y','radius'];
@@ -596,18 +649,33 @@ class CanvasWrapper extends Component {
               height : parseInt((hypotenuse),10),
               angle : parseInt(angle,10)
             });
+            delete trObj.x;
+            delete trObj.y;
             // Add scale by passing adjusted width and height with crop set to scale in secondary
             let trObjSecondary = this.helpers.objectMerge(trObjSecondary,{
               width : parseInt((hypotenuse * scaleX),10),
               height : parseInt((hypotenuse * scaleY),10),
               crop : 'scale',
-              flags : ['layer_apply']
+              flags : ['layer_apply'],
+              format : 'png'
             });
+            trObjSecondary.x = 0;
+            trObjSecondary.y = 0;
             chainLastButMerge.push(trObjSecondary);
+            //debugger;
             // OK, now we should have skew and size correct, but have 2 of the triangles put together - essentially a parallelogram - so we need to slice it down the middle. However, this need to be chained, since it has a different crop method, and can't be combined with the skewing / sizing above
+            // ISSUE: you can't chain multiple crops without having a layer inbetween (i.e. you can't chain multiple fl_layer_apply) - workaround - take transformations so far and shove into cloudinary URL, then use that as a fetchlayer
+            trObjs = processTrObjs();
+            trObj = this.helpers.objectMerge(this.mainMethods.cloudinary.generateFetchLayerFromTrans(trObjs),{
+              x : parseInt(x,10),
+              y : parseInt(y,10)
+            });
+            debugger;
+            // Reset
+            resetTrObjs();
             let trObjThird = {
               height : parseInt(((hypotenuse * scaleX) * 0.5),10),
-              width : trObjSecondary.width,
+              width : parseInt((hypotenuse * scaleX),10),
               crop : 'crop',
               gravity : 'north',
               flags : ['layer_apply']
@@ -738,22 +806,34 @@ class CanvasWrapper extends Component {
       /**
        * Separate out any props that need to be part of their own transformation / chained
        */
-      for (var prop in trObj){
-        if (mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1 || chainTogether.indexOf(prop)!==-1){
-          // Must chain
-          chainedTrObj[prop] = trObj[prop];
-          delete trObj[prop];
+      function processTrObjs(){
+        for (var prop in trObj){
+          if (mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1 || chainTogether.indexOf(prop)!==-1){
+            // Must chain
+            chainedTrObj[prop] = trObj[prop];
+            delete trObj[prop];
+          }
         }
-      }
 
-      // Push results together
-      chainLastButMerge.forEach((el)=>{
-        chainedTrObj = this.helpers.objectMerge(chainedTrObj,el);
-      });
-      trObjs.push(trObj,cropTrObj,chainedTrObj);
-      chainLast.reverse();
-      chainLast.forEach((el)=>{trObjs.push(el)});
-      
+        // Push results together
+        chainLastButMerge.forEach((el)=>{
+          chainedTrObj = _this.helpers.objectMerge(chainedTrObj,el);
+        });
+        trObjs.push(trObj,cropTrObj,chainedTrObj);
+        chainLast.reverse();
+        chainLast.forEach((el)=>{trObjs.push(el)});
+
+        // output
+        let finalTrObjs = trObjs;
+
+        // Reset inputs
+        resetTrObjs();
+
+        // Return
+        return finalTrObjs;
+      }
+      trObjs = processTrObjs();
+      debugger;
 
       let retInfo = {
         trObjs : trObjs,
@@ -848,21 +928,22 @@ class CanvasWrapper extends Component {
 
       // @TODO
       if (useArr){
-        let tr = cloudinary.Transformation.new();
-        for (var x=0; x< transformationArr.length; x++){
-          let currTransObj = transformationArr[x];
-          if ('resourceType' in currTransObj && currTransObj.resourceType === 'fetch'){
-            tr.overlay(currTransObj);
-          }
-          else {
-            if (x>0){
-              tr = tr.chain();
-            }
-            tr.transformation(currTransObj);
-          }
-        }
-        // Apply
-        cloudinaryImageTag.transformation().chain().transformation(tr);
+        // let tr = cloudinary.Transformation.new();
+        // for (var x=0; x< transformationArr.length; x++){
+        //   let currTransObj = transformationArr[x];
+        //   if ('resourceType' in currTransObj && currTransObj.resourceType === 'fetch'){
+        //     tr.overlay(currTransObj);
+        //   }
+        //   else {
+        //     if (x>0){
+        //       tr = tr.chain();
+        //     }
+        //     tr.transformation(currTransObj);
+        //   }
+        // }
+        // // Apply
+        // cloudinaryImageTag.transformation().chain().transformation(tr);
+        cloudinaryImageTag = this.mainMethods.cloudinary.applyTrArrayToCloudinaryImgTag(transformationArr,cloudinaryImageTag);
       }
 
       // Extract actual image URL
