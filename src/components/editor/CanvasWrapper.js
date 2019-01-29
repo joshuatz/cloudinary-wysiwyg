@@ -654,7 +654,7 @@ class CanvasWrapper extends Component {
             // Add scale by passing adjusted width and height with crop set to scale in secondary
             let trObjSecondary = this.helpers.objectMerge(trObjSecondary,{
               width : parseInt((hypotenuse * scaleX),10),
-              height : parseInt((hypotenuse * scaleY),10),
+              height : parseInt((hypotenuse * scaleY * 2),10),
               crop : 'scale',
               flags : ['layer_apply'],
               format : 'png'
@@ -668,19 +668,24 @@ class CanvasWrapper extends Component {
             trObjs = processTrObjs();
             trObj = this.helpers.objectMerge(this.mainMethods.cloudinary.generateFetchLayerFromTrans(trObjs),{
               x : parseInt(x,10),
-              y : parseInt(y,10)
+              y : parseInt(y,10),
+              width : parseInt((hypotenuse * scaleX),10),
+              height : parseInt(((hypotenuse * scaleY * 2) * 0.5),10),
+              crop : 'crop',
+              gravity : 'north',
+              flags : ['layer_apply'],
+              keepInPrimary : ['gravity']
             });
-            debugger;
+            //debugger;
             // Reset
             resetTrObjs();
             let trObjThird = {
-              height : parseInt(((hypotenuse * scaleX) * 0.5),10),
-              width : parseInt((hypotenuse * scaleX),10),
-              crop : 'crop',
-              gravity : 'north',
+              x : parseInt(x,10),
+              y : parseInt(y,10),
+              gravity : 'north_west',
               flags : ['layer_apply']
             };
-            chainLast.push(trObjThird);
+            chainLastButMerge.push(trObjThird);
           }
           else if (method==='distort'){
             // @TODO
@@ -811,7 +816,10 @@ class CanvasWrapper extends Component {
           if (mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1 || chainTogether.indexOf(prop)!==-1){
             // Must chain
             chainedTrObj[prop] = trObj[prop];
-            delete trObj[prop];
+            // Don't delete if specified in keepInPrimary prop
+            if (!Array.isArray(trObj.keepInPrimary) || trObj.keepInPrimary.indexOf(prop)===-1){
+              delete trObj[prop];
+            }
           }
         }
 
@@ -833,7 +841,7 @@ class CanvasWrapper extends Component {
         return finalTrObjs;
       }
       trObjs = processTrObjs();
-      debugger;
+      //debugger;
 
       let retInfo = {
         trObjs : trObjs,
