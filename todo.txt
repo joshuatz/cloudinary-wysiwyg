@@ -7,7 +7,6 @@ Todo list and misc notes
      - Add support for transparency / alpha in...
        - Color picker and applied to shapes
        - for image or text overlays
-     - Warning about URL char length (2083 max for IE, so 2K is good guideline if going to use URL for client-facing stuff)
      - Scaling slider
         - Would be used so you don't have to make the editor the exact same size as you want the output to be - example, you could set editor at 300x300 and scale at 2x to get a 600x600 output
   If time:
