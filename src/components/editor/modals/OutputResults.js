@@ -46,7 +46,7 @@ class OutputResults extends Component {
             <h3 className="modalTitle">Cloudinary Results:</h3>
             <div className="row">
               <div className="col s10 offset-s1">
-                <img className="responsive-img z-depth-2 resultsPanelPreviewImage" src={imgSrc}></img>
+                <img className="responsive-img z-depth-2 resultsPanelPreviewImage" src={imgSrc} alt="Generated Cloudinary Preview"></img>
               </div>
             </div>
             <div className="row">

@@ -59,7 +59,7 @@ class ImageSelector extends Component {
   render(){
     let pseudoImageElements = this.state.psuedoImages.map((imgSrc,index)=>{
       return (
-        <img src={imgSrc}></img>
+        <img src={imgSrc} alt=""></img>
       )
     });
     return(
@@ -76,7 +76,7 @@ class ImageSelector extends Component {
                 <ul className="tabs">
                   <li className="tab col s3"><a href="#hostedImageSelect">Hosted Image</a></li>
 
-                  <li className="tab col s3"><a href="#macroImageSelect">Placeholder / Macro</a></li>
+                  <li className="tab col s3 disabled" data-tooltip="Sorry, this has not yet been implemented" data-position="bottom"><a href="#macroImageSelect">Placeholder / Macro</a></li>
 
                   <li className="tab col s3"><a href="#cloudinaryPublicIdSelect">Cloudinary Public ID</a></li>
                   

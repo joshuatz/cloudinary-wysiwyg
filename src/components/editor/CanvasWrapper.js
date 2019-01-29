@@ -177,7 +177,7 @@ class CanvasWrapper extends Component {
     },
     getCanvObjOriginalLeft : function(obj){
       let left = obj.get('left');
-      if (!'angle' in obj || obj.angle === 0){
+      if (!('angle' in obj)|| obj.angle === 0){
         return left;
       }
       else {
@@ -367,7 +367,6 @@ class CanvasWrapper extends Component {
       }
     },
     addText : function(text,OPT_fontFamily,OPT_fontSize,OPT_fontColor,OPT_macroKey){
-      let _this = this;
       let canvas = this.state.editorData.canvasObj;
       let fabric = this.state.fabric;
       let currSelectedFont = this.state.editorData.currSelectedFont;
@@ -598,8 +597,6 @@ class CanvasWrapper extends Component {
           mustChain : ['flags','x','y','gravity']
         }
       };
-      const shapes = ['rect','circle'];
-      const texts = ['text','i-text'];
 
       let objMatched = typeof(mappings[canvasObjType])==='object' ? true : false;
       let mapping = objMatched ? mappings[canvasObjType] : {};
@@ -693,7 +690,7 @@ class CanvasWrapper extends Component {
             delete trObj.x;
             delete trObj.y;
             // Add scale by passing adjusted width and height with crop set to scale in secondary
-            let trObjSecondary = this.helpers.objectMerge(trObjSecondary,{
+            let trObjSecondary = this.helpers.objectMerge({},{
               width : parseInt((hypotenuse * scaleX),10),
               height : parseInt((hypotenuse * scaleY * 2),10),
               crop : 'scale',
@@ -854,7 +851,7 @@ class CanvasWrapper extends Component {
        */
       function processTrObjs(){
         for (var prop in trObj){
-          if (mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1 || chainTogether.indexOf(prop)!==-1){
+          if ((mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1) || chainTogether.indexOf(prop)!==-1){
             // Must chain
             chainedTrObj[prop] = trObj[prop];
             // Don't delete if specified in keepInPrimary prop
@@ -915,7 +912,6 @@ class CanvasWrapper extends Component {
       // Setup cloudinary config and make sure refs are set
       _this.cloudinaryMethods.setConfig.bind(this)();
       let cloudinaryInstance = this.cloudinaryInstance;
-      let cloudinary = this.cloudinary;
       canvas = (canvas && typeof(canvas._objects)==='object') ? canvas : this.canvas;
 
       // Start the transformation chain by create the base cloudinary imageTag
@@ -1191,7 +1187,7 @@ class CanvasWrapper extends Component {
     if (typeof(this.props.masterState.output.imgSrc)==='string' && this.props.masterState.livePreviewSrc !== ''){
       return (
         <div className="instantPreview" style={previewWrapperStyle}>
-          <img src={this.props.masterState.livePreviewSrc}></img>
+          <img src={this.props.masterState.livePreviewSrc} alt="Cloudinary Instant Preview"></img>
         </div>
       )
     }
@@ -1208,7 +1204,7 @@ class CanvasWrapper extends Component {
 
   render(){
     let pseudoImages = this.state.editorData.images.urls.map((val,index)=>{
-      return <img className="pseudoImage" key={index} src={val} />
+      return <img className="pseudoImage" key={index} src={val} alt="" />
     });
 
 

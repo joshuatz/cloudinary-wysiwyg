@@ -26,21 +26,21 @@ class ToolPanel extends Component {
   buttons = [
     {
       icon : 'fa-vector-square',
-      name : 'Squre Shape',
+      name : 'Squre',
       action : function(){
         this.props.mainMethods.canvas.addRect();
       }
     },
     {
       icon : 'fa-minus',
-      name : 'Line Shape',
+      name : 'Line',
       action : function(){
         this.props.mainMethods.canvas.addLine();
       }
     },
     {
       icon : 'fa-circle',
-      name : 'Circle Shape',
+      name : 'Circle',
       action : function(){
         this.props.mainMethods.canvas.addCircle();
       },
@@ -48,21 +48,21 @@ class ToolPanel extends Component {
     },
     {
       icon : 'fa-caret-up',
-      name : 'Triangle Shape',
+      name : 'Triangle',
       action : function(){
         this.props.mainMethods.canvas.addTriangle();
       }
     },
     {
       icon : 'fa-file-image',
-      name : 'Add Image',
+      name : 'Image',
       action : function(){
         this.props.mainMethods.modals.imageSelector.launch();
       }
     },
     {
       icon : 'fa-font',
-      name : 'Add Text',
+      name : 'Text',
       action : function(){
         this.props.mainMethods.canvas.addText('Edit Me!');
       }

@@ -39,7 +39,7 @@ class FontSelector extends Component  {
   updateSelectedTextObjs(){
     // Iterate over all canvas objects
     let matches = 0;
-    this.props.mainMethods.canvas.getSelectedObjs(false).map((canvasObj,index)=>{
+    this.props.mainMethods.canvas.getSelectedObjs(false).forEach((canvasObj,index)=>{
       if(canvasObj.get('type')==='i-text'||canvasObj.get('type')==='text'){
         matches++;
         // Merge settings
@@ -184,12 +184,12 @@ class FontSelector extends Component  {
 
   render(){
     // Build font select <option></option>
-    let fontSelectOptions = this.state.googleFontsArr.map((fontName,index)=>{
-      if (!this.getIsFontSelected() || this.getCurrSelectedFont().fontFamily!==fontName){
-        return (
-          <option value={fontName} key={fontName + '_' + index}>{fontName}</option>
-        )
-      }
+    let fontSelectOptions = this.state.googleFontsArr.filter((fontName)=>{
+      return (!this.getIsFontSelected() || this.getCurrSelectedFont().fontFamily!==fontName)
+    },this).map((fontName,index)=>{
+      return (
+        <option value={fontName} key={fontName + '_' + index}>{fontName}</option>
+      )
     });
     if (this.getIsFontSelected()){
       fontSelectOptions.unshift((

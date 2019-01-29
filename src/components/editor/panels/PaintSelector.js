@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import {SketchPicker} from 'react-color';
 import {ChromePicker} from 'react-color';
 
 class PaintSelector extends Component {

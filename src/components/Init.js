@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import {Component} from 'react';
 import Helpers from '../inc/Helpers';
 import ClipboardJS from 'clipboard';
 

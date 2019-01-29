@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 class StatsPanel extends Component {
   constructor(props){
     super(props);
+    this.state = {};
   }
   render(){
     let editorData = this.props.masterState.editorData;

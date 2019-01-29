@@ -29,7 +29,7 @@ class Helpers {
           return instance;
         });
         return instances;
-      }.bind(this);
+      };
 
       let open = function(){
         getInstances().each((index,val)=>{val.open();})
