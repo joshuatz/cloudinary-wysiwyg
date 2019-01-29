@@ -151,12 +151,12 @@ class AccountSettingsPanel extends Component {
             <label htmlFor="#editorHeight">Editor Height:</label>
           </div>
         </div>
-        <div className="row center">
+        <div className="row center resetButtonsWrapper">
           
-          <div className="col s4 offset-s2 center">
+          <div className="col s5 offset-s1 center">
             <div className="btn warningColor" onClick={this.props.appMethods.resetCanvas.bind(this)}>Reset Canvas</div>
           </div>
-          <div className="col s4 offset-s2 center">
+          <div className="col s5 offset-s1 center">
             <div className="btn dangerColor" onClick={this.reset.bind(this)}>Reset Everything</div>
           </div>
         </div>

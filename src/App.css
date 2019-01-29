@@ -13,6 +13,14 @@ body {
   width: 99%;
   margin: 10px auto;
 }
+.accountSettingsPanelWrapper .resetButtonsWrapper > .col {
+  min-width: 170px;
+  padding: 0px 4px;
+  margin-bottom: 10px;
+}
+.accountSettingsPanelWrapper .resetButtonsWrapper .btn {
+  width: 100%;
+}
 .logPanel {
   font-family: monospace;
   color: greenyellow;
