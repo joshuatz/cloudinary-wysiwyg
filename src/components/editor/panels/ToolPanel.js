@@ -32,6 +32,13 @@ class ToolPanel extends Component {
       }
     },
     {
+      icon : 'fa-minus',
+      name : 'Line Shape',
+      action : function(){
+        this.props.mainMethods.canvas.addLine();
+      }
+    },
+    {
       icon : 'fa-circle',
       name : 'Circle Shape',
       action : function(){

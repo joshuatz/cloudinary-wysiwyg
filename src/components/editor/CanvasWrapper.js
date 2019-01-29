@@ -33,6 +33,8 @@ class CanvasWrapper extends Component {
     this.CANVAS_ELEMENT_ID = 'editorCanvas';
     // Refs
     this.outputResultsClass = React.createRef();
+    // Important const - use this list with any calls to canvas.toJSON() to make sure object props are included
+    this.CANVAS_PROPERTIES_TO_KEEP = ['__controlsVisibility'];
   }
 
   componentDidMount(){
@@ -211,6 +213,36 @@ class CanvasWrapper extends Component {
       this.mainMethods.canvas.bringToFront(rect);
       rect.on('selected',()=>{
         this.canvasMethods.handleShapeSelect.bind(this)(rect);
+      });
+    },
+    addLine : function(){
+      // A line is simply a rectangle with width controls disabled and constrained.
+      let canvas = this.state.editorData.canvasObj;
+      let fabric = this.state.fabric;
+      let line = new fabric.Rect({
+        top : 10,
+        left : 15,
+        width : 2,
+        height : 100,
+        fill : this.getCurrSelectedColor().hex,
+        lockScalingX : true
+      });
+      // http://fabricjs.com/docs/fabric.Object.html#setControlsVisibility
+      line.setControlsVisibility({
+        bl : false,
+        br : false,
+        mb : true,
+        ml : false,
+        mr : false,
+        mt : true,
+        tl : false,
+        tr : false,
+        mtr : true
+      });
+      canvas.add(line);
+      this.mainMethods.canvas.bringToFront(line);
+      line.on('selected',()=>{
+        this.canvasMethods.handleShapeSelect.bind(this)(line);
       });
     },
     addCircle : function(OPT_props){
