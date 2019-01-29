@@ -3,7 +3,12 @@ import React, {Component} from 'react';
 class Warnings extends Component {
   constructor(props){
     super(props);
+    this.$ = window.jQuery;
     this.recommendedMaxUrlLength = 2000;
+  }
+
+  componentDidUpdate(){
+    this.$('.warningsWrapper [data-tooltip]').tooltip();
   }
 
   render(){
