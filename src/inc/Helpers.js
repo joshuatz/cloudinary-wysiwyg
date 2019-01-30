@@ -111,6 +111,14 @@ class Helpers {
     }
     return mergedObj;
   }
+
+  base64Safe = function(myString){
+    return encodeURIComponent(btoa(myString));
+  }
+
+  randomChar = function(){
+    return Math.random().toString(36).substring(2,3);
+  }
 }
 
 export default Helpers;

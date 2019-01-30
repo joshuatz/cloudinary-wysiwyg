@@ -977,6 +977,41 @@ class CanvasWrapper extends Component {
 
       // Extract actual image URL
       let imgSrc = (/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1]);
+      // Escape slashes inside base64 fetchlayers
+      imgSrc = imgSrc.replace(/(l_fetch:)([^\/,]+)\/([^,]+)/gim,(match,p1,p2,p3,offset,string)=>{
+        // First, make sure we haven't captured a slash that is natural.
+        // Example : l_fetch:DFf98w0384/c_crop,...
+        if (/(l_fetch:[^\/,]+)\/\w_{1}\w+:/.exec(match)){
+          return p1 + p2 + '/' + p3;
+        }
+        else {
+          // Convert from base64 back into the raw URL
+          let encodedUrl = p2 + '/' + p3;
+          let rawImageUrl = atob(encodedUrl);
+          // Try adding characters to the URL until it no longer generates a slash. Not a great solution, but the only workaround I have at the moment, because I can't find anything on escaping slashes IN base64 strings for cloudinary
+          let maxAttempts = 100;
+          let currAttempt = 0;
+          let moddedImageUrl = rawImageUrl;
+          while ((currAttempt < maxAttempts) && /\//.test(btoa(moddedImageUrl))){
+            // Check for existing query string
+            let joiner = /\?.+/.test(moddedImageUrl) ? '&' : (/\?$/.test(moddedImageUrl) ? '' : '?');
+            // Check for mod already started
+            if (/cdwysslashbust=/gim.test(moddedImageUrl)===false){
+              // Start the mod
+              moddedImageUrl = moddedImageUrl + joiner + 'cdwysslashbust='
+            }
+            // Add rand
+            moddedImageUrl = moddedImageUrl + _this.helpers.randomChar();
+            console.log(moddedImageUrl);
+            console.log(btoa(moddedImageUrl));
+            currAttempt++;
+          }
+          console.log(currAttempt);
+          console.log(moddedImageUrl);
+          console.log(btoa(moddedImageUrl));
+          return p1 + btoa(moddedImageUrl); 
+        }
+      });
 
       console.log(transformationArr);
       let generationTimeSec = ((performance.now()) - generationStartTime)/1000;
