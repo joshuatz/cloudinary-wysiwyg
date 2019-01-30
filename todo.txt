@@ -9,6 +9,7 @@ Todo list and misc notes
        - for image or text overlays
      - Scaling slider
         - Would be used so you don't have to make the editor the exact same size as you want the output to be - example, you could set editor at 300x300 and scale at 2x to get a 600x600 output
+     - Fix issue where FabricJS allows objects to go over edge of canvas (-x or -y values), but that doesn't translate properly to cloudinary
   If time:
      - Layers / grouping - and Z-index associated
      - shareable templates
