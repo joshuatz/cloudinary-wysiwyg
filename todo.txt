@@ -16,7 +16,7 @@ Todo list and misc notes
      - Built in spreadsheet generator that lets you use macros
      - Undo button / CTRL+Z combo
      - Copy / clone button
-     - DPad for moving objects by 1 pixel nudges, click and hold to move rapidly
+     - DPad for moving objects by 1 pixel nudges, click and hold to move rapidly, and/or use of arrow keys
 
 
 Resources to check out later:
