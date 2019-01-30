@@ -194,6 +194,20 @@ class CanvasWrapper extends Component {
         return top;
       }
     },
+    getCanvObjMostLeft : function(obj){
+      let left = obj.get('left');
+      for (var point in obj.aCoords){
+        left = (point.x < left) ? point.x : left;
+      }
+      return left;
+    },
+    getCanvObjMostTop : function(obj){
+      let top = obj.get('top');
+      for (var point in obj.aCoords){
+        top = (point.y < top) ? point.y : top;
+      }
+      return top;
+    },
     deleteSelectedObjs : function(){
       let canvas = this.state.editorData.canvasObj;
       this.mainMethods.canvas.getSelectedObjs(true).forEach((obj,index)=>{
@@ -555,8 +569,10 @@ class CanvasWrapper extends Component {
       let trObjs = [];
       let chainLast = [];
       let chainLastButMerge = [];
+      // primaryTrObj should always refer to the very first transformation, which should be an actual "thing", like a fetchlayer, public ID layer, etc.
       let primaryTrObj = (typeof(OPT_trans)==='object' && OPT_trans!==null) ? OPT_trans : {};
       let chainedTrObj = {};
+      // Anything you want chained after the primary layer
       let chainedTrObjs = [];
       let cropTrObj = {};
       let somethingClippedPast = false;
@@ -566,6 +582,7 @@ class CanvasWrapper extends Component {
         chainLast = [];
         chainLastButMerge = [];
         chainedTrObj = {};
+        chainedTrObjs = [];
         cropTrObj = {};
       }
 
@@ -588,8 +605,7 @@ class CanvasWrapper extends Component {
         'triangle' : {
           supportsColor : true,
           supportsAngle : true,
-          type : 'shape',
-          mustChain : colorProps
+          type : 'shape'
         },
         'text' : {
           supportsColor : true,
@@ -689,7 +705,8 @@ class CanvasWrapper extends Component {
              * Before the triangle is rotated by the user, assuming it is facing up, you can think of it being half a rectangle with a skew, where the top of the triangle is the top left of the rectangle, and the bottom left of the triangle is the bottom left of the rectangle. So before even touched by the user, there should already be a 45 degree angle applied
              *   Normally, you would have to "skew" that rectangle if you wanted to get a triangle that is NOT a perfect 90 degrees out of half of it, but the same thing can be achieved by also futzing with the scale... normally I take scale out and just compute a new height and width, but for this I want to do the opposite and add it back
              */
-            angle = 45 + angle;
+            let userAngle = angle;
+            angle = 45 + userAngle;
             let base = (0.5 * width);
             // C = Square Root of (A^2 + B^2)
             let hypotenuse = Math.sqrt((base * base) + (height * height));
@@ -697,41 +714,37 @@ class CanvasWrapper extends Component {
             // Triangles are complicated to setup the transformation chain for, so we are kind of starting back from scratch and will build one at a time
             resetTrObjs();
 
-            // Start off with just the fetch layer
+            // Start off with just the fetch layer - build a 100x100 rectangle
             primaryTrObj = this.helpers.objectMerge(this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid'),{
-              width : parseInt((hypotenuse),10),
-              height : parseInt((hypotenuse),10)
+              width : 100,
+              height : 100,
+              // x : parseInt(x,10),
+              // y : parseInt(y,10),
+              gravity : 'north_west'
             });
 
-            // Set unscaled width, height, and set x and y at zero
-            chainedTrObjs.push({
-              width : parseInt((hypotenuse),10),
-              height : parseInt((hypotenuse),10),
-              x : 0,
-              y : 0
-            });
+            // Position it
 
-            // Angle it before scaling
+            // Rotate the rectangle 45 degrees, and then slice to get a triangle
             chainedTrObjs.push({
-              angle : angle
+              angle : 45
             });
-
-            // scale it up
             chainedTrObjs.push({
-              crop : 'scale',
-              width : parseInt((hypotenuse * scaleX),10),
-              height : parseInt((hypotenuse * scaleY * 2),10),
-            });
-
-            // OK, now we should have skew and size correct, but have 2 of the triangles put together - essentially a parallelogram - so we need to slice it down the middle. However, this need to be chained, since it has a different crop method, and can't be combined with the skewing / sizing above
-            chainedTrObjs.push({
-              width : parseInt((hypotenuse * scaleX),10),
-              height : parseInt(((hypotenuse * scaleY * 2) * 0.5),10),
               crop : 'crop',
+              height : 50,
+              width : 100,
               gravity : 'north'
             });
 
-            // Finally, position the slice, color it, and use layer_apply to finish off chain
+            // Now scale it up based on user
+            // Note: Can't apply user's angle here, because it will combine with 45 degree and mess up 50% slice. Have to do it last with layer_apply flag below
+            chainedTrObjs.push({
+              width : parseInt(scaledWidth,10),
+              height : parseInt(scaledHeight,10),
+              crop : 'scale'
+            });
+
+            // Finally, colorize, set PNG, and set layer_apply flag
             chainedTrObjs.push({
               background : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
               color : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
@@ -740,8 +753,11 @@ class CanvasWrapper extends Component {
               y : parseInt(y,10),
               gravity : 'north_west',
               flags : ['layer_apply'],
-              fetch_format : 'png'
+              fetch_format : 'png',
+              angle : parseInt(userAngle,10)
             });
+
+         
           }
           else if (method==='distort'){
             // @TODO
@@ -869,7 +885,7 @@ class CanvasWrapper extends Component {
        */
       function processTrObjs(){
         for (var prop in primaryTrObj){
-          if ((mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1) || chainTogether.indexOf(prop)!==-1){
+          if ((mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1) || chainTogether.indexOf(prop)!==-1 && _this.helpers.arrayAndObjPropCompare(chainTogether,chainedTrObj) > 0){
             // Must chain
             chainedTrObj[prop] = primaryTrObj[prop];
             // Don't delete if specified in keepInPrimary prop
