@@ -191,19 +191,21 @@ class CanvasWrapper extends Component {
         return top;
       }
       else {
-        return top;
+        return obj.aCoords.bl.y;
       }
     },
     getCanvObjMostLeft : function(obj){
       let left = obj.get('left');
-      for (var point in obj.aCoords){
+      for (var prop in obj.aCoords){
+        let point = obj.aCoords[prop];
         left = (point.x < left) ? point.x : left;
       }
       return left;
     },
     getCanvObjMostTop : function(obj){
       let top = obj.get('top');
-      for (var point in obj.aCoords){
+      for (var prop in obj.aCoords){
+        let point = obj.aCoords[prop];
         top = (point.y < top) ? point.y : top;
       }
       return top;
@@ -610,12 +612,14 @@ class CanvasWrapper extends Component {
         'text' : {
           supportsColor : true,
           supportsAngle : true,
-          type : 'text'
+          type : 'text',
+          mustChain : ['color']
         },
         'i-text' : {
           supportsColor : true,
           supportsAngle : true,
-          type : 'text'
+          type : 'text',
+          mustChain : ['color']
         },
         'image' : {
           supportsColor : false,
@@ -663,17 +667,18 @@ class CanvasWrapper extends Component {
        * Colors
        */
       if (mapping.supportsColor){
-        primaryTrObj = this.helpers.objectMerge(primaryTrObj,{
+        let colorProps = {
           background : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
           color : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
           effect : 'colorize',
           flags : ['layer_apply'],
           x : parseInt(x,10),
           y : parseInt(y,10)
-        });
+        }
+        primaryTrObj = this.helpers.objectMerge(primaryTrObj,colorProps);
         // A little strange, but 'colorize' needs to be accompanied with coordinates and gravity if chained
         if (mapping.mustChain && mapping.mustChain.indexOf('color')!==-1){
-          chainedTrObj = this.helpers.objectMerge(chainedTrObj,{
+          chainedTrObj = this.helpers.objectMerge(chainedTrObj,colorProps,{
             x : primaryTrObj.x,
             y : primaryTrObj.y,
             gravity : primaryTrObj.gravity
@@ -714,12 +719,11 @@ class CanvasWrapper extends Component {
             // Triangles are complicated to setup the transformation chain for, so we are kind of starting back from scratch and will build one at a time
             resetTrObjs();
 
-            // Start off with just the fetch layer - build a 100x100 rectangle
+            // Start off with just the fetch layer - build a SQUARE (has to be equal sides for split to work later) that most closes matches user selected scale
+            let minSquareSide = scaledHeight > scaledWidth ? scaledHeight : scaledWidth;
             primaryTrObj = this.helpers.objectMerge(this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid'),{
-              width : 100,
-              height : 100,
-              // x : parseInt(x,10),
-              // y : parseInt(y,10),
+              width : parseInt(minSquareSide,10),
+              height : parseInt(minSquareSide,10),
               gravity : 'north_west'
             });
 
@@ -731,8 +735,8 @@ class CanvasWrapper extends Component {
             });
             chainedTrObjs.push({
               crop : 'crop',
-              height : 50,
-              width : 100,
+              height : parseInt((minSquareSide * 0.5),10),
+              width : parseInt(minSquareSide,10),
               gravity : 'north'
             });
 
@@ -744,13 +748,13 @@ class CanvasWrapper extends Component {
               crop : 'scale'
             });
 
-            // Finally, colorize and set layer_apply flag
+            // Finally, colorize and set layer_apply flag. Note that for X and Y, you need to get the coordinates from the bounding box of the canvasObj, since it has been rotated
             chainedTrObjs.push({
               background : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
               color : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
               effect : 'colorize',
-              x : parseInt(x,10),
-              y : parseInt(y,10),
+              x : parseInt(canvasObj.getBoundingRect().left,10),
+              y : parseInt(canvasObj.getBoundingRect().top,10),
               gravity : 'north_west',
               flags : ['layer_apply'],
               angle : parseInt(userAngle,10)
@@ -1252,7 +1256,11 @@ class CanvasWrapper extends Component {
     if (typeof(this.props.masterState.output.imgSrc)==='string' && this.props.masterState.livePreviewSrc !== ''){
       return (
         <div className="instantPreview" style={previewWrapperStyle}>
-          <img src={this.props.masterState.livePreviewSrc} alt="Cloudinary Instant Preview"></img>
+          <img src={this.props.masterState.livePreviewSrc} alt="Cloudinary Instant Preview" style={{
+            width : '100%',
+            height : 'auto',
+            maxWidth : this.state.editorData.canvasDimensions.width
+          }}></img>
         </div>
       )
     }
