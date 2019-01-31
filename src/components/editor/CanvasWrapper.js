@@ -744,7 +744,7 @@ class CanvasWrapper extends Component {
               crop : 'scale'
             });
 
-            // Finally, colorize, set PNG, and set layer_apply flag
+            // Finally, colorize and set layer_apply flag
             chainedTrObjs.push({
               background : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
               color : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
@@ -753,7 +753,6 @@ class CanvasWrapper extends Component {
               y : parseInt(y,10),
               gravity : 'north_west',
               flags : ['layer_apply'],
-              fetch_format : 'png',
               angle : parseInt(userAngle,10)
             });
 
