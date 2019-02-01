@@ -638,8 +638,8 @@ class CanvasWrapper extends Component {
       let width = parseFloat(canvasObj.get('width'));
       let height = parseFloat(canvasObj.get('height'));
       let angle = parseFloat(canvasObj.get('angle'));
-      let x = this.mainMethods.canvas.getCanvObjOriginalLeft(canvasObj);
-      let y = this.mainMethods.canvas.getCanvObjOriginalTop(canvasObj);
+      let x = canvasObj.getBoundingRect().left;
+      let y = canvasObj.getBoundingRect().top;
       //let y = parseFloat(canvasObj.get('top'));
       let scaleX = parseFloat(canvasObj.get('scaleX'));
       let scaleY = parseFloat(canvasObj.get('scaleY'));
