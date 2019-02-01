@@ -185,6 +185,31 @@ class CanvasWrapper extends Component {
         return obj.aCoords.bl.x;
       }
     },
+    getCanvObjOriginalTop : function(obj){
+      let top = obj.get('top');
+      if (!('angle' in obj) || obj.angle === 0){
+        return top;
+      }
+      else {
+        return obj.aCoords.bl.y;
+      }
+    },
+    getCanvObjMostLeft : function(obj){
+      let left = obj.get('left');
+      for (var prop in obj.aCoords){
+        let point = obj.aCoords[prop];
+        left = (point.x < left) ? point.x : left;
+      }
+      return left;
+    },
+    getCanvObjMostTop : function(obj){
+      let top = obj.get('top');
+      for (var prop in obj.aCoords){
+        let point = obj.aCoords[prop];
+        top = (point.y < top) ? point.y : top;
+      }
+      return top;
+    },
     deleteSelectedObjs : function(){
       let canvas = this.state.editorData.canvasObj;
       this.mainMethods.canvas.getSelectedObjs(true).forEach((obj,index)=>{
@@ -546,8 +571,11 @@ class CanvasWrapper extends Component {
       let trObjs = [];
       let chainLast = [];
       let chainLastButMerge = [];
-      let trObj = (typeof(OPT_trans)==='object' && OPT_trans!==null) ? OPT_trans : {};
+      // primaryTrObj should always refer to the very first transformation, which should be an actual "thing", like a fetchlayer, public ID layer, etc.
+      let primaryTrObj = (typeof(OPT_trans)==='object' && OPT_trans!==null) ? OPT_trans : {};
       let chainedTrObj = {};
+      // Anything you want chained after the primary layer
+      let chainedTrObjs = [];
       let cropTrObj = {};
       let somethingClippedPast = false;
 
@@ -556,9 +584,11 @@ class CanvasWrapper extends Component {
         chainLast = [];
         chainLastButMerge = [];
         chainedTrObj = {};
+        chainedTrObjs = [];
         cropTrObj = {};
       }
 
+      const alwaysChainLast = ['flags'];
       const chainTogether = ['effect','color','flags','x','y','radius','gravity','angle'];
       const colorProps = ['background','color','effect','flags','x','y','radius'];
       const mappings = {
@@ -570,25 +600,26 @@ class CanvasWrapper extends Component {
         },
         'circle' : {
           supportsColor : true,
-          supportsAngle : false,
+          supportsAngle : true,
           type : 'shape',
           mustChain : colorProps
         },
         'triangle' : {
           supportsColor : true,
           supportsAngle : true,
-          type : 'shape',
-          mustChain : colorProps
+          type : 'shape'
         },
         'text' : {
           supportsColor : true,
           supportsAngle : true,
-          type : 'text'
+          type : 'text',
+          mustChain : ['color']
         },
         'i-text' : {
           supportsColor : true,
           supportsAngle : true,
-          type : 'text'
+          type : 'text',
+          mustChain : ['color']
         },
         'image' : {
           supportsColor : false,
@@ -607,8 +638,9 @@ class CanvasWrapper extends Component {
       let width = parseFloat(canvasObj.get('width'));
       let height = parseFloat(canvasObj.get('height'));
       let angle = parseFloat(canvasObj.get('angle'));
-      let x = this.mainMethods.canvas.getCanvObjOriginalLeft(canvasObj);
-      let y = parseFloat(canvasObj.get('top'));
+      let x = canvasObj.getBoundingRect().left;
+      let y = canvasObj.getBoundingRect().top;
+      //let y = parseFloat(canvasObj.get('top'));
       let scaleX = parseFloat(canvasObj.get('scaleX'));
       let scaleY = parseFloat(canvasObj.get('scaleY'));
       // Handle scaling by using x and y factors and multiplying width and height
@@ -629,26 +661,27 @@ class CanvasWrapper extends Component {
         genericProps.flags = ['layer_apply'];
       }
       // merge generic props into transformation object
-      trObj = this.helpers.objectMerge(trObj,genericProps);
+      primaryTrObj = this.helpers.objectMerge(primaryTrObj,genericProps);
 
       /**
        * Colors
        */
       if (mapping.supportsColor){
-        trObj = this.helpers.objectMerge(trObj,{
+        let colorProps = {
           background : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
           color : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
           effect : 'colorize',
           flags : ['layer_apply'],
           x : parseInt(x,10),
           y : parseInt(y,10)
-        });
+        }
+        primaryTrObj = this.helpers.objectMerge(primaryTrObj,colorProps);
         // A little strange, but 'colorize' needs to be accompanied with coordinates and gravity if chained
         if (mapping.mustChain && mapping.mustChain.indexOf('color')!==-1){
-          chainedTrObj = this.helpers.objectMerge(chainedTrObj,{
-            x : trObj.x,
-            y : trObj.y,
-            gravity : trObj.gravity
+          chainedTrObj = this.helpers.objectMerge(chainedTrObj,colorProps,{
+            x : primaryTrObj.x,
+            y : primaryTrObj.y,
+            gravity : primaryTrObj.gravity
           });
         }
       }
@@ -659,9 +692,10 @@ class CanvasWrapper extends Component {
       if (mapping.type==='shape'){
         // NOTE - order of operations and chaining is important. Size and position should always come first and as separate transformations to avoid conflicts
         // Current way of doing shapes - use a transparent PNG - crop to size, and fill with color
-        trObj = this.helpers.objectMerge(trObj,this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid'));
+        primaryTrObj = this.helpers.objectMerge(primaryTrObj,this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid'));
         if (canvasObjType==='circle'){
-          trObj.radius = parseInt((scaledWidth*0.5),10)
+          primaryTrObj.radius = parseInt((scaledWidth*0.5),10)
+          // @TODO fix angle
         }
         else if (canvasObjType==='triangle'){
           /** This is a little complicated... currently my way to this is to rotate a rect, and then cut off at a 45 degree angle
@@ -676,54 +710,57 @@ class CanvasWrapper extends Component {
              * Before the triangle is rotated by the user, assuming it is facing up, you can think of it being half a rectangle with a skew, where the top of the triangle is the top left of the rectangle, and the bottom left of the triangle is the bottom left of the rectangle. So before even touched by the user, there should already be a 45 degree angle applied
              *   Normally, you would have to "skew" that rectangle if you wanted to get a triangle that is NOT a perfect 90 degrees out of half of it, but the same thing can be achieved by also futzing with the scale... normally I take scale out and just compute a new height and width, but for this I want to do the opposite and add it back
              */
-            angle = 45 + angle;
+            let userAngle = angle;
+            angle = 45 + userAngle;
             let base = (0.5 * width);
             // C = Square Root of (A^2 + B^2)
             let hypotenuse = Math.sqrt((base * base) + (height * height));
             console.log(hypotenuse);
-            // Lets reset a bunch of trObj props
-            trObj = this.helpers.objectMerge(trObj,{
-              width : parseInt((hypotenuse),10),
-              height : parseInt((hypotenuse),10),
-              angle : parseInt(angle,10)
-            });
-            delete trObj.x;
-            delete trObj.y;
-            // Add scale by passing adjusted width and height with crop set to scale in secondary
-            let trObjSecondary = this.helpers.objectMerge({},{
-              width : parseInt((hypotenuse * scaleX),10),
-              height : parseInt((hypotenuse * scaleY * 2),10),
-              crop : 'scale',
-              flags : ['layer_apply'],
-              fetch_format : 'png'
-            });
-            // Since we are generating the overlay separately, to chain as a fetchlayer, we should position at 0,0 so we just get the triangle itself and not any padding
-            trObjSecondary.x = 0;
-            trObjSecondary.y = 0;
-            chainLastButMerge.push(trObjSecondary);
-            // OK, now we should have skew and size correct, but have 2 of the triangles put together - essentially a parallelogram - so we need to slice it down the middle. However, this need to be chained, since it has a different crop method, and can't be combined with the skewing / sizing above
-            // ISSUE: you can't chain multiple crops without having a layer inbetween (i.e. you can't chain multiple fl_layer_apply) - workaround - take transformations so far and shove into cloudinary URL, then use that as a fetchlayer
-            trObjs = processTrObjs();
-            trObj = this.helpers.objectMerge(this.mainMethods.cloudinary.generateFetchLayerFromTrans(trObjs),{
-              x : parseInt(x,10),
-              y : parseInt(y,10),
-              width : parseInt((hypotenuse * scaleX),10),
-              height : parseInt(((hypotenuse * scaleY * 2) * 0.5),10),
-              crop : 'crop',
-              gravity : 'north',
-              flags : ['layer_apply'],
-              keepInPrimary : ['gravity']
-            });
-            // Reset
+            // Triangles are complicated to setup the transformation chain for, so we are kind of starting back from scratch and will build one at a time
             resetTrObjs();
-            // Need to set position of the (now sliced) triangle overlay
-            let trObjThird = {
-              x : parseInt(x,10),
-              y : parseInt(y,10),
+
+            // Start off with just the fetch layer - build a SQUARE (has to be equal sides for split to work later) that most closes matches user selected scale
+            let minSquareSide = scaledHeight > scaledWidth ? scaledHeight : scaledWidth;
+            primaryTrObj = this.helpers.objectMerge(this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid'),{
+              width : parseInt(minSquareSide,10),
+              height : parseInt(minSquareSide,10),
+              gravity : 'north_west'
+            });
+
+            // Position it
+
+            // Rotate the rectangle 45 degrees, and then slice to get a triangle
+            chainedTrObjs.push({
+              angle : 45
+            });
+            chainedTrObjs.push({
+              crop : 'crop',
+              height : parseInt((minSquareSide * 0.5),10),
+              width : parseInt(minSquareSide,10),
+              gravity : 'north'
+            });
+
+            // Now scale it up based on user
+            // Note: Can't apply user's angle here, because it will combine with 45 degree and mess up 50% slice. Have to do it last with layer_apply flag below
+            chainedTrObjs.push({
+              width : parseInt(scaledWidth,10),
+              height : parseInt(scaledHeight,10),
+              crop : 'scale'
+            });
+
+            // Finally, colorize and set layer_apply flag. Note that for X and Y, you need to get the coordinates from the bounding box of the canvasObj, since it has been rotated
+            chainedTrObjs.push({
+              background : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
+              color : 'rgb:' + this.getObjColor(canvasObj).hex.replace('#',''),
+              effect : 'colorize',
+              x : parseInt(canvasObj.getBoundingRect().left,10),
+              y : parseInt(canvasObj.getBoundingRect().top,10),
               gravity : 'north_west',
-              flags : ['layer_apply']
-            };
-            chainLastButMerge.push(trObjThird);
+              flags : ['layer_apply'],
+              angle : parseInt(userAngle,10)
+            });
+
+         
           }
           else if (method==='distort'){
             // @TODO
@@ -740,7 +777,7 @@ class CanvasWrapper extends Component {
         if (scaleX> 1){
           fontSize = parseInt((scaleX * fontSize));
         }
-        trObj = this.helpers.objectMerge(trObj,{
+        primaryTrObj = this.helpers.objectMerge(primaryTrObj,{
           overlay : new cloudinary.TextLayer({
             fontFamily : 'Roboto',
             fontSize : fontSize,
@@ -752,10 +789,10 @@ class CanvasWrapper extends Component {
         // Set text decoration flag
         // @TODO
         // Remove background color
-        delete trObj.background;
+        delete primaryTrObj.background;
         // Remove width and height since that is best controlled through font size
-        delete trObj.width;
-        delete trObj.height;
+        delete primaryTrObj.width;
+        delete primaryTrObj.height;
       }
       else if (mapping.type==='image'){
         // NOTE - X and Y should be chained as a separate transformation, with the "layer_apply" flag, while width and height can be passed directly with image
@@ -766,11 +803,11 @@ class CanvasWrapper extends Component {
         if (typeof(publicId)==='string' && publicId.length > 0){
           useRemote = false;
         }
-        trObj.crop = 'scale';
-        trObj.flags = ['layer_apply'];
+        primaryTrObj.crop = 'scale';
+        primaryTrObj.flags = ['layer_apply'];
         if (useRemote){
           let remoteSrc = canvasObj._originalElement.currentSrc;
-          trObj = this.helpers.objectMerge(trObj,{
+          primaryTrObj = this.helpers.objectMerge(primaryTrObj,{
             overlay : {
               resourceType : 'fetch',
               url : remoteSrc
@@ -778,7 +815,7 @@ class CanvasWrapper extends Component {
           });
         }
         else {
-          trObj = this.helpers.objectMerge(trObj,{
+          primaryTrObj = this.helpers.objectMerge(primaryTrObj,{
             overlay : {
               publicId : publicId
             }
@@ -823,7 +860,7 @@ class CanvasWrapper extends Component {
           trObjSecondary.crop = 'scale';
           trObjSecondary.flags = ['layer_apply'];
 
-          if ('radius' in trObj){
+          if ('radius' in primaryTrObj){
             // This is a little more complicated... 
             // Reset trObjSecondary since crop should be its own transformation
             trObjSecondary = {}
@@ -842,7 +879,7 @@ class CanvasWrapper extends Component {
           chainedTrObj = this.helpers.objectMerge(chainedTrObj,trObjSecondary);
         }
         else {
-          trObj = this.helpers.objectMerge(trObj,cropTrObj);
+          primaryTrObj = this.helpers.objectMerge(primaryTrObj,cropTrObj);
         }
       }
 
@@ -850,24 +887,44 @@ class CanvasWrapper extends Component {
        * Separate out any props that need to be part of their own transformation / chained
        */
       function processTrObjs(){
-        for (var prop in trObj){
-          if ((mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1) || chainTogether.indexOf(prop)!==-1){
+        for (var prop in primaryTrObj){
+          if ((mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1) || chainTogether.indexOf(prop)!==-1 && _this.helpers.arrayAndObjPropCompare(chainTogether,chainedTrObj) > 0){
             // Must chain
-            chainedTrObj[prop] = trObj[prop];
+            chainedTrObj[prop] = primaryTrObj[prop];
             // Don't delete if specified in keepInPrimary prop
-            if (!Array.isArray(trObj.keepInPrimary) || trObj.keepInPrimary.indexOf(prop)===-1){
-              delete trObj[prop];
+            if (!Array.isArray(primaryTrObj.keepInPrimary) || primaryTrObj.keepInPrimary.indexOf(prop)===-1){
+              delete primaryTrObj[prop];
             }
           }
         }
 
         // Push results together
+        trObjs.push(primaryTrObj);
+        chainedTrObjs.forEach((obj)=>{
+          trObjs.push(obj);
+        });
         chainLastButMerge.forEach((el)=>{
           chainedTrObj = _this.helpers.objectMerge(chainedTrObj,el);
         });
-        trObjs.push(trObj,cropTrObj,chainedTrObj);
+        trObjs.push(cropTrObj,chainedTrObj);
         chainLast.reverse();
         chainLast.forEach((el)=>{trObjs.push(el)});
+        // Remove all empty objects
+        trObjs = trObjs.filter((val,index)=>{
+          return Object.keys(val).length > 0;
+        });
+        // Finally, check alwaysChainLast, and "pull" any props to last trObj in chain that match
+        for (var x=0; x<trObjs.length-1; x++){
+          for (var c=0; c<alwaysChainLast.length; c++){
+            if (alwaysChainLast[c] in trObjs[x]){
+              let propToMove = alwaysChainLast[c];
+              // Copy prop to end of chain
+              trObjs[trObjs.length-1][propToMove] = trObjs[x][propToMove];
+              // Delete prop from current trObj
+              delete trObjs[x][propToMove];
+            }
+          }
+        }
 
         // output
         let finalTrObjs = trObjs;
@@ -981,35 +1038,12 @@ class CanvasWrapper extends Component {
       imgSrc = imgSrc.replace(/(l_fetch:)([^\/,]+)\/([^,]+)/gim,(match,p1,p2,p3,offset,string)=>{
         // First, make sure we haven't captured a slash that is natural.
         // Example : l_fetch:DFf98w0384/c_crop,...
-        if (/(l_fetch:[^\/,]+)\/\w_{1}\w+:/.exec(match)){
+        if (/(l_fetch:[^\/,]+)\/\w_{1}\w+/.test(match)){
           return p1 + p2 + '/' + p3;
         }
         else {
-          // Convert from base64 back into the raw URL
-          let encodedUrl = p2 + '/' + p3;
-          let rawImageUrl = atob(encodedUrl);
-          // Try adding characters to the URL until it no longer generates a slash. Not a great solution, but the only workaround I have at the moment, because I can't find anything on escaping slashes IN base64 strings for cloudinary
-          let maxAttempts = 100;
-          let currAttempt = 0;
-          let moddedImageUrl = rawImageUrl;
-          while ((currAttempt < maxAttempts) && /\//.test(btoa(moddedImageUrl))){
-            // Check for existing query string
-            let joiner = /\?.+/.test(moddedImageUrl) ? '&' : (/\?$/.test(moddedImageUrl) ? '' : '?');
-            // Check for mod already started
-            if (/cdwysslashbust=/gim.test(moddedImageUrl)===false){
-              // Start the mod
-              moddedImageUrl = moddedImageUrl + joiner + 'cdwysslashbust='
-            }
-            // Add rand
-            moddedImageUrl = moddedImageUrl + _this.helpers.randomChar();
-            console.log(moddedImageUrl);
-            console.log(btoa(moddedImageUrl));
-            currAttempt++;
-          }
-          console.log(currAttempt);
-          console.log(moddedImageUrl);
-          console.log(btoa(moddedImageUrl));
-          return p1 + btoa(moddedImageUrl); 
+          // You can simply replace the slash with an underscore, as per https://tools.ietf.org/html/rfc4648#page-7
+          return p1 + p2 + '_' + p3;
         }
       });
 
@@ -1222,7 +1256,11 @@ class CanvasWrapper extends Component {
     if (typeof(this.props.masterState.output.imgSrc)==='string' && this.props.masterState.livePreviewSrc !== ''){
       return (
         <div className="instantPreview" style={previewWrapperStyle}>
-          <img src={this.props.masterState.livePreviewSrc} alt="Cloudinary Instant Preview"></img>
+          <img src={this.props.masterState.livePreviewSrc} alt="Cloudinary Instant Preview" style={{
+            width : '100%',
+            height : 'auto',
+            maxWidth : this.state.editorData.canvasDimensions.width
+          }}></img>
         </div>
       )
     }

@@ -119,6 +119,19 @@ class Helpers {
   randomChar = function(){
     return Math.random().toString(36).substring(2,3);
   }
+  
+  arrayAndObjPropCompare = function(arrayOrObjA,arrayOrObjB){
+    // Force array comparison
+    let arrayA = Array.isArray(arrayOrObjA)===true ? arrayOrObjA : (typeof(arrayOrObjA)==='object' ? Object.keys(arrayOrObjA) : []);
+    let arrayB = Array.isArray(arrayOrObjB)===true ? arrayOrObjB : (typeof(arrayOrObjB)==='object' ? Object.keys(arrayOrObjB) : []);
+    let matches = 0;
+    for (var a=0; a<arrayA.length; a++){
+      if (arrayB.indexOf(arrayA[a])!==-1){
+        matches++;
+      }
+    }
+    return matches;
+  }
 }
 
 export default Helpers;
