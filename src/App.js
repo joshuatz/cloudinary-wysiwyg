@@ -53,6 +53,23 @@ class App extends Component {
           'strikethrough' : false
         },
         updateHooks : [],
+        baseLayer : {
+          // image : null,
+          // isId : false,
+          // isImage : true,
+          // isColor : false,
+          // color : null,
+          // opacity : 1,
+          // crop : 'scale'
+
+          image : 'http://lorempixel.com/400/200/sports/',
+          isId : false,
+          isImage : false,
+          isColor : true,
+          colorHex : '#0F4583',
+          opacity : 100,
+          crop : 'scale'
+        },
         baseImage : null
       },
       accountSettings : {

@@ -488,8 +488,23 @@ class CanvasWrapper extends Component {
         return 'sample';
       }
     },
-    getBaseImage : function(){
-      return this.state.editorData.baseImage!==null ? this.state.editorData.baseImage : this.cloudinaryMethods.getFallbackBasePicId.bind(this)();
+    getBaseLayerConfig : function(){
+      let baseLayerConfig = this.state.editorData.baseLayer;
+      // If base type is set to image, but image is not set, fallback to psuedo base
+      if (baseLayerConfig.isImage && baseLayerConfig.image===null){
+        baseLayerConfig.image = this.cloudinaryMethods.getFallbackBasePicId.bind(this)();
+        baseLayerConfig.isId = true;
+        baseLayerConfig.opacity = 0;
+      }
+      else if (baseLayerConfig.isColor){
+        // make sure crop is set to scale
+        baseLayerConfig.crop = 'scale';
+        // Fallback to white color
+        if (baseLayerConfig.colorHex===null){
+          baseLayerConfig.colorHex = '#FFFFFF';
+        }
+      }
+      return baseLayerConfig;
     },
     /**
      * Generates a final cloudinary hosted URL based on an array of transformations
@@ -970,28 +985,43 @@ class CanvasWrapper extends Component {
       _this.cloudinaryMethods.setConfig.bind(this)();
       let cloudinaryInstance = this.cloudinaryInstance;
       canvas = (canvas && typeof(canvas._objects)==='object') ? canvas : this.canvas;
-
-      // Start the transformation chain by create the base cloudinary imageTag
-      let baseImageId = _this.cloudinaryMethods.getBaseImage.bind(this)();
-      let cloudinaryImageTag = cloudinaryInstance.imageTag(baseImageId);
-
       // Get every object on the canvas
       let canvasObjects = canvas._objects;
       let transformationArr = [];
 
       // The very first step, before even looking at which objects are on the canvas, should be to get the "base" image (i.e. the background) on which all objects will be laid. Should be resized to current canvas size
+      // Start the transformation chain by create the base cloudinary imageTag
+      let baseLayerConfig = _this.cloudinaryMethods.getBaseLayerConfig.bind(this)();
       let baseTransformationObj = {
         width : canvas.width,
         height : canvas.height,
-        crop : 'scale'
+        crop : baseLayerConfig.crop,
+        opacity : parseInt(baseLayerConfig.opacity)
       };
-      // Next, if the base image is set as the default fallback - meaning that the user wants to overlay on top of a solid or transparent background, we should make sure the base image will show that way...
-      // @TODO allow for solid fill instead of transparent
-      if (baseImageId === _this.mainMethods.cloudinary.getFallbackBasePicId()){
+      let cloudinaryImageTag = {};
+      if (baseLayerConfig.isColor){
+        // Use fetch as baselayer, with pixel src
+        cloudinaryImageTag = cloudinaryInstance.imageTag(this.mainMethods.cloudinary.getSolidPixelSrc(),{
+          type : 'fetch'
+        });
+        // Apply coloring
         baseTransformationObj = this.helpers.objectMerge(baseTransformationObj,{
-          opacity : 0
+          color : 'rgb:' + baseLayerConfig.colorHex.replace('#',''),
+          effect : 'colorize'
         });
       }
+      else if (baseLayerConfig.isImage){
+        if (baseLayerConfig.isId){
+          cloudinaryImageTag = cloudinaryInstance.imageTag(baseLayerConfig.image);
+        }
+        else {
+          // Use fetch
+          cloudinaryImageTag = cloudinaryInstance.imageTag(baseLayerConfig.image,{
+            type : 'fetch'
+          });
+        }
+      }
+
       if (!useArr){
         cloudinaryImageTag.transformation().chain().transformation(baseTransformationObj).chain();
       }

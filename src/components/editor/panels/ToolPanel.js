@@ -77,7 +77,7 @@ class ToolPanel extends Component {
     },
     {
       icon : 'fa-paint-roller',
-      name : 'Add Background',
+      name : 'Set Background',
       action : function(){
         
       },
