@@ -1,6 +1,5 @@
 Todo list and misc notes
   Top Priority / WIP:
-     - Fix escaping on base64 encoded remote URLs (slash needs to be replaced)
      - Optimize transformation chain as much as possible
         - Prevent duplicate items from being including in transformation chain
      - Setting the background
