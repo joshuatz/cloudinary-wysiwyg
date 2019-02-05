@@ -81,9 +81,9 @@ class ToolPanel extends Component {
       icon : 'fa-paint-roller',
       name : 'Set Background',
       action : function(){
-        
+        this.helpers.mtz.modal('.baseLayerEditor.modal').open();
       },
-      disabled : true
+      disabled : false
     }
   ]
   render(){

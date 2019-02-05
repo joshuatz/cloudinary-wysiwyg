@@ -14,15 +14,18 @@ class ImageSelector extends Component {
     this.helpers = new Helpers();
   }
 
-  componentDidMount(){
-    if (this.props.inline && this.props.destination==='baseLayer'){
-      this.helpers.mtz.init();
-    }
-  }
-
   addImageByUrl(url){
-    console.log(url);
-    this.props.mainMethods.canvas.addImage(url);
+    if (this.props.destination==='baseLayer'){
+      let originalBaseLayer = this.props.masterState.editorData.baseLayer;
+      this.props.mainMethods.app.mergeMasterState('editorData.baseLayer',this.helpers.objectMerge(originalBaseLayer,{
+        image : url,
+        type : 'image',
+        isId : false
+      }));
+    }
+    else {
+      this.props.mainMethods.canvas.addImage(url);
+    }
   }
 
   hostedImageUrlAdd(){
@@ -33,33 +36,43 @@ class ImageSelector extends Component {
   addImageById(){
     let cloudinaryPublicId = this.$('#cloudinaryPublicIdInput').val();
     if (cloudinaryPublicId.length > 0){
-      // Add image to DOM
-      let imgSrc = this.props.mainMethods.cloudinary.getImageSrcFromPublicId(cloudinaryPublicId);
-      // Canvas is going to need the URL suffixed with a file type
-      if (/\.[A-Za-z]{1,10}$/.test(imgSrc)===false){
-        imgSrc = imgSrc + '.png';
+      if (this.props.destination==='baseLayer'){
+        let originalBaseLayer = this.props.masterState.editorData.baseLayer;
+        this.props.mainMethods.app.mergeMasterState('editorData.baseLayer',this.helpers.objectMerge(originalBaseLayer,{
+          image : cloudinaryPublicId,
+          type : 'image',
+          isId : true
+        }));
       }
-      let updatedState = this.state;
-      updatedState.psuedoImages.push(imgSrc);
-      this.setState(updatedState,()=>{
-        let renderedImage = this.$('img[src="' + imgSrc + '"]')[0];
-        setTimeout(()=>{
-          if (renderedImage.width > 0){
-            this.props.mainMethods.canvas.addImage(renderedImage,()=>{
-              // Not sure what is going on here - I think canvas is having some issue with large image rendering
-              // @TODO
-              setTimeout(()=>{
-                this.props.mainMethods.canvas.renderAll(true);
-              },1000);
-              // Delete the psuedo image
-              renderedImage.remove();
-            },null,null,cloudinaryPublicId);
-          }
-          else {
-            //@TODO
-          }
-        },400);
-      });
+      else {
+        // Add image to DOM
+        let imgSrc = this.props.mainMethods.cloudinary.getImageSrcFromPublicId(cloudinaryPublicId);
+        // Canvas is going to need the URL suffixed with a file type
+        if (/\.[A-Za-z]{1,10}$/.test(imgSrc)===false){
+          imgSrc = imgSrc + '.png';
+        }
+        let updatedState = this.state;
+        updatedState.psuedoImages.push(imgSrc);
+        this.setState(updatedState,()=>{
+          let renderedImage = this.$('img[src="' + imgSrc + '"]')[0];
+          setTimeout(()=>{
+            if (renderedImage.width > 0){
+              this.props.mainMethods.canvas.addImage(renderedImage,()=>{
+                // Not sure what is going on here - I think canvas is having some issue with large image rendering
+                // @TODO
+                setTimeout(()=>{
+                  this.props.mainMethods.canvas.renderAll(true);
+                },1000);
+                // Delete the psuedo image
+                renderedImage.remove();
+              },null,null,cloudinaryPublicId);
+            }
+            else {
+              //@TODO
+            }
+          },400);
+        });
+      }
     }
     else {
       // @TODO
