@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import Helpers from '../../../inc/Helpers';
 
 class ToolPanel extends Component {
   constructor(props){
@@ -6,6 +7,7 @@ class ToolPanel extends Component {
     this.state = {
       fabric : {}
     }
+    this.helpers = new Helpers();
   }
 
   componentDidMount(){
@@ -57,7 +59,7 @@ class ToolPanel extends Component {
       icon : 'fa-file-image',
       name : 'Image',
       action : function(){
-        this.props.mainMethods.modals.imageSelector.launch();
+        this.helpers.mtz.modal('.imageHostingMethodSelector[data-destination="canvas"]').open();
       }
     },
     {

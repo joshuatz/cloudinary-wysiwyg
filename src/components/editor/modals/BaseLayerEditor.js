@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import ImageSelector from '../modals/ImageSelector';
 import Helpers from '../../../inc/Helpers';
 
 class BaseLayerEditor extends Component {
@@ -25,6 +26,8 @@ class BaseLayerEditor extends Component {
     this.setState(this.helpers.objectMerge(this.state,{
       type : baseLayerType
     }));
+    // Reinit materialize
+    // @todo
   }
 
   refresh(){
@@ -65,6 +68,13 @@ class BaseLayerEditor extends Component {
                 <div className="card-panel">
                   <p>Nothing to configure :)</p>
                 </div>
+              }
+              {this.state.type==='color' && 
+                <div className="card-panel">
+                </div>
+              }
+              {this.state.type==='image' && 
+                <ImageSelector inline={true} destination="baseLayer" />
               }
             </div>
           </div>

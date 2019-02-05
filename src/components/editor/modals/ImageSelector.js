@@ -1,13 +1,23 @@
 import React, {Component} from 'react';
+import Helpers from '../../../inc/Helpers';
 
 class ImageSelector extends Component {
   constructor(props){
     super(props);
+    // Note - this can be used to either update the baselayer (background) or add an image to the canvas, by changing props.destination
+    // use props.inline to strip out modal
     this.$ = window.jQuery;
     let initialState = {
       psuedoImages : []
     }
     this.state = initialState;
+    this.helpers = new Helpers();
+  }
+
+  componentDidMount(){
+    if (this.props.inline && this.props.destination==='baseLayer'){
+      this.helpers.mtz.init();
+    }
   }
 
   addImageByUrl(url){
@@ -57,6 +67,7 @@ class ImageSelector extends Component {
   }
 
   render(){
+    let destinationString = this.props.inline!==true ? "modal" : "inlineContent";
     let pseudoImageElements = this.state.psuedoImages.map((imgSrc,index)=>{
       return (
         <img src={imgSrc} alt=""></img>
@@ -66,7 +77,7 @@ class ImageSelector extends Component {
       <div className="ImageSelectorWrapper">
 
         {/* Image Hosting Method Selector */}
-        <div className="imageHostingMethodSelector modal">
+        <div className={"imageHostingMethodSelector" + " " + destinationString} data-destination={this.props.destination==='baseLayer' ? 'baseLayer' : 'canvas'}>
           <div className="modal-content">
             <h3>Image Selector</h3>
             <div className="row">
@@ -74,18 +85,18 @@ class ImageSelector extends Component {
               <div className="row center">
                 {/* Tab Select */}
                 <ul className="tabs">
-                  <li className="tab col s3"><a href="#hostedImageSelect">Hosted Image</a></li>
+                  <li className="tab col s3"><a href={"#hostedImageSelect_" + destinationString}>Hosted Image</a></li>
 
-                  <li className="tab col s3 disabled" data-tooltip="Sorry, this has not yet been implemented" data-position="bottom"><a href="#macroImageSelect">Placeholder / Macro</a></li>
+                  <li className="tab col s3 disabled" data-tooltip="Sorry, this has not yet been implemented" data-position="bottom"><a href={"#macroImageSelect_" + destinationString}>Placeholder / Macro</a></li>
 
-                  <li className="tab col s3"><a href="#cloudinaryPublicIdSelect">Cloudinary Public ID</a></li>
+                  <li className="tab col s3"><a href={"#cloudinaryPublicIdSelect_" + destinationString}>Cloudinary Public ID</a></li>
                   
-                  <li className="tab col s3 disabled" data-tooltip="Sorry, this has not yet been implemented" data-position="bottom"><a href="#newImageUploadSelect">Upload</a></li>
+                  <li className="tab col s3 disabled" data-tooltip="Sorry, this has not yet been implemented" data-position="bottom"><a href={"#newImageUploadSelect_" + destinationString}>Upload</a></li>
                 </ul>
               </div>
 
               {/* Tab Content */}
-              <div id="hostedImageSelect">
+              <div id={"hostedImageSelect_" + destinationString}>
                 <div className="tabContent">
                   <div className="row">
                     <div className="input-field col s6 offset-s1">
@@ -93,15 +104,19 @@ class ImageSelector extends Component {
                       <label htmlFor="hostedImageUrl_1">Hosted Image URL:</label>
                     </div>
                     <div className="col s4">
-                      <div className="button btn modal-trigger modal-close" onClick={this.hostedImageUrlAdd.bind(this)}>Add Image</div>
+                      {this.props.destination==='baseLayer' ? (
+                        <div className="button btn modal-trigger modal-close" onClick={this.hostedImageUrlAdd.bind(this)}>Set Image</div>
+                      ) : (
+                        <div className="button btn modal-trigger modal-close" onClick={this.hostedImageUrlAdd.bind(this)}>Add Image</div>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div id="newImageUploadSelect">Sorry, this has not yet been implemented...</div>
+              <div id={"newImageUploadSelect_" + destinationString}>Sorry, this has not yet been implemented...</div>
 
-              <div id="cloudinaryPublicIdSelect">
+              <div id={"cloudinaryPublicIdSelect_" + destinationString}>
                 <div className="tabContent row">
                   <div className="col s6 offset-s1 input-field">
                     <input type="text" id="cloudinaryPublicIdInput" placeholder="flowers"></input>
@@ -113,7 +128,7 @@ class ImageSelector extends Component {
                 </div>
               </div>
 
-              <div id="macroImageSelect">
+              <div id={"macroImageSelect_" + destinationString}>
                 <div className="tabContent row">
                   
                 </div>

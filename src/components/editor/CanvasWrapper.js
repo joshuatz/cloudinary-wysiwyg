@@ -1263,21 +1263,12 @@ class CanvasWrapper extends Component {
     });
   }
 
-  modals = {
-    imageSelector : {
-      launch : function(){
-        this.helpers.mtz.modal('.imageHostingMethodSelector').open();
-      }.bind(this)
-    }
-  }
-
   mainMethods = {
     app : this.props.appMethods,
     colors : {
       handleColorSelect : this.handleColorSelect.bind(this)
     },
     canvas : (new Helpers()).bindObjectMethod(this.canvasMethods,this),
-    modals : this.modals,
     cloudinary : (new Helpers()).bindObjectMethod(this.cloudinaryMethods,this)
   }
 
