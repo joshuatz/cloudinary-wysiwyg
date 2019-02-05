@@ -507,6 +507,43 @@ class CanvasWrapper extends Component {
       }
       return baseLayerConfig;
     },
+    getBaseLayerAsImage(){
+      let canvas = this.canvas;
+      let cloudinaryInstance = this.cloudinaryInstance;
+      let baseLayerConfig = this.cloudinaryMethods.getBaseLayerConfig.bind(this)();
+      let baseTransformationObj = {
+        width : canvas.width,
+        height : canvas.height,
+        crop : baseLayerConfig.crop,
+        opacity : parseInt(baseLayerConfig.opacity)
+      };
+      let cloudinaryImageTag = {};
+      if (baseLayerConfig.isColor){
+        // Use fetch as baselayer, with pixel src
+        cloudinaryImageTag = cloudinaryInstance.imageTag(this.mainMethods.cloudinary.getSolidPixelSrc(),{
+          type : 'fetch'
+        });
+        // Apply coloring
+        baseTransformationObj = this.helpers.objectMerge(baseTransformationObj,{
+          color : 'rgb:' + baseLayerConfig.colorHex.replace('#',''),
+          effect : 'colorize'
+        });
+      }
+      else if (baseLayerConfig.isImage){
+        if (baseLayerConfig.isId){
+          cloudinaryImageTag = cloudinaryInstance.imageTag(baseLayerConfig.image);
+        }
+        else {
+          // Use fetch
+          cloudinaryImageTag = cloudinaryInstance.imageTag(baseLayerConfig.image,{
+            type : 'fetch'
+          });
+        }
+      }
+      // Apply transformations
+      cloudinaryImageTag.transformation().chain().transformation(baseTransformationObj).chain();
+      return cloudinaryImageTag;
+    },
     /**
      * Generates a final cloudinary hosted URL based on an array of transformations
      * @param {array} trObjs - array of transformation objects
@@ -992,41 +1029,7 @@ class CanvasWrapper extends Component {
 
       // The very first step, before even looking at which objects are on the canvas, should be to get the "base" image (i.e. the background) on which all objects will be laid. Should be resized to current canvas size
       // Start the transformation chain by create the base cloudinary imageTag
-      let baseLayerConfig = _this.cloudinaryMethods.getBaseLayerConfig.bind(this)();
-      let baseTransformationObj = {
-        width : canvas.width,
-        height : canvas.height,
-        crop : baseLayerConfig.crop,
-        opacity : parseInt(baseLayerConfig.opacity)
-      };
-      let cloudinaryImageTag = {};
-      if (baseLayerConfig.isColor){
-        // Use fetch as baselayer, with pixel src
-        cloudinaryImageTag = cloudinaryInstance.imageTag(this.mainMethods.cloudinary.getSolidPixelSrc(),{
-          type : 'fetch'
-        });
-        // Apply coloring
-        baseTransformationObj = this.helpers.objectMerge(baseTransformationObj,{
-          color : 'rgb:' + baseLayerConfig.colorHex.replace('#',''),
-          effect : 'colorize'
-        });
-      }
-      else if (baseLayerConfig.isImage){
-        if (baseLayerConfig.isId){
-          cloudinaryImageTag = cloudinaryInstance.imageTag(baseLayerConfig.image);
-        }
-        else {
-          // Use fetch
-          cloudinaryImageTag = cloudinaryInstance.imageTag(baseLayerConfig.image,{
-            type : 'fetch'
-          });
-        }
-      }
-
-      if (!useArr){
-        cloudinaryImageTag.transformation().chain().transformation(baseTransformationObj).chain();
-      }
-      transformationArr.push(baseTransformationObj);
+      let cloudinaryImageTag = this.mainMethods.cloudinary.getBaseLayerAsImage();
 
       // MAIN ITERATOR OVER CANVAS OBJECTS
       let outputNeedsCropping = false;

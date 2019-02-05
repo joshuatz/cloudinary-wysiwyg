@@ -13,7 +13,9 @@ class BaseLayerEditor extends Component {
       <div className="baseLayerEditorWrapper">
         <div className="baseLayerEditor">
           <div className="modal-content">
-            
+            <h3>Base Layer Editor</h3>
+            <div className="row">
+            </div>
           </div>
         </div>
       </div>
