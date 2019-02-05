@@ -5,11 +5,12 @@ import ImageAssets from './panels/ImageAssets';
 import ToolPanel from './panels/ToolPanel';
 import PaintSelector from './panels/PaintSelector';
 import FontSelector from './panels/FontSelector';
-import ImageSelector from './modals/ImageSelector';
-import OutputResults from './modals/OutputResults';
 import CurrObjectActions from './panels/CurrObjectActions';
 import underscore from 'underscore';
-
+// Modals
+import ImageSelector from './modals/ImageSelector';
+import OutputResults from './modals/OutputResults';
+import BaseLayerEditor from './modals/BaseLayerEditor';
 class CanvasWrapper extends Component {
   constructor(props){
     super(props);
@@ -1367,6 +1368,7 @@ class CanvasWrapper extends Component {
         <div className="modals">
           <ImageSelector mainMethods={this.mainMethods} />
           <OutputResults ref={this.outputResultsClass} mainMethods={this.mainMethods} />
+          <BaseLayerEditor />
         </div>
         {/* Hidden Elements that necessary */}
         <div className="dynamicData hidden">

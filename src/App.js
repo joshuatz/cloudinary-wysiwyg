@@ -54,20 +54,12 @@ class App extends Component {
         },
         updateHooks : [],
         baseLayer : {
-          // image : null,
-          // isId : false,
-          // isImage : true,
-          // isColor : false,
-          // color : null,
-          // opacity : 1,
-          // crop : 'scale'
-
-          image : 'http://lorempixel.com/400/200/sports/',
+          image : null,
           isId : false,
-          isImage : false,
-          isColor : true,
-          colorHex : '#0F4583',
-          opacity : 100,
+          isImage : true,
+          isColor : false,
+          color : null,
+          opacity : 1,
           crop : 'scale'
         },
         baseImage : null
