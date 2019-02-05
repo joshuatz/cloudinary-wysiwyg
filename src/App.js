@@ -59,6 +59,7 @@ class App extends Component {
           type : 'none',
           isId : false,
           colorHex : '#FFF',
+          colorRGB : [255,255,255],
           opacity : 100,
           crop : 'scale'
         },

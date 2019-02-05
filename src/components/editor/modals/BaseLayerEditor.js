@@ -19,6 +19,8 @@ class BaseLayerEditor extends Component {
     updatedState = this.helpers.objectMerge(originalState,updatedState);
     this.props.mainMethods.app.mergeMasterState('editorData.baseLayer',updatedState);
     this.setState(updatedState);
+    // Update canvas
+    this.props.mainMethods.canvas.applyBaseLayer();
   }
 
   handleBaseTypeChange(evt){
@@ -29,6 +31,7 @@ class BaseLayerEditor extends Component {
     if (baseLayerType==='none'){
       // For none, set color to white, and set opacity at 100%
       stateChanges.colorHex = '#FFF';
+      stateChanges.colorRGB = [255,255,255];
       stateChanges.opacity = 100;
     }
     this.updateState(stateChanges);
@@ -38,7 +41,8 @@ class BaseLayerEditor extends Component {
 
   handleColorChange(color,event){
     this.updateState({
-      colorHex : color.hex
+      colorHex : color.hex,
+      colorRGB : [color.rgb.r,color.rgb.b,color.rgb.g]
     });
   }
 
@@ -81,7 +85,7 @@ class BaseLayerEditor extends Component {
     let colorHex = typeof(this.props.masterState.editorData.baseLayer.colorHex)==='string' ? this.props.masterState.editorData.baseLayer.colorHex : '#FFF';
     return(
       <div className="baseLayerEditorWrapper">
-        <div className="baseLayerEditor modal">
+        <div className="baseLayerEditor modal" id="baseLayerEditor">
           <div className="modal-content">
             <h3>Base Layer Editor</h3>
             {/* Type of BaseLayer selector */}
@@ -129,7 +133,7 @@ class BaseLayerEditor extends Component {
                   }
                 </div>
                 <div className="col s3">
-                  <div className="button btn modal-trigger modal-close">Save Settings</div>
+                  <div className="button btn modal-close">Save Settings</div>
                 </div>
               </div>
             </div>

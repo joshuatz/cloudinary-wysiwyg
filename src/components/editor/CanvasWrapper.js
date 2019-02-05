@@ -35,7 +35,7 @@ class CanvasWrapper extends Component {
     // Refs
     this.outputResultsClass = React.createRef();
     // Important const - use this list with any calls to canvas.toJSON() to make sure object props are included
-    this.CANVAS_PROPERTIES_TO_KEEP = ['__controlsVisibility'];
+    this.CANVAS_PROPERTIES_TO_KEEP = ['__controlsVisibility','isBaseLayer','baseLayerConfig','myTextObj'];
   }
 
   componentDidMount(){
@@ -73,6 +73,9 @@ class CanvasWrapper extends Component {
       this.mainMethods.canvas.removeMultiLineText(evt.target);
     });
     this.canvas = canvas;
+
+    // Apply canvas baseLayer (sets background)
+    this.mainMethods.canvas.applyBaseLayer();
   }
 
   componentDidUpdate(prevProps,prevState){
@@ -443,9 +446,40 @@ class CanvasWrapper extends Component {
     },
     applyBaseLayer : function(){
       let canvas = this.state.editorData.canvasObj;
+      let canvasObjects = canvas._objects;
       let fabric = this.state.fabric;
-      // Need to find baseLayer in stack
-
+      // Generate canvasObj from baseLayer
+      let baseLayerConfig = this.state.editorData.baseLayer;
+      // opacity is stored in config as 0-100 int, but canvas uses percent float
+      let opacityPercent = parseFloat((baseLayerConfig.opacity / 100));
+      if (baseLayerConfig.type==='image'){
+        let imageUrl = baseLayerConfig.image;
+        if (baseLayerConfig.isId){
+          imageUrl = this.mainMethods.cloudinary.getImageSrcFromPublicId(baseLayerConfig.image);
+        }
+        if (typeof(imageUrl)==='string' && imageUrl!==''){
+          // I need to get the natural / native dimensions of the remote image, so I can calculate scale to fill the entire background
+          this.helpers.loadRemoteImageWithCallback(imageUrl,(imageElem)=>{
+            let scaleX = canvas.width / imageElem.width;
+            let scaleY = canvas.height / imageElem.height;
+            canvas.setBackgroundImage(imageUrl,function(){this.mainMethods.canvas.renderAll()}.bind(this),{
+              width : imageElem.width,
+              height : imageElem.height,
+              scaleX : scaleX,
+              scaleY : scaleY,
+              originX : 'left',
+              originY : 'top',
+              opacity : opacityPercent
+            });
+          }); 
+        }
+      }
+      else if (baseLayerConfig.type==='color' || baseLayerConfig.type==='none'){
+        let rbgaString = 'rgba(' + baseLayerConfig.colorRGB[0] + ',' + baseLayerConfig.colorRGB[1] + ',' + baseLayerConfig.colorRGB[2] + ',' + opacityPercent.toFixed(2) + ')';
+        canvas.setBackgroundColor(rbgaString,function(){
+          this.mainMethods.canvas.renderAll();
+        }.bind(this));
+      }
     }
   }
   // canvasMethods - END
@@ -1044,6 +1078,8 @@ class CanvasWrapper extends Component {
       canvas = (canvas && typeof(canvas._objects)==='object') ? canvas : this.canvas;
       // Get every object on the canvas
       let canvasObjects = canvas._objects;
+      // Filter out baseLayer objects - these are process separately
+      canvasObjects = canvasObjects.filter((val,index)=>{return val.isBaseLayer!==true});
       let transformationArr = [];
 
       // The very first step, before even looking at which objects are on the canvas, should be to get the "base" image (i.e. the background) on which all objects will be laid. Should be resized to current canvas size
@@ -1261,19 +1297,13 @@ class CanvasWrapper extends Component {
     }
   }
 
-  getSelectedObjColor(){
-    
-  }
   getCurrSelectedColor(){
     return this.state.editorData.currSelectedColor;
   }
-  
 
   getPseudoImage(url){
     return this.$('img[src="' + url + '"]')[0];
   }
-
-  
 
   generateCloudinaryAsset(){
     let canvasObjects = this.canvas._objects;
@@ -1331,8 +1361,10 @@ class CanvasWrapper extends Component {
 
           <div className="canvasWrapper leftSide roundedWrapper">
             <h3 className="areaTitle">Editor:</h3>
-            {/* THE ACTUAL CANVAS ELEMENT */}
-            <canvas id="editorCanvas"></canvas>
+            <div className="canvasContainerWrapper">
+              {/* THE ACTUAL CANVAS ELEMENT */}
+              <canvas id="editorCanvas"></canvas>
+            </div>
             <CurrObjectActions masterState={this.masterState} mainMethods={this.mainMethods}></CurrObjectActions>
           </div>
 

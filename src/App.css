@@ -121,11 +121,12 @@ body {
   display: inline-block;
   margin: 10px auto;
 }
+.canvasWrapper .canvasContainerWrapper {
+  border: 4px dashed black;
+}
 .canvasWrapper .canvas-container {
   margin-left: auto;
   margin-right: auto;
-  border: 4px dashed black;
-  background-color: white;
 }
 .canvasWrapper .CurrObjectActions {
   margin-top: 10px;

@@ -18,6 +18,11 @@ class Helpers {
       let $ = this.$;
       this.Materialize.Range.init($(selector));
     }.bind(this),
+    initTabs : function(selector){
+      selector = typeof(selector)==='string' ? selector : 'ul.tabs';
+      let $ = this.$;
+      this.Materialize.Tabs.init($(selector));
+    }.bind(this),
     modal : function(selector){
       let $ = this.$;
       var Materialize = this.Materialize;
@@ -136,6 +141,19 @@ class Helpers {
       }
     }
     return matches;
+  }
+
+  getRemoteImageProps = function(remoteImageUrl,callback){
+    //
+  }
+
+  loadRemoteImageWithCallback(remoteImageUrl,callback){
+    let $ = this.$;
+    let image = new Image();
+    image.onload = function(){
+      callback(this);
+    }
+    image.src = remoteImageUrl;
   }
 }
 

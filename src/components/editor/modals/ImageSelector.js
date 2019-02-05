@@ -12,6 +12,14 @@ class ImageSelector extends Component {
     }
     this.state = initialState;
     this.helpers = new Helpers();
+    this.destinationString = this.props.destination==='baseLayer' ? 'baseLayer' : 'canvas'
+    this.useModal = this.props.inline!==true;
+    this.modalClassName = this.useModal ? "modal" : "inlineContent";
+  }
+
+  componentDidMount(){
+    let currModalTabs = this.$('.imageHostingMethodSelector.' + this.modalClassName + ' .tabs');
+    this.helpers.mtz.initTabs(currModalTabs);
   }
 
   addImageByUrl(url){
@@ -21,7 +29,9 @@ class ImageSelector extends Component {
         image : url,
         type : 'image',
         isId : false
-      }));
+      }),()=>{
+        this.props.mainMethods.canvas.applyBaseLayer();
+      });
     }
     else {
       this.props.mainMethods.canvas.addImage(url);
@@ -29,12 +39,13 @@ class ImageSelector extends Component {
   }
 
   hostedImageUrlAdd(){
-    let hostedImageUrl = this.$('#hostedImageUrl_1').val();
+    let hostedImageUrl = this.$('#hostedImageUrl_' + this.destinationString).val();
     this.addImageByUrl(hostedImageUrl);
   }
 
   addImageById(){
-    let cloudinaryPublicId = this.$('#cloudinaryPublicIdInput').val();
+    let _this = this;
+    let cloudinaryPublicId = this.$('#cloudinaryPublicIdInput_' + this.destinationString).val();
     if (cloudinaryPublicId.length > 0){
       if (this.props.destination==='baseLayer'){
         let originalBaseLayer = this.props.masterState.editorData.baseLayer;
@@ -42,7 +53,9 @@ class ImageSelector extends Component {
           image : cloudinaryPublicId,
           type : 'image',
           isId : true
-        }));
+        }),()=>{
+          _this.props.mainMethods.canvas.applyBaseLayer();
+        });
       }
       else {
         // Add image to DOM
@@ -80,7 +93,7 @@ class ImageSelector extends Component {
   }
 
   render(){
-    let destinationString = this.props.inline!==true ? "modal" : "inlineContent";
+    let destinationString = this.destinationString;
     let pseudoImageElements = this.state.psuedoImages.map((imgSrc,index)=>{
       return (
         <img src={imgSrc} alt=""></img>
@@ -90,7 +103,7 @@ class ImageSelector extends Component {
       <div className="ImageSelectorWrapper">
 
         {/* Image Hosting Method Selector */}
-        <div className={"imageHostingMethodSelector" + " " + destinationString} data-destination={this.props.destination==='baseLayer' ? 'baseLayer' : 'canvas'}>
+        <div className={"imageHostingMethodSelector" + " " + this.modalClassName} data-destination={this.destinationString}>
           <div className="modal-content">
             {this.props.destination!=='baseLayer' &&
               <h3>Image Selector</h3>
@@ -115,14 +128,14 @@ class ImageSelector extends Component {
                 <div className="tabContent">
                   <div className="row">
                     <div className="input-field col s6 offset-s1">
-                      <input type="url" className="validate" id="hostedImageUrl_1" placeholder="https://picsum.photos/200/300" />
-                      <label htmlFor="hostedImageUrl_1">Hosted Image URL:</label>
+                      <input type="url" className="validate" id={"hostedImageUrl_" + destinationString} placeholder="https://picsum.photos/200/300" />
+                      <label htmlFor={"hostedImageUrl_" + destinationString} >Hosted Image URL:</label>
                     </div>
                     <div className="col s4">
                       {this.props.destination==='baseLayer' ? (
-                        <div className="button btn modal-trigger modal-close" onClick={this.hostedImageUrlAdd.bind(this)}>Set Image</div>
+                        <div className="button btn modal-close" onClick={this.hostedImageUrlAdd.bind(this)}>Set Image</div>
                       ) : (
-                        <div className="button btn modal-trigger modal-close" onClick={this.hostedImageUrlAdd.bind(this)}>Add Image</div>
+                        <div className="button btn modal-close" onClick={this.hostedImageUrlAdd.bind(this)}>Add Image</div>
                       )}
                     </div>
                   </div>
@@ -134,14 +147,14 @@ class ImageSelector extends Component {
               <div id={"cloudinaryPublicIdSelect_" + destinationString}>
                 <div className="tabContent row">
                   <div className="col s6 offset-s1 input-field">
-                    <input type="text" id="cloudinaryPublicIdInput" placeholder="flowers"></input>
-                    <label htmlFor="cloudinaryPublicIdInput">Cloudinary Public ID:</label>
+                    <input type="text" id={"cloudinaryPublicIdInput_" + destinationString} placeholder="flowers"></input>
+                    <label htmlFor={"cloudinaryPublicIdInput_" + destinationString}>Cloudinary Public ID:</label>
                   </div>
                   <div className="col s4">
                     {this.props.destination==='baseLayer' ? (
-                      <div className="button btn modal-trigger modal-close" onClick={this.addImageById.bind(this)}>Set Image</div>
+                      <div className="button btn modal-close" onClick={this.addImageById.bind(this)}>Set Image</div>
                     ) : (
-                      <div className="button btn modal-trigger modal-close" onClick={this.addImageById.bind(this)}>Add Image</div>
+                      <div className="button btn modal-close" onClick={this.addImageById.bind(this)}>Add Image</div>
                     )}
                   </div>
                 </div>
