@@ -11,7 +11,6 @@ class Helpers {
       $(document).ready(function(){
         this.Materialize.AutoInit();
         $('[data-tooltip]').tooltip();
-        $('.tabs').tabs();
       }.bind(this));
     }.bind(this),
     modal : function(selector){

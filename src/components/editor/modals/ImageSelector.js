@@ -79,7 +79,9 @@ class ImageSelector extends Component {
         {/* Image Hosting Method Selector */}
         <div className={"imageHostingMethodSelector" + " " + destinationString} data-destination={this.props.destination==='baseLayer' ? 'baseLayer' : 'canvas'}>
           <div className="modal-content">
-            <h3>Image Selector</h3>
+            {this.props.destination!=='baseLayer' &&
+              <h3>Image Selector</h3>
+            }
             <div className="row">
               <div className="col s12 center">What type of image do  you want to use?</div>
               <div className="row center">
@@ -123,7 +125,11 @@ class ImageSelector extends Component {
                     <label htmlFor="cloudinaryPublicIdInput">Cloudinary Public ID:</label>
                   </div>
                   <div className="col s4">
-                    <div className="button btn modal-trigger modal-close" onClick={this.addImageById.bind(this)}>Add Image</div>
+                    {this.props.destination==='baseLayer' ? (
+                      <div className="button btn modal-trigger modal-close" onClick={this.addImageById.bind(this)}>Set Image</div>
+                    ) : (
+                      <div className="button btn modal-trigger modal-close" onClick={this.addImageById.bind(this)}>Add Image</div>
+                    )}
                   </div>
                 </div>
               </div>

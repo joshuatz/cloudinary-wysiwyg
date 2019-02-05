@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import ImageSelector from '../modals/ImageSelector';
 import Helpers from '../../../inc/Helpers';
+import {ChromePicker} from 'react-color';
 
 class BaseLayerEditor extends Component {
   constructor(props){
@@ -19,15 +20,24 @@ class BaseLayerEditor extends Component {
     this.helpers = new Helpers();
   }
 
+  updateState(updatedState){
+    let originalState = this.state;
+    updatedState = this.helpers.objectMerge(originalState,updatedState);
+    this.props.mainMethods.app.mergeMasterState('editorData.baseLayer',updatedState);
+    this.setState(updatedState);
+  }
+
   handleBaseTypeChange(evt){
-    let $ = this.$;
     let baseLayerType = evt.target.value;
-    this.props.mainMethods.app.mergeMasterState('editorData.baseLayer.type',baseLayerType);
-    this.setState(this.helpers.objectMerge(this.state,{
+    this.updateState({
       type : baseLayerType
-    }));
-    // Reinit materialize
-    // @todo
+    });
+  }
+
+  handleColorChange(color,event){
+    this.updateState({
+      color : color.hex
+    });
   }
 
   refresh(){
@@ -35,6 +45,7 @@ class BaseLayerEditor extends Component {
   }
   
   render(){
+    let colorHex = typeof(this.state.color)==='string' ? this.state.color : '#FFF';
     return(
       <div className="baseLayerEditorWrapper">
         <div className="baseLayerEditor">
@@ -63,19 +74,29 @@ class BaseLayerEditor extends Component {
                 </p>
               </div>
             </div>
-            <div className="subConfigPanels">
-              {this.state.type==='none' && 
-                <div className="card-panel">
-                  <p>Nothing to configure :)</p>
+            <div className="subConfigPanels row">
+              <div className="valign-wrapper">
+                <div className="col s9">
+                  {this.state.type==='none' && 
+                    <div className="card-panel">
+                      <p>Nothing to configure :)</p>
+                    </div>
+                  }
+                  {this.state.type==='color' && 
+                    <div className="card-panel">
+                      <ChromePicker className="autoCenter" onChangeComplete={this.handleColorChange.bind(this)} color={colorHex}/>
+                    </div>
+                  }
+                  {this.state.type==='image' && 
+                    <div className="card-panel">
+                      <ImageSelector inline={true} destination="baseLayer" />
+                    </div>
+                  }
                 </div>
-              }
-              {this.state.type==='color' && 
-                <div className="card-panel">
+                <div className="col s3">
+                  <div className="button btn modal-trigger modal-close">Save Settings</div>
                 </div>
-              }
-              {this.state.type==='image' && 
-                <ImageSelector inline={true} destination="baseLayer" />
-              }
+              </div>
             </div>
           </div>
         </div>
