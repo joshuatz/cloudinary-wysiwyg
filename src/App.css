@@ -316,3 +316,7 @@ ul.tabs > li.tab {
   display: inline-block;
   margin-right: 10px;
 }
+
+.opacitySliderNumber, label[for="opacitySlider"] {
+  font-size: 20px;
+}

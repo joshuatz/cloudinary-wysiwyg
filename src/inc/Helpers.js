@@ -13,6 +13,11 @@ class Helpers {
         $('[data-tooltip]').tooltip();
       }.bind(this));
     }.bind(this),
+    initSliders : function(selector){
+      selector = typeof(selector)==='string' ? selector : 'input[type="range"]'
+      let $ = this.$;
+      this.Materialize.Range.init($(selector));
+    }.bind(this),
     modal : function(selector){
       let $ = this.$;
       var Materialize = this.Materialize;

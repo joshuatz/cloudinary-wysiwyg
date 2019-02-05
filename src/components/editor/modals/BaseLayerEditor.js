@@ -12,8 +12,8 @@ class BaseLayerEditor extends Component {
       image : null,
       type : 'none',
       isId : false,
-      color : null,
-      opacity : 1,
+      colorHex : null,
+      opacity : 100,
       crop : 'scale'
     };
     this.state = initialState;
@@ -32,12 +32,32 @@ class BaseLayerEditor extends Component {
     this.updateState({
       type : baseLayerType
     });
+    // Re init Materialize slider
+    this.helpers.mtz.initSliders('#opacitySlider');
   }
 
   handleColorChange(color,event){
     this.updateState({
-      color : color.hex
+      colorHex : color.hex
     });
+  }
+
+  handleOpacityChange(evt){
+    let opacity = parseInt(evt.target.value);
+    this.updateState({
+      opacity : opacity
+    });
+  }
+
+  shouldComponentUpdate(nextProps,nextState){
+    if (JSON.stringify(this.state)!==JSON.stringify(nextState)){
+      return true;
+    }
+    return false;
+  }
+
+  componentDidUpdate(){
+    this.helpers.mtz.initSliders('#opacitySlider');
   }
 
   refresh(){
@@ -45,7 +65,20 @@ class BaseLayerEditor extends Component {
   }
   
   render(){
-    let colorHex = typeof(this.state.color)==='string' ? this.state.color : '#FFF';
+    let opacitySlider = (
+      <div className="opacitySliderWrapper">
+        <div className="row">
+          <p className="range-field col s9">
+            <input type="range" value={this.state.opacity} name="opacitySlider" id="opacitySlider" min="0" max="100" onChange={this.handleOpacityChange.bind(this)} />
+            <label htmlFor="opacitySlider">Opacity (from 0 to 100%)</label>
+          </p>
+          <div className="col s3">
+            <div className="opacitySliderNumber">{this.state.opacity}%</div>
+          </div>
+        </div>
+      </div>
+    );
+    let colorHex = typeof(this.state.colorHex)==='string' ? this.state.colorHex : '#FFF';
     return(
       <div className="baseLayerEditorWrapper">
         <div className="baseLayerEditor">
@@ -84,11 +117,13 @@ class BaseLayerEditor extends Component {
                   }
                   {this.state.type==='color' && 
                     <div className="card-panel">
+                      {opacitySlider}
                       <ChromePicker className="autoCenter" onChangeComplete={this.handleColorChange.bind(this)} color={colorHex}/>
                     </div>
                   }
                   {this.state.type==='image' && 
                     <div className="card-panel">
+                      {opacitySlider}
                       <ImageSelector inline={true} destination="baseLayer" />
                     </div>
                   }
