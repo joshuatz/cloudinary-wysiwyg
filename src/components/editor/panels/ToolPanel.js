@@ -70,14 +70,6 @@ class ToolPanel extends Component {
       }
     },
     {
-      icon : 'fa-layer-group',
-      name : 'Add Layer',
-      action : function(){
-
-      },
-      disabled : true
-    },
-    {
       icon : 'fa-paint-roller',
       name : 'Set Background',
       action : function(){

@@ -143,10 +143,11 @@ class Helpers {
     return matches;
   }
 
-  getRemoteImageProps = function(remoteImageUrl,callback){
-    //
-  }
-
+  /**
+   * Load a hosted image without visibly adding to DOM, to get attributes
+   * @param {string} remoteImageUrl - the URL of the hosted image to load 
+   * @param {function} callback - function that will be called with the (loaded) image as the argument.
+   */
   loadRemoteImageWithCallback(remoteImageUrl,callback){
     let $ = this.$;
     let image = new Image();

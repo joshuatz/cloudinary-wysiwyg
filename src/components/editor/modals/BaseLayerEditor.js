@@ -8,7 +8,6 @@ class BaseLayerEditor extends Component {
   constructor(props){
     super(props);
     this.$ = window.jQuery;
-    // Basically a clone of masterState.editorData.baseLayer
     let initialState = {};
     this.state = initialState;
     this.helpers = new Helpers();
@@ -62,10 +61,6 @@ class BaseLayerEditor extends Component {
 
   componentDidUpdate(){
     this.helpers.mtz.initSliders('#opacitySlider');
-  }
-
-  refresh(){
-    //
   }
   
   render(){

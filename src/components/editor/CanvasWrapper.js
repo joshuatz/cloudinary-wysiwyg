@@ -896,7 +896,7 @@ class CanvasWrapper extends Component {
         // @TODO
         // Remove background color
         delete primaryTrObj.background;
-        // Remove width and height since that is best controlled through font size
+        // Remove width and height since that is best controlled through font size and/or scaling
         delete primaryTrObj.width;
         delete primaryTrObj.height;
       }
