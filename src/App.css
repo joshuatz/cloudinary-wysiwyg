@@ -311,3 +311,8 @@ ul.tabs > li.tab {
 .outputResultModal .resultsPanelPreviewImage {
   max-height: 200px !important;
 }
+
+.horizontalRadioGroup > p {
+  display: inline-block;
+  margin-right: 10px;
+}

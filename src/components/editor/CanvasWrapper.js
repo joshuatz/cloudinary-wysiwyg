@@ -492,12 +492,12 @@ class CanvasWrapper extends Component {
     getBaseLayerConfig : function(){
       let baseLayerConfig = this.state.editorData.baseLayer;
       // If base type is set to image, but image is not set, fallback to psuedo base
-      if (baseLayerConfig.isImage && baseLayerConfig.image===null){
+      if (baseLayerConfig.type==='image' && baseLayerConfig.image===null){
         baseLayerConfig.image = this.cloudinaryMethods.getFallbackBasePicId.bind(this)();
         baseLayerConfig.isId = true;
         baseLayerConfig.opacity = 0;
       }
-      else if (baseLayerConfig.isColor){
+      else if (baseLayerConfig.type==='color'){
         // make sure crop is set to scale
         baseLayerConfig.crop = 'scale';
         // Fallback to white color
@@ -518,7 +518,7 @@ class CanvasWrapper extends Component {
         opacity : parseInt(baseLayerConfig.opacity)
       };
       let cloudinaryImageTag = {};
-      if (baseLayerConfig.isColor){
+      if (baseLayerConfig.type==='color'){
         // Use fetch as baselayer, with pixel src
         cloudinaryImageTag = cloudinaryInstance.imageTag(this.mainMethods.cloudinary.getSolidPixelSrc(),{
           type : 'fetch'
@@ -529,7 +529,7 @@ class CanvasWrapper extends Component {
           effect : 'colorize'
         });
       }
-      else if (baseLayerConfig.isImage){
+      else if (baseLayerConfig.type==='image'){
         if (baseLayerConfig.isId){
           cloudinaryImageTag = cloudinaryInstance.imageTag(baseLayerConfig.image);
         }
@@ -1371,7 +1371,7 @@ class CanvasWrapper extends Component {
         <div className="modals">
           <ImageSelector mainMethods={this.mainMethods} />
           <OutputResults ref={this.outputResultsClass} mainMethods={this.mainMethods} />
-          <BaseLayerEditor />
+          <BaseLayerEditor mainMethods={this.mainMethods} masterState={this.masterState} />
         </div>
         {/* Hidden Elements that necessary */}
         <div className="dynamicData hidden">

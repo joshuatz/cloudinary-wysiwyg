@@ -55,9 +55,9 @@ class App extends Component {
         updateHooks : [],
         baseLayer : {
           image : null,
+          // null | 'none' | 'image' | 'color'
+          type : 'none',
           isId : false,
-          isImage : true,
-          isColor : false,
           color : null,
           opacity : 1,
           crop : 'scale'
