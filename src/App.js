@@ -58,7 +58,7 @@ class App extends Component {
           // null | 'none' | 'image' | 'color'
           type : 'none',
           isId : false,
-          colorHex : null,
+          colorHex : '#FFF',
           opacity : 100,
           crop : 'scale'
         },

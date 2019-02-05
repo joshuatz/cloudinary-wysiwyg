@@ -23,9 +23,15 @@ class BaseLayerEditor extends Component {
 
   handleBaseTypeChange(evt){
     let baseLayerType = evt.target.value;
-    this.updateState({
+    let stateChanges = {
       type : baseLayerType
-    });
+    }
+    if (baseLayerType==='none'){
+      // For none, set color to white, and set opacity at 100%
+      stateChanges.colorHex = '#FFF';
+      stateChanges.opacity = 100;
+    }
+    this.updateState(stateChanges);
     // Re init Materialize slider
     this.helpers.mtz.initSliders('#opacitySlider');
   }
@@ -106,7 +112,7 @@ class BaseLayerEditor extends Component {
                 <div className="col s9">
                   {this.props.masterState.editorData.baseLayer.type==='none' && 
                     <div className="card-panel">
-                      <p>Nothing to configure :)</p>
+                      {opacitySlider}
                     </div>
                   }
                   {this.props.masterState.editorData.baseLayer.type==='color' && 

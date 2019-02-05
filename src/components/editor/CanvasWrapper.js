@@ -81,6 +81,8 @@ class CanvasWrapper extends Component {
       console.log('canvas dimensions changed');
       this.mainMethods.canvas.updateDimensions();
     }
+    // Check for baseLayer changes...
+
   }
 
   /**
@@ -438,6 +440,12 @@ class CanvasWrapper extends Component {
       this.state.editorData.canvasObj.setWidth(width);
       // Prompt re-render with force
       this.mainMethods.canvas.renderAll(true);
+    },
+    applyBaseLayer : function(){
+      let canvas = this.state.editorData.canvasObj;
+      let fabric = this.state.fabric;
+      // Need to find baseLayer in stack
+
     }
   }
   // canvasMethods - END
@@ -514,11 +522,14 @@ class CanvasWrapper extends Component {
       let baseTransformationObj = {
         width : canvas.width,
         height : canvas.height,
-        crop : baseLayerConfig.crop,
-        opacity : parseInt(baseLayerConfig.opacity)
+        crop : baseLayerConfig.crop
       };
+      // Only add opacity param if NOT 100
+      if (baseLayerConfig.opacity < 100){
+        baseTransformationObj.opacity = parseInt(baseLayerConfig.opacity);
+      }
       let cloudinaryImageTag = {};
-      if (baseLayerConfig.type==='color'){
+      if (baseLayerConfig.type==='color' || baseLayerConfig.type==='none'){
         // Use fetch as baselayer, with pixel src
         cloudinaryImageTag = cloudinaryInstance.imageTag(this.mainMethods.cloudinary.getSolidPixelSrc(),{
           type : 'fetch'
@@ -540,6 +551,14 @@ class CanvasWrapper extends Component {
           });
         }
       }
+
+      // Important - if user set baseLayer opacity at ANYTHING other than 100, we should assume they want a PNG to support alpha
+      if (baseLayerConfig.opacity < 100){
+        baseTransformationObj = this.helpers.objectMerge(baseTransformationObj,{
+          format : 'png'
+        });
+      }
+
       // Apply transformations
       cloudinaryImageTag.transformation().chain().transformation(baseTransformationObj).chain();
       return cloudinaryImageTag;
