@@ -321,3 +321,10 @@ ul.tabs > li.tab {
 .opacitySliderNumber, label[for="opacitySlider"] {
   font-size: 20px;
 }
+
+/**
+* Disable Alpha Slider in Chrome-Picker
+*/
+.chrome-picker > div:last-child > div:first-child > div:last-child > div:last-child {
+  display: none !important;
+}

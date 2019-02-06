@@ -2,7 +2,6 @@ Todo list and misc notes
   Top Priority / WIP:
      - Optimize transformation chain as much as possible
         - Prevent duplicate items from being including in transformation chain
-     - Setting the background
      - Add support for transparency / alpha in...
        - Color picker and applied to shapes
        - for image or text overlays
