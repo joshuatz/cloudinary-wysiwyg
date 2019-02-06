@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Helpers from '../inc/Helpers';
 const MASTER_STATE_KEY = 'accountSettings';
 
 class AccountSettingsPanel extends Component {
@@ -23,6 +24,8 @@ class AccountSettingsPanel extends Component {
       this.props.appMethods.mergeMasterState(MASTER_STATE_KEY,newState);
     }
 
+    this.helpers = new Helpers();
+
     // Attach this components state to master
     this.state = this.props.masterState[MASTER_STATE_KEY];
     this.copyDimensionsToCanvas();
@@ -41,7 +44,8 @@ class AccountSettingsPanel extends Component {
       fetchInstantly : false,
       lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24),
       editorWidth : 400,
-      editorHeight : 400
+      editorHeight : 400,
+      outputScale : 1
     }
   }
 
@@ -94,11 +98,8 @@ class AccountSettingsPanel extends Component {
     }
   }
 
-  updateCanvasDimensions(){
-    this.props.mainMethods.appMethods.mergeMasterState('editorData.canvasDimensions',{
-      width : this.state.editorWidth,
-      height : this.state.editorHeight
-    });
+  updateOutputScale(evt){
+    debugger;
   }
   
   /**
@@ -116,6 +117,10 @@ class AccountSettingsPanel extends Component {
     localStorage.removeItem(this.LOCALSTORAGEKEY);
     this.props.appMethods.addMsg('Reset Settings');
     this.props.appMethods.resetEverything();
+  }
+
+  componentDidUpdate(){
+    this.helpers.mtz.initSliders('#outputScale');
   }
 
   render() {
@@ -150,8 +155,21 @@ class AccountSettingsPanel extends Component {
             <label htmlFor="#editorHeight">Editor Height:</label>
           </div>
         </div>
+        <div className="row outputScaleWrapper">
+          <p className="range-field col s6">
+            <input type="range" value={this.state.outputScale} name="outputScale" id="outputScale" min="1" max="20" onChange={this.handleChange.bind(this)} />
+            <label htmlFor="outputScale">Output Scale</label>
+          </p>
+          <div className="col s6 row">
+            <div className="col s6">
+              Editor output will be scaled to x{this.state.outputScale}
+            </div>
+            <div className="col s6">
+              Final dimensions = {this.state.editorWidth * this.state.outputScale}px X {this.state.editorHeight * this.state.outputScale}px
+            </div>
+          </div>
+        </div>
         <div className="row center resetButtonsWrapper">
-          
           <div className="col s5 offset-s1 center">
             <div className="btn warningColor" onClick={this.props.appMethods.resetCanvas.bind(this)}>Reset Canvas</div>
           </div>
