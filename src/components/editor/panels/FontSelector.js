@@ -1,21 +1,21 @@
 import React, {Component} from 'react';
-let googleFonts = require( 'google-fonts-complete/google-fonts.json');
+let googleFonts = require('google-fonts-complete/google-fonts.json');
+const GOOGLE_FONTS_ARR = Object.keys(googleFonts);
 
 class FontSelector extends Component  {
   constructor(props){
     super(props);
     let initialState = {
       googleFontsObj : googleFonts,
-      googleFontsArr : Object.keys(googleFonts),
       currSelectedFont : {},
       currSelectedFontSyleObj : {}
     }
     Object.assign(initialState.currSelectedFont,this.getCurrSelectedFont(false));
     this.state = initialState;
     this.$ = window.$;
-    this.fontSelectOptions = this.state.googleFontsArr.map((fontName,index)=>{
+    this.fontSelectOptions = GOOGLE_FONTS_ARR.map((fontName,index)=>{
       return (
-        <option value={fontName} key={fontName}>{fontName}</option>
+        <option value={fontName} key={fontName+'_'+index}>{fontName}</option>
       )
     });
   }
@@ -30,6 +30,10 @@ class FontSelector extends Component  {
       return true;
     }
     return false;
+  }
+
+  componentDidUpdate(){
+    this.updateFontSelectorFromState();
   }
 
   /**
@@ -68,6 +72,17 @@ class FontSelector extends Component  {
     this.props.mainMethods.app.mergeEditorData('currSelectedFont.fontFamilyFull',fontFamilyString);
     this.props.mainMethods.app.mergeEditorData('currSelectedFont.fontFamilySlim',selectedFontName);
     this.updateSelectedTextObjs();
+  }
+
+  /**
+   * This will update the font selector <select></select> dropdown to show the matching font from state
+   */
+  updateFontSelectorFromState(){
+    let $ = this.$;
+    let fontSelect = $('.fontFamilyPickerDropdown select');
+    fontSelect.find('option[value="' + this.state.currSelectedFont.fontFamilySlim + '"]').prop('selected',true);
+    // Materialize needs to be re-inited
+    fontSelect.formSelect();
   }
 
   /**
@@ -183,19 +198,6 @@ class FontSelector extends Component  {
   }
 
   render(){
-    // Build font select <option></option>
-    let fontSelectOptions = this.state.googleFontsArr.filter((fontName)=>{
-      return (!this.getIsFontSelected() || this.getCurrSelectedFont().fontFamily!==fontName)
-    },this).map((fontName,index)=>{
-      return (
-        <option value={fontName} key={fontName + '_' + index}>{fontName}</option>
-      )
-    });
-    if (this.getIsFontSelected()){
-      fontSelectOptions.unshift((
-        <option value={this.getCurrSelectedFont().fontFamilySlim} key={this.getCurrSelectedFont().fontFamilySlim}>{this.getCurrSelectedFont().fontFamilySlim}</option>
-      ));
-    }
     // Build font buttons
     let buttonsHTML = this.fontButtons.map((val,index)=>{
       let propName = val.currSelectedFontProp;
@@ -222,7 +224,7 @@ class FontSelector extends Component  {
       <div>
         <div className="input-field col s8 fontFamilyPickerDropdown">
           <select onChange={this.handleFontFamilyChange.bind(this)}>
-            {fontSelectOptions}
+            {this.fontSelectOptions}
           </select>
         </div>
         <div className="input-field col s4 fontSizePickerDropdown">

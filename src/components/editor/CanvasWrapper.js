@@ -1390,7 +1390,7 @@ class CanvasWrapper extends Component {
             </div>
 
             <div className="col s12 sidebarComponent">
-              <PaintSelector mainMethods={this.mainMethods} color={this.state.editorData.currSelectedColor} />
+              <PaintSelector handleColorSelect={this.mainMethods.colors.handleColorSelect} color={this.state.editorData.currSelectedColor} />
             </div>
 
             <div className="col s12 sidebarComponent">
