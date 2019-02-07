@@ -683,7 +683,12 @@ class CanvasWrapper extends Component {
       // Anything you want chained after the primary layer
       let chainedTrObjs = [];
       let cropTrObj = {};
+      // Clipping info
       let somethingClippedPast = false;
+      let minX = 0;
+      let maxX = canvasDimensions.width;
+      let minY = 0;
+      let maxY = canvasDimensions.height;
 
       function resetTrObjs(){
         trObjs = [];
@@ -801,7 +806,6 @@ class CanvasWrapper extends Component {
         primaryTrObj = this.helpers.objectMerge(primaryTrObj,this.mainMethods.cloudinary.getTransformationObj('pixel').get('solid'));
         if (canvasObjType==='circle'){
           primaryTrObj.radius = parseInt((scaledWidth*0.5),10)
-          // @TODO fix angle
         }
         else if (canvasObjType==='triangle'){
           /** This is a little complicated... currently my way to this is to rotate a rect, and then cut off at a 45 degree angle
@@ -832,8 +836,6 @@ class CanvasWrapper extends Component {
               height : parseInt(minSquareSide,10),
               gravity : 'north_west'
             });
-
-            // Position it
 
             // Rotate the rectangle 45 degrees, and then slice to get a triangle
             chainedTrObjs.push({
@@ -932,7 +934,18 @@ class CanvasWrapper extends Component {
       /**
        * Calculation of boundaries / clipping
        */
-      somethingClippedPast = ((x + scaledWidth > canvasDimensions.width) || (y + scaledHeight > canvasDimensions.height));
+      let leftEdge = x;
+      let topEdge = y;
+      let rightEdge = x + scaledWidth;
+      let bottomEdge = y + scaledHeight;
+      // Update min/max X/Y values
+      minX = (x < minX) ? x : minX;
+      maxX = (rightEdge > x) ? rightEdge : maxX;
+      minY = (y < minY) ? y : minY;
+      maxY = (bottomEdge > y) ? bottomEdge : maxY;
+      // Did something clip? 
+      somethingClippedPast = (leftEdge < 0 || topEdge < 0 || (x + scaledWidth > canvasDimensions.width) || (y + scaledHeight > canvasDimensions.height));
+      // Only clip per object if setting instructs to
       if (forceBounding){
         let modPrimary = true;
         let doesClip = false;
@@ -973,8 +986,8 @@ class CanvasWrapper extends Component {
 
             // To crop to a specific region (the region not overlapping) I need to manually set the crop region by offseting x and y from 0,0 (top left) of the original image
             // https://cloudinary.com/cookbook/crop_pictures_by_custom_coordinates
-            cropTrObj.x = parseInt((width - croppedWidth),10);
-            cropTrObj.y = parseInt((height - croppedHeight),10);
+            cropTrObj.x = parseInt(Math.abs(width - croppedWidth),10);
+            cropTrObj.y = parseInt(Math.abs(height - croppedHeight),10);
             cropTrObj.crop = 'crop';
             cropTrObj.gravity = 'south_east';
             modPrimary = false;
@@ -1046,7 +1059,21 @@ class CanvasWrapper extends Component {
       let retInfo = {
         trObjs : trObjs,
         objMatched : objMatched,
-        somethingClippedPast : somethingClippedPast
+        clippingInfo : {
+          somethingClippedPast : somethingClippedPast,
+          minX : minX,
+          maxX : maxX,
+          minY : minY,
+          maxY : maxY
+        },
+        objProps : {
+          x : x,
+          y : y,
+          leftEdge : leftEdge,
+          topEdge : topEdge,
+          rightEdge : rightEdge,
+          bottomEdge : bottomEdge
+        }
       }
       console.log(retInfo);
 
@@ -1065,6 +1092,12 @@ class CanvasWrapper extends Component {
       let perObjectBounding = forceBoundingStyle==='perObject' ? true : false;
 
       let canvasDimensions = this.state.editorData.canvasDimensions;
+
+      // Clipping info
+      let minX = 0;
+      let maxX = canvasDimensions.width;
+      let minY = 0;
+      let maxY = canvasDimensions.height;
 
       // TESTING
       let useArr = true;
@@ -1094,9 +1127,15 @@ class CanvasWrapper extends Component {
         // Get transformation objs from mapper
         let trInfo = _this.mainMethods.cloudinary.mapCanvasObjPropsToTrans(currObj,null,perObjectBounding);
         let trObjs = trInfo.trObjs;
-        if (trInfo.somethingClippedPast === true){
+        if (trInfo.clippingInfo.somethingClippedPast === true){
           outputNeedsCropping = true;
         }
+
+        // Update min/max X/Y values
+        minX = (trInfo.objProps.x < minX) ? trInfo.objProps.x : minX;
+        maxX = (trInfo.objProps.rightEdge > trInfo.objProps.x) ? trInfo.objProps.rightEdge : maxX;
+        minY = (trInfo.objProps.y < minY) ? trInfo.objProps.y : minY;
+        maxY = (trInfo.objProps.bottomEdge > trInfo.objProps.y) ? trInfo.objProps.bottomEdge : maxY;
 
         // If the current canvas object got matched to a known type and triggered a transformation...
         if (trInfo.objMatched){
@@ -1108,11 +1147,15 @@ class CanvasWrapper extends Component {
         }
       });
       if (forceBoundingStyle==='atEnd' && outputNeedsCropping===true){
+        debugger;
         transformationArr.push({
           crop : 'crop',
           gravity : 'north_west',
           width : canvasDimensions.width,
-          height : canvasDimensions.height
+          height : canvasDimensions.height,
+          // If an object clipped above or to the left (-x or -y value), we need to offset the crop by the absolute value of the clip
+          x : parseInt(Math.abs(minX),10),
+          y : parseInt(Math.abs(minY),10)
         });
       }
 

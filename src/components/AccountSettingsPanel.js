@@ -97,10 +97,6 @@ class AccountSettingsPanel extends Component {
       });
     }
   }
-
-  updateOutputScale(evt){
-    debugger;
-  }
   
   /**
    * Saves accounts settings JSON to localstorage
