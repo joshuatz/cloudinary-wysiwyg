@@ -43,9 +43,9 @@ class AccountSettingsPanel extends Component {
       cloudinaryCloudName : 'demo',
       fetchInstantly : false,
       lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24),
-      editorWidth : 400,
-      editorHeight : 400,
-      outputScale : 1
+      outputWidth : 400,
+      outputHeight : 400,
+      editorScale : 1
     }
   }
 
@@ -58,8 +58,8 @@ class AccountSettingsPanel extends Component {
 
   copyDimensionsToCanvas(){
     this.props.appMethods.mergeMasterState('editorData.canvasDimensions',{
-      width : this.state.editorWidth,
-      height : this.state.editorHeight
+      width : this.state.outputWidth,
+      height : this.state.outputHeight
     });
   }
 
@@ -75,11 +75,11 @@ class AccountSettingsPanel extends Component {
     let value = (e.target.type==='checkbox' ? e.target.checked : e.target.value);
 
     // Special - Dimensions
-    if (settingKey==='editorWidth' || settingKey === 'editorHeight'){
+    if (settingKey==='outputWidth' || settingKey === 'outputHeight'){
       // Force to number
       value = parseInt(value);
       // Copy dimension to canvas settings
-      this.props.appMethods.mergeMasterState('editorData.canvasDimensions.' + settingKey.replace('editor','').toLowerCase(),value,()=>{
+      this.props.appMethods.mergeMasterState('editorData.canvasDimensions.' + settingKey.replace('output','').toLowerCase(),value,()=>{
         //
       });
     }
@@ -120,7 +120,7 @@ class AccountSettingsPanel extends Component {
   }
 
   componentDidUpdate(){
-    this.helpers.mtz.initSliders('#outputScale');
+    this.helpers.mtz.initSliders('#editorScale');
   }
 
   render() {
@@ -147,25 +147,25 @@ class AccountSettingsPanel extends Component {
         </div>
         <div className="row">
           <div className="col s4 offset-s1 input-field">
-            <input id="editorWidth" type="number" min="2" max="800" step="1" value={this.state.editorWidth} onChange={this.handleChange.bind(this)}></input>
-            <label htmlFor="#editorWidth">Editor Width:</label>
+            <input id="outputWidth" type="number" min="2" max="8000" step="1" value={this.state.outputWidth} onChange={this.handleChange.bind(this)}></input>
+            <label htmlFor="#outputWidth">Output Width:</label>
           </div>
           <div className="col s4 offset-s1 input-field">
-            <input id="editorHeight" type="number" min="2" max="800" step="1" value={this.state.editorHeight} onChange={this.handleChange.bind(this)}></input>
-            <label htmlFor="#editorHeight">Editor Height:</label>
+            <input id="outputHeight" type="number" min="2" max="8000" step="1" value={this.state.outputHeight} onChange={this.handleChange.bind(this)}></input>
+            <label htmlFor="#outputHeight">Output Height:</label>
           </div>
         </div>
-        <div className="row outputScaleWrapper">
+        <div className="row editorScaleWrapper">
           <p className="range-field col s6">
-            <input type="range" value={this.state.outputScale} name="outputScale" id="outputScale" min="1" max="20" onChange={this.handleChange.bind(this)} />
-            <label htmlFor="outputScale">Output Scale</label>
+            <input type="range" value={this.state.editorScale} name="editorScale" id="editorScale" min="1" max="100" onChange={this.handleChange.bind(this)} />
+            <label htmlFor="editorScale">Output Scale</label>
           </p>
           <div className="col s6 row">
             <div className="col s6">
-              Editor output will be scaled to x{this.state.outputScale}
+              On-screen editor will be scaled to {this.state.editorScale}%
             </div>
             <div className="col s6">
-              Final dimensions = {this.state.editorWidth * this.state.outputScale}px X {this.state.editorHeight * this.state.outputScale}px
+              Editor dimensions = {this.state.outputWidth * this.state.editorScale/100}px X {this.state.outputHeight * this.state.editorScale/100}px
             </div>
           </div>
         </div>

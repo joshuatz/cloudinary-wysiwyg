@@ -1353,7 +1353,13 @@ class CanvasWrapper extends Component {
     let pseudoImages = this.state.editorData.images.urls.map((val,index)=>{
       return <img className="pseudoImage" key={index} src={val} alt="" />
     });
-
+    
+    // Generate tranform CSS string for canvasContainerWrapper, which needs scaleX and scaleY per user settings
+    let scaleFloatString = (this.state.accountSettings.editorScale/100).toFixed(2);
+    let canvasContainerWrapperTransform = ''
+      + 'scaleX(' + scaleFloatString + ')'
+      + ' '
+      + 'scaleY(' + scaleFloatString + ')';
 
     return(
       <div className="canvasWrapperWrapper" data-instantpreview={this.state.accountSettings.fetchInstantly.toString()}>
@@ -1361,7 +1367,9 @@ class CanvasWrapper extends Component {
 
           <div className="canvasWrapper leftSide roundedWrapper">
             <h3 className="areaTitle">Editor:</h3>
-            <div className="canvasContainerWrapper">
+            <div className="canvasContainerWrapper" style={{
+              transform : canvasContainerWrapperTransform
+            }}>
               {/* THE ACTUAL CANVAS ELEMENT */}
               <canvas id="editorCanvas"></canvas>
             </div>
