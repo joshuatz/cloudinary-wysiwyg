@@ -425,6 +425,10 @@ class CanvasWrapper extends Component {
       });
       return textInstance;
     },
+    /**
+     * It is easier to remove a line break immediately after a user adds one and flash a warning, rather than intercepting and capturing an enter keypress
+     * @param {object} textObj - Canvas textObject (IText or Text)
+     */
     removeMultiLineText : function(textObj){
       let hasMultiLine = /[\r\n]/gm.test(textObj.text);
       if (hasMultiLine){
@@ -444,10 +448,11 @@ class CanvasWrapper extends Component {
       // Prompt re-render with force
       this.mainMethods.canvas.renderAll(true);
     },
+    /**
+     * Takes the baseLayerConfig from masterState and applies it to the canvas / fabric.js
+     */
     applyBaseLayer : function(){
       let canvas = this.state.editorData.canvasObj;
-      let canvasObjects = canvas._objects;
-      let fabric = this.state.fabric;
       // Generate canvasObj from baseLayer
       let baseLayerConfig = this.state.editorData.baseLayer;
       // opacity is stored in config as 0-100 int, but canvas uses percent float
@@ -503,6 +508,11 @@ class CanvasWrapper extends Component {
     getSolidPixelSrc : function(){
       return typeof(this.state.editorData.solidPixelSrc)==='string' ? this.state.editorData.solidPixelSrc : this.fallbackSolidPixelSrc;
     },
+    /**
+     * 
+     * @param {array} trObjs - should be an array of transformation objects
+     * @param {object} cloudinaryImageTag - instance of ImageTag class
+     */
     applyTrArrayToCloudinaryImgTag(trObjs,cloudinaryImageTag){
       let tr = this.cloudinary.Transformation.new();
       for (var x=0; x< trObjs.length; x++){
@@ -531,6 +541,9 @@ class CanvasWrapper extends Component {
         return 'sample';
       }
     },
+    /**
+     * Gets the base layer config from masterState, but cleans it up a bit first and makes sure that correct fallbacks are in place
+     */
     getBaseLayerConfig : function(){
       let baseLayerConfig = this.state.editorData.baseLayer;
       // If base type is set to image, but image is not set, fallback to psuedo base
@@ -549,6 +562,9 @@ class CanvasWrapper extends Component {
       }
       return baseLayerConfig;
     },
+    /**
+     * Gets the baseLayer (e.g. the background) and returns it as a processed Cloudinary ImageTag instance
+     */
     getBaseLayerAsImage(){
       let canvas = this.canvas;
       let cloudinaryInstance = this.cloudinaryInstance;
@@ -1147,7 +1163,6 @@ class CanvasWrapper extends Component {
         }
       });
       if (forceBoundingStyle==='atEnd' && outputNeedsCropping===true){
-        debugger;
         transformationArr.push({
           crop : 'crop',
           gravity : 'north_west',

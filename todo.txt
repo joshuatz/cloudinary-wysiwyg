@@ -7,6 +7,7 @@ Todo list and misc notes
        - for image or text overlays
      - Fix issue where FabricJS allows objects to go over edge of canvas (-x or -y values), but that doesn't translate properly to cloudinary
   If time:
+     - MACROS
      - Layers / grouping - and Z-index associated
      - shareable templates
      - Looking into saving template as a set of transformations in Cloudinary platform
@@ -14,6 +15,7 @@ Todo list and misc notes
      - Undo button / CTRL+Z combo
      - Copy / clone button
      - DPad for moving objects by 1 pixel nudges, click and hold to move rapidly, and/or use of arrow keys
+     - Lock / Unlock object
 
 
 Resources to check out later:
