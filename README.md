@@ -1,11 +1,11 @@
 # Cloudinary-WYSIWYG
-## Project Page:
-Link: [REPLACEME](REPLACEME)
+## Project Page and link to live tool:
+### Link: [https://joshuatz.com/projects/web-stuff/cloudinary-wysiwyg-visual-editor-for-transformations](https://joshuatz.com/projects/web-stuff/cloudinary-wysiwyg-visual-editor-for-transformations)
 ###
 ---
 ###
-## Link to live demo:
-A hosted demo of this can be found at [REPLACEME](REPLACEME).
+## Quick Demo:
+![Quick Demo GIF](/src/readme-files/Cloudinary_WYSIWYG-Quick_Editor_Demo.gif?raw=true)
 ###
 ---
 ###
@@ -31,7 +31,10 @@ There are tons of features that could be added to this project (support for "eff
 ---
 ###
 ## Samples:
-REPLACEME
+### Gaming Badge generated from JSON
+![Gaming Badge Demo](/src/readme-files/Cloudinary_-_Dynamic_Gaming_Badge_Overlay_Generated_Example.jpg)
+### Jira Daily Task Summary
+![Jira Daily Task Summary](/src/readme-files/Cloudinary_-_Jira_Daily_Task_Summary_Generated_Image_Sample.jpg)
 ###
 ---
 ###
