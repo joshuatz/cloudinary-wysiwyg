@@ -84,8 +84,6 @@ class CanvasWrapper extends Component {
       console.log('canvas dimensions changed');
       this.mainMethods.canvas.updateDimensions();
     }
-    // Check for baseLayer changes...
-
   }
 
   /**
@@ -1330,7 +1328,6 @@ class CanvasWrapper extends Component {
   }
 
   updateFontSelectorFromCanvasObj(canvasObj){
-    // @TODO
     // First, take a snapshot of the currently selected font, so it can be reverted if the object is unselected
     let currSelectedFont = underscore.clone(this.state.editorData.currSelectedFont);
     // Now get font settings based on canvasObj
