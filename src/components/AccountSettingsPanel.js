@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import LogPanel from './LogPanel';
+import Helpers from '../inc/Helpers';
 const MASTER_STATE_KEY = 'accountSettings';
 
 class AccountSettingsPanel extends Component {
@@ -22,48 +22,69 @@ class AccountSettingsPanel extends Component {
       });
       // Merge back up
       this.props.appMethods.mergeMasterState(MASTER_STATE_KEY,newState);
-      //this.state = newState;
     }
+
+    this.helpers = new Helpers();
 
     // Attach this components state to master
     this.state = this.props.masterState[MASTER_STATE_KEY];
+    this.copyDimensionsToCanvas();
+  }
+  
+  componentDidMount(){
+    //
   }
 
+  /**
+   * Gets the "default" state of account settings - used for reset() function
+   */
   getDefaultState(){
     return {
       cloudinaryCloudName : 'demo',
-      fetchInstantly : false
+      fetchInstantly : false,
+      lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24),
+      outputWidth : 400,
+      outputHeight : 400,
+      editorScale : 1
     }
-    return this.props.masterState[MASTER_STATE_KEY];
   }
 
+  /**
+   * Get the account settings JSON from state
+   */
   getAccountSettingsState(){
     return this.props.masterState[MASTER_STATE_KEY];
   }
 
+  copyDimensionsToCanvas(){
+    this.props.appMethods.mergeMasterState('editorData.canvasDimensions',{
+      width : this.state.outputWidth,
+      height : this.state.outputHeight
+    });
+  }
+
   handleChange(e){
     console.log(e.target);
+    // Get state
+    let stateCopy = this.getAccountSettingsState();
 
     // Use the id of the input as the storage key
     let settingKey = e.target.id;
 
     // Get value dependent on type of input
     let value = (e.target.type==='checkbox' ? e.target.checked : e.target.value);
-    /*
-    if (this.state[settingKey]!==value){
-      // Make sure to use callback!
-      this.setState({
-        [settingKey] : value
-      },()=>{
-        console.group('state');
-          console.log(this.state);
-        console.groupEnd();
-        this.saveItDown();
+
+    // Special - Dimensions
+    if (settingKey==='outputWidth' || settingKey === 'outputHeight'){
+      // Force to number
+      value = parseInt(value);
+      // Copy dimension to canvas settings
+      this.props.appMethods.mergeMasterState('editorData.canvasDimensions.' + settingKey.replace('output','').toLowerCase(),value,()=>{
+        //
       });
     }
-    */
 
-    let stateCopy = this.getAccountSettingsState();
+    
     if (stateCopy[settingKey]!==value){
       // Update copy
       stateCopy[settingKey]=value;
@@ -77,28 +98,36 @@ class AccountSettingsPanel extends Component {
     }
   }
   
+  /**
+   * Saves accounts settings JSON to localstorage
+   */
   saveItDown(){
-    //localStorage.setItem(this.LOCALSTORAGEKEY,JSON.stringify(this.state));
     localStorage.setItem(this.LOCALSTORAGEKEY,JSON.stringify(this.props.masterState[MASTER_STATE_KEY]));
   }
 
+  /**
+   * Resets account settings to the default state
+   */
   reset(){
-    //this.setState(this.getDefaultState());
     this.props.appMethods.mergeMasterState(MASTER_STATE_KEY,this.getDefaultState());
     localStorage.removeItem(this.LOCALSTORAGEKEY);
     this.props.appMethods.addMsg('Reset Settings');
     this.props.appMethods.resetEverything();
   }
 
+  componentDidUpdate(){
+    this.helpers.mtz.initSliders('#editorScale');
+  }
+
   render() {
     return (
-      <div className="accountSettingsPanelWrapper">
+      <div className="accountSettingsPanelWrapper roundedWrapper">
         <div className="row valign-wrapper">
             <div className="input-field col s5">
               <input id="cloudinaryCloudName" type="text" name="cloudinaryCloudName" value={this.state.cloudinaryCloudName} onChange={this.handleChange.bind(this)} onKeyUp={this.handleChange.bind(this)} />
               <label htmlFor="cloudinaryCloudName">Your Cloud Name</label>
             </div>
-            <div className="col s6 offset-s1 center">
+            <div className="col s6 offset-s1 center instantRenderingSwitchWrapper">
               <div className="valign-wrapper">
                 <div className="switchHeading">Instant Rendering</div>
                 <div className="switch">
@@ -112,9 +141,36 @@ class AccountSettingsPanel extends Component {
               </div>
             </div>
         </div>
-        <div className="row center">
-          <div className="col s4 offset-s4 center">
-            <div className="btn red" onClick={this.reset.bind(this)}>Reset</div>
+        <div className="row">
+          <div className="col s4 offset-s1 input-field">
+            <input id="outputWidth" type="number" min="2" max="8000" step="1" value={this.state.outputWidth} onChange={this.handleChange.bind(this)}></input>
+            <label htmlFor="#outputWidth">Output Width:</label>
+          </div>
+          <div className="col s4 offset-s1 input-field">
+            <input id="outputHeight" type="number" min="2" max="8000" step="1" value={this.state.outputHeight} onChange={this.handleChange.bind(this)}></input>
+            <label htmlFor="#outputHeight">Output Height:</label>
+          </div>
+        </div>
+        <div className="row editorScaleWrapper">
+          <p className="range-field col s6">
+            <input type="range" value={this.state.editorScale} name="editorScale" id="editorScale" min="1" max="100" onChange={this.handleChange.bind(this)} />
+            <label htmlFor="editorScale">Output Scale</label>
+          </p>
+          <div className="col s6 row">
+            <div className="col s6">
+              On-screen editor will be scaled to {this.state.editorScale}%
+            </div>
+            <div className="col s6">
+              Editor dimensions = {this.state.outputWidth * this.state.editorScale/100}px X {this.state.outputHeight * this.state.editorScale/100}px
+            </div>
+          </div>
+        </div>
+        <div className="row center resetButtonsWrapper">
+          <div className="col s5 offset-s1 center">
+            <div className="btn warningColor" onClick={this.props.appMethods.resetCanvas.bind(this)}>Reset Canvas</div>
+          </div>
+          <div className="col s5 offset-s1 center">
+            <div className="btn dangerColor" onClick={this.reset.bind(this)}>Reset Everything</div>
           </div>
         </div>
       </div>

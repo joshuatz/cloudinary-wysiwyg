@@ -1,0 +1,25 @@
+Todo list and misc notes
+  Top Priority / WIP:
+     - Optimize transformation chain as much as possible
+        - Prevent duplicate items from being including in transformation chain
+     - Add support for transparency / alpha in...
+       - Color picker and applied to shapes
+       - for image or text overlays
+     - Fix issue where FabricJS allows objects to go over edge of canvas (-x or -y values), but that doesn't translate properly to cloudinary
+  If time:
+     - MACROS
+     - Layers / grouping - and Z-index associated
+     - shareable templates
+     - Looking into saving template as a set of transformations in Cloudinary platform
+     - Built in spreadsheet generator that lets you use macros
+     - Undo button / CTRL+Z combo
+     - Copy / clone button
+     - DPad for moving objects by 1 pixel nudges, click and hold to move rapidly, and/or use of arrow keys
+     - Lock / Unlock object
+
+
+Resources to check out later:
+  https://stackoverflow.com/questions/15032497/layering-canvas-objects-in-fabric-js
+
+Important notes to self:
+   - canvas.renderAll() needs to be called BEFORE .bringToFront() and changing index

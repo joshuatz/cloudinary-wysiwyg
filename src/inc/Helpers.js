@@ -10,37 +10,25 @@ class Helpers {
       let $ = this.$;
       $(document).ready(function(){
         this.Materialize.AutoInit();
+        $('[data-tooltip]').tooltip();
       }.bind(this));
+    }.bind(this),
+    initSliders : function(selector){
+      selector = typeof(selector)==='string' ? selector : 'input[type="range"]'
+      let $ = this.$;
+      this.Materialize.Range.init($(selector));
+    }.bind(this),
+    initTabs : function(selector){
+      selector = typeof(selector)==='string' ? selector : 'ul.tabs';
+      let $ = this.$;
+      this.Materialize.Tabs.init($(selector));
     }.bind(this),
     modal : function(selector){
       let $ = this.$;
       var Materialize = this.Materialize;
-
-      let getInstance = function(element){
-        /*
-        if (typeof(elemOrSelector)==='string'){
-          let selector = elemOrSelector;
-          return this.Materialize.Modal.getInstance($(selector));
-        }
-        else {
-          let elem = elemOrSelector;
-          return this.Materialize.Modal.getInstance(elem);
-        }
-        */
-       if ($(selector).length > 0){
-         let elems = $(selector);
-         let instances = Materialize.Modal.getInstance(elems);
-         if (typeof(instances)==='undefined' || instances ===null){
-           instances = Materialize.Modal.init(elems);
-         }
-         debugger;
-         return instances[0];
-       }
-      }.bind(this);
       
       // Should return jQuery iterable object
       let getInstances = function(){
-        console.log(Materialize);
         var instances = $(selector).map((index,val)=>{
           var elem = val;
           let instance = Materialize.Modal.getInstance(elem);
@@ -51,7 +39,7 @@ class Helpers {
           return instance;
         });
         return instances;
-      }.bind(this);
+      };
 
       let open = function(){
         getInstances().each((index,val)=>{val.open();})
@@ -61,6 +49,27 @@ class Helpers {
         open : open.bind(this)
       }
     }.bind(this)
+  }
+
+  toast(msg,style){
+    let styleMappings = {
+      'info' : 'toast toastInfo defaultPrimaryColor',
+      'success' : 'toast toastSuccess green',
+      'warning' : 'toast toastWarning warningColor',
+      'error' : 'toast toastError dangerColor'
+    }
+    style = (style || 'info');
+    // Construct Materialize toast config
+    let toastConfig = {
+      html : msg,
+      classes : styleMappings[style]
+    }
+    this.Materialize.toast(toastConfig);
+    // @TODO - spruce up
+  }
+
+  getPlaceholderImage(width,height){
+    return 'https://via.placeholder.com/' + width + 'x' + height;
   }
 
   //https://stackoverflow.com/a/6394168
@@ -93,6 +102,11 @@ class Helpers {
     return boundObj;
   }
 
+  /**
+   * @param {object||array} objectA - object, or array of objects to merge together
+   * @param {object} [objectB] - object to merge into object A
+   * @returns {object} Merged Object
+   */
   objectMerge = function(objectA,objectB){
     let mergedObj = {};
     if (Array.isArray(objectA)){
@@ -106,6 +120,41 @@ class Helpers {
       for (var attr in objectB){mergedObj[attr] = objectB[attr]};
     }
     return mergedObj;
+  }
+
+  base64Safe = function(myString){
+    return encodeURIComponent(btoa(myString));
+  }
+
+  randomChar = function(){
+    return Math.random().toString(36).substring(2,3);
+  }
+  
+  arrayAndObjPropCompare = function(arrayOrObjA,arrayOrObjB){
+    // Force array comparison
+    let arrayA = Array.isArray(arrayOrObjA)===true ? arrayOrObjA : (typeof(arrayOrObjA)==='object' ? Object.keys(arrayOrObjA) : []);
+    let arrayB = Array.isArray(arrayOrObjB)===true ? arrayOrObjB : (typeof(arrayOrObjB)==='object' ? Object.keys(arrayOrObjB) : []);
+    let matches = 0;
+    for (var a=0; a<arrayA.length; a++){
+      if (arrayB.indexOf(arrayA[a])!==-1){
+        matches++;
+      }
+    }
+    return matches;
+  }
+
+  /**
+   * Load a hosted image without visibly adding to DOM, to get attributes
+   * @param {string} remoteImageUrl - the URL of the hosted image to load 
+   * @param {function} callback - function that will be called with the (loaded) image as the argument.
+   */
+  loadRemoteImageWithCallback(remoteImageUrl,callback){
+    let $ = this.$;
+    let image = new Image();
+    image.onload = function(){
+      callback(this);
+    }
+    image.src = remoteImageUrl;
   }
 }
 

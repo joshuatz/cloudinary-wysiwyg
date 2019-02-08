@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
+import Warnings from './components/Warnings';
 import Init from './components/Init';
 import AccountSettingsPanel from './components/AccountSettingsPanel';
 import LogPanel from './components/LogPanel';
+import StatsPanel from './components/StatsPanel';
 import CanvasWrapper from './components/editor/CanvasWrapper';
 import './App.css';
-import ImageSelector from './components/editor/modals/ImageSelector';
 import Helpers from './inc/Helpers';
 import $ from 'jquery';
 import 'jquery-ui';
@@ -13,6 +14,7 @@ import 'blueimp-file-upload/js/jquery.iframe-transport.js';
 import 'blueimp-file-upload/js/jquery.fileupload.js';
 // import * as cloudinary from 'cloudinary-jquery-file-upload/cloudinary-jquery-file-upload.min.js';
 import * as cloudinary from 'cloudinary-jquery-file-upload/cloudinary-jquery-file-upload.js';
+import underscore from 'underscore';
 window.$ = $;
 window.jQuery = $;
 window.cloudinary = cloudinary;
@@ -22,10 +24,14 @@ class App extends Component {
   constructor(){
     super();
     // Using this as top-level state
-    this.state = {
+    let initialState = {
       logQueue : [],
       editorData : {
         canvasObj : {},
+        canvasDimensions : {
+          width : 400,
+          height : 400
+        },
         isItemSelected : false,
         currSelectedItemType : false,
         currSelectedItemGenericProps : {},
@@ -47,15 +53,51 @@ class App extends Component {
           'strikethrough' : false
         },
         updateHooks : [],
+        baseLayer : {
+          image : null,
+          // null | 'none' | 'image' | 'color'
+          type : 'none',
+          isId : false,
+          colorHex : '#FFF',
+          colorRGB : [255,255,255],
+          opacity : 100,
+          crop : 'scale'
+        },
         baseImage : null
       },
       accountSettings : {
         cloudinaryCloudName : 'demo',
-        fetchInstantly : false
+        fetchInstantly : false,
+        editorWidth : 400,
+        editorHeight : 400,
+        outputScale : 1,
+      },
+      output : {
+        transformations : {
+          transformationArr : []
+        },
+        img : {
+          raw : {},
+          html : '',
+          src : ''
+        },
+        imgSrc : ''
+      },
+      livePreviewSrc : '',
+      lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24),
+      fetchCount : 0,
+      performance : {
+        generationTimeSec : 0
       }
     }
-    window.masterState = this.state;
+    initialState.editorData.lastSelectedFont = underscore.clone(initialState.editorData.currSelectedFont);
+    this.state = initialState;
+    window.getMasterState = this.getMasterState.bind(this);
     this.jQuery = window.jQuery;
+    this.$ = this.jQuery;
+    this.Materialize = window.M;
+    window.Materialize = window.M;
+
     this.helpers = new Helpers();
   }
 
@@ -96,18 +138,36 @@ class App extends Component {
       logQueue : queue
     },callback);
   }
+
   resetEverything(){
+    this.resetCanvas();
+  }
+  resetCanvas(){
     let canvas = this.state.editorData.canvasObj;
     if (canvas && canvas['targets']){
       canvas.clear();
     }
+    this.mergeMasterState('livePreviewSrc','');
   }
+
+  getSecondsSinceLastFetch(){
+    return (this.getMsSinceLastFetch() / 1000);
+  }
+
+  getMsSinceLastFetch(){
+    let msPast = (new Date()).getTime() - this.state.lastFetched;
+    return msPast;
+  }
+
   appMethods = {
     addMsg : this.addMsg.bind(this),
     resetEverything : this.resetEverything.bind(this),
+    resetCanvas : this.resetCanvas.bind(this),
     mergeMasterState : this.mergeMasterState.bind(this),
     mergeEditorData : this.mergeEditorData.bind(this),
-    getMasterState : this.getMasterState.bind(this)
+    getMasterState : this.getMasterState.bind(this),
+    getSecondsSinceLastFetch : this.getSecondsSinceLastFetch.bind(this),
+    getMsSinceLastFetch : this.getMsSinceLastFetch.bind(this)
   }
 
   fireUpdateHooks(){
@@ -127,10 +187,16 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <Init />
-        <AccountSettingsPanel appMethods={this.appMethods} masterState={this.state} />
-        <CanvasWrapper appMethods={this.appMethods} masterState={this.state} editorData={this.state.editorData} />
-        <LogPanel logQueue={this.state.logQueue} />
+        <Warnings masterState={this.state} />
+        <div className="mainContainer">
+          <Init />
+          <AccountSettingsPanel appMethods={this.appMethods} masterState={this.state} />
+          <div className="myDivider"></div>
+          <CanvasWrapper appMethods={this.appMethods} masterState={this.state} editorData={this.state.editorData} />
+          <div className="myDivider"></div>
+          <LogPanel logQueue={this.state.logQueue} />
+          <StatsPanel masterState={this.state}></StatsPanel>
+        </div>
       </div>
     );
   }

@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import Helpers from '../../../inc/Helpers';
 
 class ToolPanel extends Component {
   constructor(props){
@@ -6,11 +7,11 @@ class ToolPanel extends Component {
     this.state = {
       fabric : {}
     }
+    this.helpers = new Helpers();
   }
 
   componentDidMount(){
     console.log(this.props);
-    //debugger;
     this.setState({
       editorData : this.props.editorData,
       canvasObj : this.props.editorData.canvasObj,
@@ -27,44 +28,60 @@ class ToolPanel extends Component {
   buttons = [
     {
       icon : 'fa-vector-square',
-      name : 'Squre Shape',
+      name : 'Squre',
       action : function(){
         this.props.mainMethods.canvas.addRect();
       }
     },
     {
-      icon : 'fa-file-image',
-      name : 'Add Image',
+      icon : 'fa-minus',
+      name : 'Line',
       action : function(){
-        this.props.mainMethods.modals.imageSelector.launch();
+        this.props.mainMethods.canvas.addLine();
+      }
+    },
+    {
+      icon : 'fa-circle',
+      name : 'Circle',
+      action : function(){
+        this.props.mainMethods.canvas.addCircle();
+      },
+      disabled : false
+    },
+    {
+      icon : 'fa-caret-up',
+      name : 'Triangle',
+      action : function(){
+        this.props.mainMethods.canvas.addTriangle();
+      }
+    },
+    {
+      icon : 'fa-file-image',
+      name : 'Image',
+      action : function(){
+        this.helpers.mtz.modal('.imageHostingMethodSelector[data-destination="canvas"]').open();
       }
     },
     {
       icon : 'fa-font',
-      name : 'Add Text',
+      name : 'Text',
       action : function(){
-        this.props.mainMethods.canvas.addText('foobar');
-      }
-    },
-    {
-      icon : 'fa-layer-group',
-      name : 'Add Layer',
-      action : function(){
-
+        this.props.mainMethods.canvas.addText('Edit Me!');
       }
     },
     {
       icon : 'fa-paint-roller',
-      name : 'Add Background',
+      name : 'Set Background',
       action : function(){
-        
-      }
+        this.helpers.mtz.modal('.baseLayerEditor.modal').open();
+      },
+      disabled : false
     }
   ]
   render(){
     let buttonsHTML = this.buttons.map((val,index)=>{
       return (
-          <button className="toolbarButton" key={'tlbb_' + index} onClick={val.action.bind(this)}>
+          <button className={"toolbarButton z-depth-2" + (val.disabled===true ? " disabled" : "")} key={'tlbb_' + index} onClick={val.action.bind(this)} data-tooltip={(val.disabled===true ? "Sorry, this has not yet been implemented." : null)}>
             <i className={"fas " + val.icon}></i>{val.name}
           </button>
       )

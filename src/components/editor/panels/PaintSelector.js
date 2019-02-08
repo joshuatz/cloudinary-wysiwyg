@@ -1,18 +1,23 @@
 import React, {Component} from 'react';
-import {SketchPicker} from 'react-color';
 import {ChromePicker} from 'react-color';
 
 class PaintSelector extends Component {
   constructor(props){
     super(props);
-  }
-
-  componentDidMount(){
-    //
+    let initialState = {
+      currSelectedColor : this.props.color
+    }
   }
 
   handleChangeComplete = (color, event) => {
-    this.props.mainMethods.colors.handleColorSelect(color,event);
+    this.props.handleColorSelect(color,event);
+  }
+
+  shouldComponentUpdate(nextProps,nextState){
+    if (JSON.stringify(this.props.color)!==JSON.stringify(nextProps.color)){
+      return true;
+    }
+    return false;
   }
 
   render(){
