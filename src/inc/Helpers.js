@@ -201,7 +201,6 @@ class Helpers {
     value = parseInt(value,10);
     value = Number.isNaN(value) ? null : value;
     this.checkGaLoaded((res)=>{
-      debugger;
       window.gtag('event',action,{
         event_category : category,
         event_label : label,

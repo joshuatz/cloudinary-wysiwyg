@@ -223,16 +223,18 @@ class App extends Component {
     this.runOnlyOnFirstLoad();
   }
   render() {
+    let hasValidCloudinaryAcct = this.getIsValidCloudinaryAcct();
+    let generatorHasOutput = this.state.output.img.src.length > 0;
     return (
       <div className="App">
-        <Fabs />
+        <Fabs hasValidCloudinaryAcct={hasValidCloudinaryAcct} generatorHasOutput={generatorHasOutput} />
         <Warnings masterState={this.state} />
         <div className="mainContainer">
           <Init />
           <AccountSettingsPanel appMethods={this.appMethods} masterState={this.state} />
           <div className="myDivider"></div>
           <div className="appLower">
-            {this.getIsValidCloudinaryAcct() ? (
+            {hasValidCloudinaryAcct ? (
               <CanvasWrapper appMethods={this.appMethods} masterState={this.state} editorData={this.state.editorData} />
             ) : (
               <div className="obscureBlocker">
@@ -241,7 +243,7 @@ class App extends Component {
                 </div>
               </div>
             )}
-            <div className="myDivider"></div>
+            <div className="myDivider"></div>w
             <LogPanel logQueue={this.state.logQueue} />
             <StatsPanel masterState={this.state}></StatsPanel>
           </div>

@@ -36,6 +36,8 @@ class CanvasWrapper extends Component {
     this.outputResultsClass = React.createRef();
     // Important const - use this list with any calls to canvas.toJSON() to make sure object props are included
     this.CANVAS_PROPERTIES_TO_KEEP = ['__controlsVisibility','isBaseLayer','baseLayerConfig','myTextObj'];
+    // Share across - hackish
+    window.showResultsModal = this.mainMethods.cloudinary.showResultsModal
   }
 
   componentDidMount(){
