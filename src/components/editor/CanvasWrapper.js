@@ -1264,6 +1264,10 @@ class CanvasWrapper extends Component {
       }.bind(this)
     },
     showResultsModal : function(){
+      this.helpers.fireGaEvent({
+        action : 'Get Cloudinary Results Modal',
+        label : 'Open'
+      });
       this.outputResultsClass.current.refresh();
       this.helpers.mtz.modal('.outputResultModal').open();
     }

@@ -101,8 +101,14 @@ class App extends Component {
     this.$ = this.jQuery;
     this.Materialize = window.M;
     window.Materialize = window.M;
-
+    this.firstLoadComplete = false;
     this.helpers = new Helpers();
+
+    /**
+     * Try to load config file if exists
+     */
+    this.appConfig = this.helpers.getAppConfig().appConfig;
+    this.hasAppConfig = typeof(this.appConfig)==='object';
   }
 
   /**
@@ -200,11 +206,26 @@ class App extends Component {
     });
   }
 
+  runOnlyOnFirstLoad(){
+    if(!this.firstLoadComplete){
+      // do stuff
+      this.helpers.fireGaPageView();
+      this.firstLoadComplete = true;
+      console.log('runOnlyOnFirstLoad complete!');
+    }
+    else {
+      if (this.getIsDebug()){
+        console.warn('runOnlyOnFirstLoad was called but first load already complete');
+      }
+    }
+  }
+
   componentDidUpdate(){
     this.fireUpdateHooks.bind(this);
   }
   componentDidMount(){
     this.fireUpdateHooks.bind(this);
+    this.runOnlyOnFirstLoad();
   }
   render() {
     return (

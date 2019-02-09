@@ -3,6 +3,7 @@ class Helpers {
     this.jQuery = window.jQuery;
     this.Materialize = window.M;
     this.$ = this.jQuery;
+    this.ANALYTICS_CATEGORY_STRING = 'CloudinaryWYSIWYG-App';
   }
 
   mtz = {
@@ -156,6 +157,75 @@ class Helpers {
     }
     image.src = remoteImageUrl;
   }
+
+  getGauid(){
+    let gauid = false;
+    let appConfig = this.getAppConfig();
+    if (appConfig){
+      if (typeof(appConfig.analytics)==='object' && /UA-\d{8}-\d{1}/.test(appConfig.analytics.gauid)){
+        gauid = appConfig.analytics.gauid;
+      }
+    }
+    return gauid;
+  }
+
+  checkGaLoaded(callback){
+    callback = typeof(callback)==='function' ? callback : ()=>{};
+    let gauid = this.getGauid();
+    let $ = this.$;
+    let gaLoaded = window.hasHelpersCheckedGaLoaded===true ? true : false;
+    if (gauid){
+      if (!gaLoaded){
+        // Add gtag.js script
+        $('head').append('<script async src="https://www.googletagmanager.com/gtag/js?id=' + gauid + '"></script>');
+        // set window level vars
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function(){window.dataLayer.push(arguments);}
+        window.gtag('js', new Date());
+        window.gtag('config', gauid);
+        // Set flag
+        window.hasHelpersCheckedGaLoaded = true;
+      }
+      callback();
+    }
+    else {
+      // Do not trigger callback if GAUID is not set up
+    }
+  }
+
+  fireGaEvent(evtConfig){
+    let category = typeof(evtConfig.category)==='string' ? evtConfig.category : this.ANALYTICS_CATEGORY_STRING;
+    let action = typeof(evtConfig.action)==='string' ? evtConfig.action : null;
+    let label = typeof(evtConfig.label)==='string' ? evtConfig.label : null;
+    let value = typeof(evtConfig.value)!=='undefined' ? evtConfig.value : null;
+    value = parseInt(value,10);
+    value = Number.isNaN(value) ? null : value;
+    this.checkGaLoaded((res)=>{
+      debugger;
+      window.gtag('event',action,{
+        event_category : category,
+        event_label : label,
+        event_value : value
+      });
+    });
+  }
+
+  fireGaPageView(){
+    // checkGaLoaded will also trigger a pageview if it is being run for the first time and it loads GA
+    this.checkGaLoaded();
+  }
+
+  getAppConfig(){
+    let appConfig = false;
+    try {
+      appConfig = require('../config.json');
+    }
+    catch (e){
+      console.warn('Could not find config.json');
+    }
+    return appConfig;
+  }
+  
 }
 
 export default Helpers;
