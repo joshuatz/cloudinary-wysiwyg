@@ -68,6 +68,7 @@ class AccountSettingsPanel extends Component {
   }
 
   handleChange(e){
+    let blockUpdate = false;
     // Get state
     let stateCopy = this.getAccountSettingsState();
 
@@ -81,14 +82,21 @@ class AccountSettingsPanel extends Component {
     if (settingKey==='outputWidth' || settingKey === 'outputHeight'){
       // Force to number
       value = parseInt(value);
-      // Copy dimension to canvas settings
-      this.props.appMethods.mergeMasterState('editorData.canvasDimensions.' + settingKey.replace('output','').toLowerCase(),value,()=>{
-        //
-      });
+      // Check NaN and min value
+      if (!Number.isNaN(value) && value > 0){
+        // Copy dimension to canvas settings
+        this.props.appMethods.mergeMasterState('editorData.canvasDimensions.' + settingKey.replace('output','').toLowerCase(),value,()=>{
+          //
+        });
+      }
+      else {
+        blockUpdate = true;
+        this.helpers.toast('Please enter a valid number greater than zero','warning');
+      }
     }
 
     
-    if (stateCopy[settingKey]!==value){
+    if (stateCopy[settingKey]!==value && !blockUpdate){
       // Update copy
       stateCopy[settingKey]=value;
       // Update master, then save to localstorage - make sure to use callback!
