@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Fabs from './components/Fabs';
 import Warnings from './components/Warnings';
 import Init from './components/Init';
 import AccountSettingsPanel from './components/AccountSettingsPanel';
@@ -224,6 +225,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
+        <Fabs />
         <Warnings masterState={this.state} />
         <div className="mainContainer">
           <Init />
