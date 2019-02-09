@@ -174,7 +174,7 @@ class Helpers {
     let gauid = this.getGauid();
     let $ = this.$;
     let gaLoaded = window.hasHelpersCheckedGaLoaded===true ? true : false;
-    if (gauid){
+    if (gauid && this.getIsDebug()===false){
       if (!gaLoaded){
         // Add gtag.js script
         $('head').append('<script async src="https://www.googletagmanager.com/gtag/js?id=' + gauid + '"></script>');
@@ -189,7 +189,7 @@ class Helpers {
       callback();
     }
     else {
-      // Do not trigger callback if GAUID is not set up
+      // Do not trigger callback if GAUID is not set up, or debug is on
     }
   }
 
@@ -224,6 +224,11 @@ class Helpers {
       console.warn('Could not find config.json');
     }
     return appConfig;
+  }
+
+  getIsDebug(){
+    // @TODO - more robust
+    return (document.location.hostname==='localhost' && /debug=off/gim.test(document.location.search)===false);
   }
   
 }

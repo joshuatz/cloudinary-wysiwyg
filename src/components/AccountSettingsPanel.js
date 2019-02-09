@@ -5,7 +5,7 @@ const MASTER_STATE_KEY = 'accountSettings';
 class AccountSettingsPanel extends Component {
   constructor(props){
     super(props);
-
+    this.helpers = new Helpers();
     // Constants
     this.LOCALSTORAGEKEY = 'accountSettings';
 
@@ -23,8 +23,6 @@ class AccountSettingsPanel extends Component {
       // Merge back up
       this.props.appMethods.mergeMasterState(MASTER_STATE_KEY,newState);
     }
-
-    this.helpers = new Helpers();
 
     // Attach this components state to master
     this.state = this.props.masterState[MASTER_STATE_KEY];
@@ -47,7 +45,7 @@ class AccountSettingsPanel extends Component {
       outputHeight : 400,
       editorScale : 100
     }
-    if (this.props.appMethods.getIsDebug()){
+    if (this.helpers.getIsDebug()){
       defaultState.cloudinaryCloudName = 'demo';
     }
     return defaultState;
@@ -120,7 +118,7 @@ class AccountSettingsPanel extends Component {
    * Resets account settings to the default state
    */
   reset(){
-    this.props.appMethods.mergeMasterState(MASTER_STATE_KEY,this.getDefaultState());
+    this.props.appMethods.mergeMasterState(MASTER_STATE_KEY,this.getDefaultState.bind(this)());
     localStorage.removeItem(this.LOCALSTORAGEKEY);
     this.props.appMethods.addMsg('Reset Settings');
     this.props.appMethods.resetEverything();

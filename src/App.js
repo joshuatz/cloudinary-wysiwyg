@@ -23,6 +23,7 @@ window.cloudinaryInstance = cloudinary.CloudinaryJQuery.new();
 class App extends Component {
   constructor(){
     super();
+    this.helpers = new Helpers();
     // Using this as top-level state
     let initialState = {
       logQueue : [],
@@ -92,7 +93,7 @@ class App extends Component {
     }
     initialState.editorData.lastSelectedFont = underscore.clone(initialState.editorData.currSelectedFont);
     // Special debug state
-    if (this.getIsDebug()){
+    if (this.helpers.getIsDebug()){
       initialState.accountSettings.cloudinaryCloudName = 'demo';
     }
     this.state = initialState;
@@ -102,7 +103,6 @@ class App extends Component {
     this.Materialize = window.M;
     window.Materialize = window.M;
     this.firstLoadComplete = false;
-    this.helpers = new Helpers();
 
     /**
      * Try to load config file if exists
@@ -178,24 +178,18 @@ class App extends Component {
     getMasterState : this.getMasterState.bind(this),
     getSecondsSinceLastFetch : this.getSecondsSinceLastFetch.bind(this),
     getMsSinceLastFetch : this.getMsSinceLastFetch.bind(this),
-    getIsValidCloudinaryAcct : this.getIsValidCloudinaryAcct.bind(this),
-    getIsDebug : this.getIsDebug.bind(this)
+    getIsValidCloudinaryAcct : this.getIsValidCloudinaryAcct.bind(this)
   }
 
   getIsValidCloudinaryAcct(){
     let cloudinaryCloudName = this.state.accountSettings.cloudinaryCloudName;
     let prohibited = ['demo','null'];
     if(cloudinaryCloudName!==''){
-      if (this.getIsDebug()){
+      if (this.helpers.getIsDebug()){
         return true;
       }
       else return prohibited.indexOf(cloudinaryCloudName)===-1
     };
-  }
-
-  getIsDebug(){
-    // @TODO - more robust
-    return (document.location.hostname==='localhost' && /debug=off/gim.test(document.location.search)===false);
   }
 
   fireUpdateHooks(){
@@ -214,7 +208,7 @@ class App extends Component {
       console.log('runOnlyOnFirstLoad complete!');
     }
     else {
-      if (this.getIsDebug()){
+      if (this.helpers.getIsDebug()){
         console.warn('runOnlyOnFirstLoad was called but first load already complete');
       }
     }
