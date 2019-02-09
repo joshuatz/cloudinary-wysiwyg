@@ -101,16 +101,19 @@ class CanvasWrapper extends Component {
       this.state.editorData.canvasObj.clear();
     },
     updateLivePreview : function(force){
-      force = typeof(force)==='boolean' ? force : false;
-      if (force || (this.state.accountSettings.fetchInstantly && this.mainMethods.app.getMsSinceLastFetch() > 250)){
-        // Get updated image src
-        this.mainMethods.cloudinary.generateFromCanvas.get.bind(this)();
-        // Update livePreviewSrc state, which will prompt render of preview
-        this.mainMethods.app.mergeMasterState('livePreviewSrc',this.mainMethods.app.getMasterState().output.imgSrc);
-      }
-      // Also update if livePreview is off, that way state will be ready if live preview is sudddenly opened
-      else if (this.state.accountSettings.fetchInstantly===false){
-        this.mainMethods.canvas.updateLivePreview(true);
+      // Check for valid settings first
+      if (this.mainMethods.app.getIsValidCloudinaryAcct()){
+        force = typeof(force)==='boolean' ? force : false;
+        if (force || (this.state.accountSettings.fetchInstantly && this.mainMethods.app.getMsSinceLastFetch() > 250)){
+          // Get updated image src
+          this.mainMethods.cloudinary.generateFromCanvas.get.bind(this)();
+          // Update livePreviewSrc state, which will prompt render of preview
+          this.mainMethods.app.mergeMasterState('livePreviewSrc',this.mainMethods.app.getMasterState().output.imgSrc);
+        }
+        // Also update if livePreview is off, that way state will be ready if live preview is sudddenly opened
+        else if (this.state.accountSettings.fetchInstantly===false){
+          this.mainMethods.canvas.updateLivePreview(true);
+        }
       }
     },
     renderAll : function(force,OPT_skipCloudinaryGeneration){
@@ -495,6 +498,10 @@ class CanvasWrapper extends Component {
     setConfig : function(){
       if (this.state.accountSettings.cloudinaryCloudName!==''){
         this.cloudinaryInstance.config({'cloud_name' : this.state.accountSettings.cloudinaryCloudName});
+        return true;
+      }
+      else {
+        return false;
       }
     },
     getImageSrcFromPublicId : function(publicId){

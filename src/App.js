@@ -66,11 +66,11 @@ class App extends Component {
         baseImage : null
       },
       accountSettings : {
-        cloudinaryCloudName : 'demo',
+        cloudinaryCloudName : '',
         fetchInstantly : false,
-        editorWidth : 400,
-        editorHeight : 400,
-        outputScale : 1,
+        outputWidth : 400,
+        outputHeight : 400,
+        editorScale : 100,
       },
       output : {
         transformations : {
@@ -91,6 +91,10 @@ class App extends Component {
       }
     }
     initialState.editorData.lastSelectedFont = underscore.clone(initialState.editorData.currSelectedFont);
+    // Special debug state
+    if (this.getIsDebug()){
+      initialState.accountSettings.cloudinaryCloudName = 'demo';
+    }
     this.state = initialState;
     window.getMasterState = this.getMasterState.bind(this);
     this.jQuery = window.jQuery;
@@ -167,7 +171,25 @@ class App extends Component {
     mergeEditorData : this.mergeEditorData.bind(this),
     getMasterState : this.getMasterState.bind(this),
     getSecondsSinceLastFetch : this.getSecondsSinceLastFetch.bind(this),
-    getMsSinceLastFetch : this.getMsSinceLastFetch.bind(this)
+    getMsSinceLastFetch : this.getMsSinceLastFetch.bind(this),
+    getIsValidCloudinaryAcct : this.getIsValidCloudinaryAcct.bind(this),
+    getIsDebug : this.getIsDebug.bind(this)
+  }
+
+  getIsValidCloudinaryAcct(){
+    let cloudinaryCloudName = this.state.accountSettings.cloudinaryCloudName;
+    let prohibited = ['demo','null'];
+    if(cloudinaryCloudName!==''){
+      if (this.getIsDebug()){
+        return true;
+      }
+      else return prohibited.indexOf(cloudinaryCloudName)===-1
+    };
+  }
+
+  getIsDebug(){
+    // @TODO - more robust
+    return (document.location.hostname==='localhost' && /debug=off/gim.test(document.location.search)===false);
   }
 
   fireUpdateHooks(){
@@ -192,10 +214,20 @@ class App extends Component {
           <Init />
           <AccountSettingsPanel appMethods={this.appMethods} masterState={this.state} />
           <div className="myDivider"></div>
-          <CanvasWrapper appMethods={this.appMethods} masterState={this.state} editorData={this.state.editorData} />
-          <div className="myDivider"></div>
-          <LogPanel logQueue={this.state.logQueue} />
-          <StatsPanel masterState={this.state}></StatsPanel>
+          <div className="appLower">
+            {this.getIsValidCloudinaryAcct() ? (
+              <CanvasWrapper appMethods={this.appMethods} masterState={this.state} editorData={this.state.editorData} />
+            ) : (
+              <div className="obscureBlocker">
+                <div className="valign-wrapper">
+                  <div className="errorMessage">Please enter valid account settings</div>
+                </div>
+              </div>
+            )}
+            <div className="myDivider"></div>
+            <LogPanel logQueue={this.state.logQueue} />
+            <StatsPanel masterState={this.state}></StatsPanel>
+          </div>
         </div>
       </div>
     );

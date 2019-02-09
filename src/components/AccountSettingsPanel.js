@@ -39,14 +39,18 @@ class AccountSettingsPanel extends Component {
    * Gets the "default" state of account settings - used for reset() function
    */
   getDefaultState(){
-    return {
-      cloudinaryCloudName : 'demo',
+    let defaultState =  {
+      cloudinaryCloudName : '',
       fetchInstantly : false,
       lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24),
       outputWidth : 400,
       outputHeight : 400,
-      editorScale : 1
+      editorScale : 100
     }
+    if (this.props.appMethods.getIsDebug()){
+      defaultState.cloudinaryCloudName = 'demo';
+    }
+    return defaultState;
   }
 
   /**
@@ -64,7 +68,6 @@ class AccountSettingsPanel extends Component {
   }
 
   handleChange(e){
-    console.log(e.target);
     // Get state
     let stateCopy = this.getAccountSettingsState();
 
