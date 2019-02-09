@@ -32,7 +32,7 @@ class OutputResults extends Component {
 
   render(){
     let output = this.state.output;
-    let imgSrc = output.imgSrc!=='' ? output.imgSrc : 'loading.gif';
+    let imgSrc = output.imgSrc!=='' ? output.imgSrc : '../assets/loading.gif';
     setTimeout(()=>{
       window.Materialize.updateTextFields();
       document.querySelectorAll('.outputResultModal .materialize-textarea').forEach((el)=>{
