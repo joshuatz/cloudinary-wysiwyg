@@ -23,7 +23,7 @@
     "build-light": "cross-env GENERATE_SOURCEMAP=false npm run build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "preinstall": "node fabricjs_setup.js"
+    "preinstall": "cp lib/fabric.min.js public/lib/js/fabric.min.js"
   },
   "eslintConfig": {
     "extends": "react-app"
