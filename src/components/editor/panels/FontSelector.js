@@ -36,6 +36,10 @@ class FontSelector extends Component  {
     this.updateFontSelectorFromState();
   }
 
+  componentDidMount(){
+    this.updateFontSelectorFromState();
+  }
+
   /**
    * This will update all selected text objects on the canvas to match currently selected font settings
    * NOTE: The reverse of this function is updateFontSelectorFromCanvasObj
