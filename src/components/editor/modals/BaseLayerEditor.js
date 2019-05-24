@@ -88,19 +88,19 @@ class BaseLayerEditor extends Component {
               <div className="horizontalRadioGroup">
                 <p>
                   <label>
-                    <input name="baseLayerTypeSelector" type="radio" value="none" checked={this.props.masterState.editorData.baseLayer.type==='none'||this.props.masterState.editorData.baseLayer.type===null} onClick={this.handleBaseTypeChange.bind(this)} />
+                    <input name="baseLayerTypeSelector" type="radio" value="none" checked={this.props.masterState.editorData.baseLayer.type==='none'||this.props.masterState.editorData.baseLayer.type===null} onChange={this.handleBaseTypeChange.bind(this)} />
                     <span>None</span>
                   </label>
                 </p>
                 <p>
                   <label>
-                    <input name="baseLayerTypeSelector" type="radio" value="color" checked={this.props.masterState.editorData.baseLayer.type==='color'} onClick={this.handleBaseTypeChange.bind(this)} />
+                    <input name="baseLayerTypeSelector" type="radio" value="color" checked={this.props.masterState.editorData.baseLayer.type==='color'} onChange={this.handleBaseTypeChange.bind(this)} />
                     <span>Solid Color</span>
                   </label>
                 </p>
                 <p>
                   <label>
-                    <input name="baseLayerTypeSelector" type="radio" value="image" checked={this.props.masterState.editorData.baseLayer.type==='image'} onClick={this.handleBaseTypeChange.bind(this)} />
+                    <input name="baseLayerTypeSelector" type="radio" value="image" checked={this.props.masterState.editorData.baseLayer.type==='image'} onChange={this.handleBaseTypeChange.bind(this)} />
                     <span>Image</span>
                   </label>
                 </p>

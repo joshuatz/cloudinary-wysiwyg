@@ -70,7 +70,7 @@ class CanvasWrapper extends Component {
       this.mainMethods.canvas.renderAll();
     });
     canvas.on('text:changed',(evt)=>{
-      console.log(evt);
+      this.helpers.debugConsole.log(evt);
       // Prevent multi-line text
       this.mainMethods.canvas.removeMultiLineText(evt.target);
     });
@@ -83,7 +83,7 @@ class CanvasWrapper extends Component {
   componentDidUpdate(prevProps,prevState){
     // Check for canvas dimensions change
     if (prevState.editorData.canvasDimensions.width!==this.state.editorData.canvasObj.width || prevState.editorData.canvasDimensions.height!==this.state.editorData.canvasObj.height){
-      console.log('canvas dimensions changed');
+      this.helpers.debugConsole.log('canvas dimensions changed');
       this.mainMethods.canvas.updateDimensions();
     }
   }
@@ -259,7 +259,7 @@ class CanvasWrapper extends Component {
     },
     handleShapeSelect : function(shape){
       this.mainMethods.app.mergeEditorData('isItemSelected',true);
-      console.log(shape);
+      this.helpers.debugConsole.log(shape);
     },
     handleTextSelect : function(canvasObj){
       //this.updateFontSelectorFromCanvasObj(canvasObj);
@@ -369,12 +369,12 @@ class CanvasWrapper extends Component {
         this.mainMethods.app.mergeEditorData('images',currImages,(newState)=>{
           //@TODO refactor this to use a componentDidUpdate hook or something else to make sure image is now in DOM and can use, instead of timeout
           setTimeout(()=>{
-            console.log(_this);
+            this.helpers.debugConsole.log(_this);
             imageElem = _this.getPseudoImage(url);
             // Callback self
             _this.canvasMethods.addImage.bind(_this)(imageElem,callback,OPT_macroKey);
             _this.canvasMethods.renderAll.bind(_this)();
-            console.log(_this.state);
+            this.helpers.debugConsole.log(_this.state);
           },400);
         });
       }
@@ -436,7 +436,7 @@ class CanvasWrapper extends Component {
       let fabric = this.state.fabric;
       let currSelectedFont = this.state.editorData.currSelectedFont;
       text = (text || 'Edit Me!');
-      console.log(currSelectedFont);
+      this.helpers.debugConsole.log(currSelectedFont);
       let textProps = this.helpers.objectMerge(this.mainMethods.canvas.getTextPropsFromFontPanel(),{
         left : 100,
         top : 100,
@@ -879,7 +879,7 @@ class CanvasWrapper extends Component {
             let base = (0.5 * width);
             // C = Square Root of (A^2 + B^2)
             let hypotenuse = Math.sqrt((base * base) + (height * height));
-            console.log(hypotenuse);
+            this.helpers.debugConsole.log(hypotenuse);
             // Triangles are complicated to setup the transformation chain for, so we are kind of starting back from scratch and will build one at a time
             resetTrObjs();
 
@@ -1129,7 +1129,7 @@ class CanvasWrapper extends Component {
           bottomEdge : bottomEdge
         }
       }
-      console.log(retInfo);
+      this.helpers.debugConsole.log(retInfo);
 
       // Return transformations and mapping info
       return retInfo;
@@ -1215,7 +1215,7 @@ class CanvasWrapper extends Component {
       // Construct html tag
       let imgHtmlTag = '<img src="' + imgSrc + '">';
 
-      console.log(transformationArr);
+      _this.helpers.debugConsole.log(transformationArr);
       let generationTimeSec = ((performance.now()) - generationStartTime)/1000;
       this.mainMethods.app.mergeMasterState('performance.generationTimeSec',generationTimeSec);
       this.mainMethods.app.addMsg('Canvas-to-Cloudinary generation complete || Time = ' + generationTimeSec.toFixed(4) + 's || transformations = ' + transformationArr.length);
@@ -1257,7 +1257,7 @@ class CanvasWrapper extends Component {
             },
             imgSrc : imgSrc
           }
-          console.log(results);
+          _this.helpers.debugConsole.log(results);
           if (shouldUpdateState){
             // Update state
             _this.mainMethods.app.mergeMasterState('output',results);
@@ -1335,8 +1335,8 @@ class CanvasWrapper extends Component {
 
   handleColorSelect(color,event){
     console.group('handleColorSelect');
-    console.log(color);
-    console.log(event);
+    this.helpers.debugConsole.log(color);
+    this.helpers.debugConsole.log(event);
     console.groupEnd();
     let editorData = this.state.editorData;
     editorData.currSelectedColor = color;
@@ -1353,14 +1353,14 @@ class CanvasWrapper extends Component {
   }
 
   updateInputPanelFromCanvasObj(canvasObj){
-    console.log(canvasObj);
+    this.helpers.debugConsole.log(canvasObj);
     this.updateColorSelectorFromCanvasObj(canvasObj);
     this.updateFontSelectorFromCanvasObj(canvasObj);
     this.mainMethods.canvas.renderAll();
   }
 
   updateColorSelectorFromCanvasObj(canvasObj){
-    console.log(this.getObjColor(canvasObj));
+    this.helpers.debugConsole.log(this.getObjColor(canvasObj));
     this.mainMethods.app.mergeEditorData('currSelectedColor',this.getObjColor(canvasObj));
   }
 

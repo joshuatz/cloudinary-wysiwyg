@@ -206,12 +206,10 @@ class App extends Component {
       // do stuff
       this.helpers.fireGaPageView();
       this.firstLoadComplete = true;
-      console.log('runOnlyOnFirstLoad complete!');
+      this.helpers.debugConsole.log('runOnlyOnFirstLoad complete!');
     }
     else {
-      if (this.helpers.getIsDebug()){
-        console.warn('runOnlyOnFirstLoad was called but first load already complete');
-      }
+      this.helpers.debugConsole.warn('runOnlyOnFirstLoad was called but first load already complete');
     }
   }
 

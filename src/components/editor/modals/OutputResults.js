@@ -34,7 +34,7 @@ class OutputResults extends Component {
 
   render(){
     let output = this.state.output;
-    let imgSrc = output.imgSrc!=='' ? output.imgSrc : '../assets/loading.gif';
+    let imgSrc = output.imgSrc!=='' ? this.helpers.forceHttps(output.imgSrc) : '/assets/loading.gif';
     setTimeout(()=>{
       window.Materialize.updateTextFields();
       document.querySelectorAll('.outputResultModal .materialize-textarea').forEach((el)=>{
@@ -48,7 +48,7 @@ class OutputResults extends Component {
             <h3 className="modalTitle">Cloudinary Results:</h3>
             <div className="row">
               <div className="col s10 offset-s1">
-                <img className="responsive-img z-depth-2 resultsPanelPreviewImage" src={this.helpers.forceHttps(imgSrc)} alt="Generated Cloudinary Preview"></img>
+                <img className="responsive-img z-depth-2 resultsPanelPreviewImage" src={imgSrc} alt="Generated Cloudinary Preview"></img>
               </div>
             </div>
             <div className="row">

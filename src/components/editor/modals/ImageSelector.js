@@ -51,7 +51,7 @@ class ImageSelector extends Component {
   addImageById(){
     let _this = this;
     let cloudinaryPublicId = this.$('#cloudinaryPublicIdInput_' + this.destinationString).val();
-    console.log(cloudinaryPublicId);
+    this.helpers.debugConsole.log(cloudinaryPublicId);
     if (cloudinaryPublicId.length > 0){
       if (this.props.destination==='baseLayer'){
         let originalBaseLayer = this.props.masterState.editorData.baseLayer;

@@ -100,9 +100,11 @@ class AccountSettingsPanel extends Component {
       stateCopy[settingKey]=value;
       // Update master, then save to localstorage - make sure to use callback!
       this.props.appMethods.mergeMasterState(MASTER_STATE_KEY,stateCopy,()=>{
-        console.group('state');
-          console.log(this.getAccountSettingsState());
-        console.groupEnd();
+        if (this.helpers.getIsDebug()){
+          console.group('state');
+            console.log(this.getAccountSettingsState());
+          console.groupEnd();
+        }
         this.saveItDown();
       });
     }

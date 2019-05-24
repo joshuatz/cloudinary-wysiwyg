@@ -11,13 +11,10 @@ class ToolPanel extends Component {
   }
 
   componentDidMount(){
-    console.log(this.props);
     this.setState({
       editorData : this.props.editorData,
       canvasObj : this.props.editorData.canvasObj,
       fabric : window.fabric
-    },function(){
-      console.log(this.state);
     });
   }
 

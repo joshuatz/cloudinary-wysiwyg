@@ -243,6 +243,22 @@ class Helpers {
     }
     return url;
   }
+
+  debugConsole = this.getDebugConsole();
+  getDebugConsole(){
+    if (this.getIsDebug()){
+      return console;
+    }
+    else {
+      return {
+        log : function(){},
+        warn: function(){},
+        error: function(){},
+        group: function(){},
+        groupEnd: function(){}
+      }
+    }
+  }
 }
 
 export default Helpers;

@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import Helpers from '../../../inc/Helpers';
 let googleFonts = require('google-fonts-complete/google-fonts.json');
 const GOOGLE_FONTS_ARR = Object.keys(googleFonts);
 
@@ -13,6 +14,7 @@ class FontSelector extends Component  {
     Object.assign(initialState.currSelectedFont,this.getCurrSelectedFont(false));
     this.state = initialState;
     this.$ = window.$;
+    this.helpers = new Helpers();
     this.fontSelectOptions = GOOGLE_FONTS_ARR.map((fontName,index)=>{
       return (
         <option value={fontName} key={fontName+'_'+index}>{fontName}</option>
@@ -102,7 +104,7 @@ class FontSelector extends Component  {
     let newFontProps = originalFontProps;
     newFontProps[optionPropName] = !originalFontProps[optionPropName];
     this.props.mainMethods.app.mergeEditorData('currSelectedFont',newFontProps,(res)=>{
-      console.log(this.props.mainMethods.app.getMasterState());
+      this.helpers.debugConsole.log(this.props.mainMethods.app.getMasterState());
     });
     if (typeof(button.action)==='function'){
       button.action.bind(this)();
