@@ -40,6 +40,7 @@ class AccountSettingsPanel extends Component {
     let defaultState =  {
       cloudinaryCloudName : '',
       fetchInstantly : false,
+      preferHttps : false,
       lastFetched : (new Date()).getTime() - (1000 * 60 * 60 * 24),
       outputWidth : 400,
       outputHeight : 400,
@@ -136,13 +137,26 @@ class AccountSettingsPanel extends Component {
               <input id="cloudinaryCloudName" type="text" name="cloudinaryCloudName" value={this.state.cloudinaryCloudName} onChange={this.handleChange.bind(this)} onKeyUp={this.handleChange.bind(this)} />
               <label htmlFor="cloudinaryCloudName">Your Cloud Name</label>
             </div>
-            <div className="col s6 offset-s1 center instantRenderingSwitchWrapper">
+            <div className="col s3 offset-s1 center instantRenderingSwitchWrapper">
               <div className="valign-wrapper">
                 <div className="switchHeading">Instant Rendering</div>
                 <div className="switch">
                   <label>
                     Off
                     <input id="fetchInstantly" type="checkbox" checked={this.state.fetchInstantly} onChange={this.handleChange.bind(this)} />
+                    <span className="lever"></span>
+                    On
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="col s3 center preferHttpsSwitchWrapper">
+              <div className="valign-wrapper">
+                <div className="switchHeading">Prefer HTTPS</div>
+                <div className="switch">
+                  <label>
+                    Off
+                    <input id="preferHttps" type="checkbox" checked={this.state.preferHttps} onChange={this.handleChange.bind(this)} />
                     <span className="lever"></span>
                     On
                   </label>

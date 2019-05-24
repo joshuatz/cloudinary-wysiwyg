@@ -1153,15 +1153,11 @@ class CanvasWrapper extends Component {
       let minY = 0;
       let maxY = canvasDimensions.height;
 
-      // TESTING
-      let useArr = true;
-      console.log(this);
       if ('generateFromCanvasRaw' in _this){
         _this.cloudinaryMethods = _this;
       }
       // Setup cloudinary config and make sure refs are set
       _this.cloudinaryMethods.setConfig.bind(this)();
-      let cloudinaryInstance = this.cloudinaryInstance;
       canvas = (canvas && typeof(canvas._objects)==='object') ? canvas : this.canvas;
       // Get every object on the canvas
       let canvasObjects = canvas._objects;
@@ -1211,26 +1207,13 @@ class CanvasWrapper extends Component {
           y : parseInt(Math.abs(minY),10)
         });
       }
-
-      // @TODO
-      if (useArr){
-        cloudinaryImageTag = this.mainMethods.cloudinary.applyTrArrayToCloudinaryImgTag(transformationArr,cloudinaryImageTag);
-      }
+      cloudinaryImageTag = this.mainMethods.cloudinary.applyTrArrayToCloudinaryImgTag(transformationArr,cloudinaryImageTag);
 
       // Extract actual image URL
-      let imgSrc = (/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1]);
-      // Escape slashes inside base64 fetchlayers
-      imgSrc = imgSrc.replace(/(l_fetch:)([^\/,]+)\/([^,]+)/gim,(match,p1,p2,p3,offset,string)=>{
-        // First, make sure we haven't captured a slash that is natural.
-        // Example : l_fetch:DFf98w0384/c_crop,...
-        if (/(l_fetch:[^\/,]+)\/\w_{1}\w+/.test(match)){
-          return p1 + p2 + '/' + p3;
-        }
-        else {
-          // You can simply replace the slash with an underscore, as per https://tools.ietf.org/html/rfc4648#page-7
-          return p1 + p2 + '_' + p3;
-        }
-      });
+      let imgSrc = this.mainMethods.cloudinary.extractImageUrlFromCloudinaryImageTag(cloudinaryImageTag,this.state.accountSettings.preferHttps);
+
+      // Construct html tag
+      let imgHtmlTag = '<img src="' + imgSrc + '">';
 
       console.log(transformationArr);
       let generationTimeSec = ((performance.now()) - generationStartTime)/1000;
@@ -1239,7 +1222,7 @@ class CanvasWrapper extends Component {
 
       return {
         open : function(){
-          window.open(/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1])
+          window.open(imgSrc);
         },
         log : function(){
           console.group('Cloudinary Output:');
@@ -1254,7 +1237,7 @@ class CanvasWrapper extends Component {
               console.groupEnd();
             console.groupEnd();
             console.log(cloudinaryImageTag);
-            console.log(cloudinaryImageTag.toHtml());
+            console.log(imgHtmlTag);
             console.log(imgSrc);
         },
         get : function(OPT_updateState){
@@ -1269,7 +1252,7 @@ class CanvasWrapper extends Component {
             },
             img : {
               raw : cloudinaryImageTag,
-              html : cloudinaryImageTag.toHtml(),
+              html : imgHtmlTag,
               src : imgSrc
             },
             imgSrc : imgSrc
@@ -1284,6 +1267,30 @@ class CanvasWrapper extends Component {
           return results;
         }
       }
+    },
+    /**
+     * Handles escaping, forcing https, etc.
+     */
+    extractImageUrlFromCloudinaryImageTag(cloudinaryImageTag,OPT_forceHttps){
+      let forceHttps = typeof(OPT_forceHttps)==='boolean' ? OPT_forceHttps : false;
+      // Extract actual image URL
+      let imgSrc = (/src="([^"]*)"/.exec(cloudinaryImageTag.toHtml())[1]);
+      // Escape slashes inside base64 fetchlayers
+      imgSrc = imgSrc.replace(/(l_fetch:)([^\/,]+)\/([^,]+)/gim,(match,p1,p2,p3,offset,string)=>{
+        // First, make sure we haven't captured a slash that is natural.
+        // Example : l_fetch:DFf98w0384/c_crop,...
+        if (/(l_fetch:[^\/,]+)\/\w_{1}\w+/.test(match)){
+          return p1 + p2 + '/' + p3;
+        }
+        else {
+          // You can simply replace the slash with an underscore, as per https://tools.ietf.org/html/rfc4648#page-7
+          return p1 + p2 + '_' + p3;
+        }
+      });
+      if (forceHttps){
+        imgSrc = this.helpers.forceHttps(imgSrc);
+      }
+      return imgSrc;
     },
     generateFromCanvas : {
       open : function(canvas){

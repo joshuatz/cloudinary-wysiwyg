@@ -13,7 +13,6 @@ import 'jquery-ui';
 import 'blueimp-file-upload/js/vendor/jquery.ui.widget.js';
 import 'blueimp-file-upload/js/jquery.iframe-transport.js';
 import 'blueimp-file-upload/js/jquery.fileupload.js';
-// import * as cloudinary from 'cloudinary-jquery-file-upload/cloudinary-jquery-file-upload.min.js';
 import * as cloudinary from 'cloudinary-jquery-file-upload/cloudinary-jquery-file-upload.js';
 import underscore from 'underscore';
 window.$ = $;
@@ -70,6 +69,7 @@ class App extends Component {
       accountSettings : {
         cloudinaryCloudName : '',
         fetchInstantly : false,
+        preferHttps : false,
         outputWidth : 400,
         outputHeight : 400,
         editorScale : 100,
