@@ -162,7 +162,39 @@ class CanvasWrapper extends Component {
       }
       return selectedArr;
     },
-    moveSelected : function(direction){
+    moveSelected: function(direction,OPT_pixels){
+      let pixelsToMove = (typeof(OPT_pixels)!=='undefined' && !isNaN(OPT_pixels)) ? OPT_pixels : 1;
+      let selected = this.mainMethods.canvas.getSelectedObjs(false);
+      let canvas = this.state.editorData.canvasObj;
+      let leftChange = 0;
+      let topChange = 0;
+      switch (direction){
+        case 'left':
+          leftChange = -1 * (Math.abs(pixelsToMove));
+          break;
+        case 'up':
+          topChange = -1 * (Math.abs(pixelsToMove));
+          break;
+        case 'right':
+          leftChange = 1 * (Math.abs(pixelsToMove));
+          break;
+        case 'down':
+          topChange = 1 * (Math.abs(pixelsToMove));
+          break;
+        default:
+          console.warn('moveSelected was called without specifying direction - no action taken.');
+          break;
+      }
+      if (leftChange!==0 || topChange !==0){
+        selected.forEach((obj,index)=>{
+          obj.left += leftChange;
+          obj.top += topChange;
+          obj.setCoords();
+        });
+        this.mainMethods.canvas.renderAll();
+      }
+    },
+    moveSelectedZIndex : function(direction){
       let selected = this.mainMethods.canvas.getSelectedObjs(false);
       let canvas = this.state.editorData.canvasObj;
       switch (direction) {
@@ -173,7 +205,7 @@ class CanvasWrapper extends Component {
           selected.forEach((obj,index)=>{canvas.sendBackwards(obj)});
           break;
         default:
-          console.warn('moveSelected was called without specifying direction - no action taken.');
+          console.warn('moveSelectedZIndex was called without specifying direction - no action taken.');
           break;
       }
     },

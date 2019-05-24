@@ -230,6 +230,14 @@ class Helpers {
     return (document.location.hostname==='localhost' && /debug=off/gim.test(document.location.search)===false);
   }
   
+  properCase(text){
+    let processedText = '';
+    text.split(' ').forEach((block)=>{
+      processedText += block.charAt(0).toUpperCase() + block.slice(1);
+    });
+    return processedText;
+  }
+
 }
 
 export default Helpers;

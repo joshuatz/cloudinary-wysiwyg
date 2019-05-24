@@ -85,6 +85,41 @@ body {
 }
 
 /**
+* Selected Object Buttons
+*/
+.canvasWrapper .CurrObjectActions {
+  margin-top: 10px;
+  min-height: 36px;
+}
+.canvasWrapper .CurrObjectActions .zIndexButton {
+  margin-right: 8px;
+}
+.zIndexButtonsLabel {
+  display: inline;
+  margin: 0px 8px;
+}
+.dpadWrapper {
+  width: 100%;
+}
+.dpadWrapper button {
+  width: 50px;
+  height: 50px;
+}
+.dpadWrapper .dpadLeft, .dpadWrapper .dpadRight {
+  /* margin-top: 25px; */
+  width: 50px;
+  margin-right: 0px;
+}
+.dpadWrapper .dpadUpAndDown {
+  width: 50px;
+  display: inline-block;
+}
+.dpadWrapper .dpadUp, .dpadWrapper .dpadDown {
+  display: inline;
+  width: 100%;
+}
+
+/**
 * Image Selector Modal
 */
 .ImageSelectorWrapper .button {
@@ -132,13 +167,6 @@ body {
 .canvasWrapper .canvas-container {
   margin-left: auto;
   margin-right: auto;
-}
-.canvasWrapper .CurrObjectActions {
-  margin-top: 10px;
-  min-height: 36px;
-}
-.canvasWrapper .CurrObjectActions .btn {
-  margin-right: 8px;
 }
 .switchHeading {
   padding: 5px;
