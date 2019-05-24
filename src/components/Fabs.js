@@ -11,16 +11,16 @@ class Fabs extends Component {
     return (
       <div className="fabsWrapper">
         <div className="fixed-action-btn">
-          <a className="btn-floating btn-large darkPrimaryColor">
+          <button className="btn-floating btn-large darkPrimaryColor">
             <i className="large material-icons">menu</i>
-          </a>
+          </button>
           <ul>
-            <li><a className="btn-floating accentColor" data-tooltip="Project Page / More Info" data-position="left" href="https://joshuatz.com/projects/web-stuff/cloudinary-wysiwyg-visual-editor-for-transformations" target="_blank">
+            <li><a className="btn-floating accentColor" data-tooltip="Project Page / More Info" data-position="left" href="https://joshuatz.com/projects/web-stuff/cloudinary-wysiwyg-visual-editor-for-transformations" target="_blank" rel="noopener noreferrer">
               <i className="material-icons">info</i>
             </a></li>
-            <li><a className={"btn-floating accentColor" + (!this.props.generatorHasOutput ? " disabled" : "")} data-tooltip="Generate Output" data-position="left" onClick={window.showResultsModal}>
+            <li><button className={"btn-floating accentColor" + (!this.props.generatorHasOutput ? " disabled" : "")} data-tooltip="Generate Output" data-position="left" onClick={window.showResultsModal}>
               <i className="material-icons">get_app</i>
-            </a></li>
+            </button></li>
           </ul>
         </div>
       </div>

@@ -243,7 +243,7 @@ class App extends Component {
                 </div>
               </div>
             )}
-            <div className="myDivider"></div>w
+            <div className="myDivider"></div>
             <LogPanel logQueue={this.state.logQueue} />
             <StatsPanel masterState={this.state}></StatsPanel>
           </div>

@@ -40,12 +40,18 @@ class ImageSelector extends Component {
 
   hostedImageUrlAdd(){
     let hostedImageUrl = this.$('#hostedImageUrl_' + this.destinationString).val();
-    this.addImageByUrl(hostedImageUrl);
+    if (hostedImageUrl.length > 0){
+      this.addImageByUrl(hostedImageUrl);
+    }
+    else {
+      this.helpers.toast('Please enter a valid image URL','error');
+    }
   }
 
   addImageById(){
     let _this = this;
     let cloudinaryPublicId = this.$('#cloudinaryPublicIdInput_' + this.destinationString).val();
+    console.log(cloudinaryPublicId);
     if (cloudinaryPublicId.length > 0){
       if (this.props.destination==='baseLayer'){
         let originalBaseLayer = this.props.masterState.editorData.baseLayer;
@@ -81,14 +87,14 @@ class ImageSelector extends Component {
               },null,null,cloudinaryPublicId);
             }
             else {
-              //@TODO
+              this.helpers.toast('Could not fetch and render image. Is the URL correct?','warning');
             }
           },400);
         });
       }
     }
     else {
-      // @TODO
+      this.helpers.toast('Please enter a valid Cloudinary Public ID','error');
     }
   }
 

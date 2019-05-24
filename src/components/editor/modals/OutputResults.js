@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import underscore from 'underscore';
+import Helpers from '../../../inc/Helpers';
 
 class OutputResults extends Component {
   constructor(props){
@@ -20,6 +21,7 @@ class OutputResults extends Component {
     };
     this.state = initialState;
     this.$ = window.jQuery;
+    this.helpers = new Helpers();
   }
 
   refresh(){
@@ -46,7 +48,7 @@ class OutputResults extends Component {
             <h3 className="modalTitle">Cloudinary Results:</h3>
             <div className="row">
               <div className="col s10 offset-s1">
-                <img className="responsive-img z-depth-2 resultsPanelPreviewImage" src={imgSrc} alt="Generated Cloudinary Preview"></img>
+                <img className="responsive-img z-depth-2 resultsPanelPreviewImage" src={this.helpers.forceHttps(imgSrc)} alt="Generated Cloudinary Preview"></img>
               </div>
             </div>
             <div className="row">

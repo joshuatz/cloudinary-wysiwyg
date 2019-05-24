@@ -165,7 +165,6 @@ class CanvasWrapper extends Component {
     moveSelected: function(direction,OPT_pixels){
       let pixelsToMove = (typeof(OPT_pixels)!=='undefined' && !isNaN(OPT_pixels)) ? OPT_pixels : 1;
       let selected = this.mainMethods.canvas.getSelectedObjs(false);
-      let canvas = this.state.editorData.canvasObj;
       let leftChange = 0;
       let topChange = 0;
       switch (direction){
@@ -1062,7 +1061,7 @@ class CanvasWrapper extends Component {
        */
       function processTrObjs(){
         for (var prop in primaryTrObj){
-          if ((mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1) || chainTogether.indexOf(prop)!==-1 && _this.helpers.arrayAndObjPropCompare(chainTogether,chainedTrObj) > 0){
+          if ((mapping.mustChain && mapping.mustChain.indexOf(prop)!==-1) || (chainTogether.indexOf(prop)!==-1 && _this.helpers.arrayAndObjPropCompare(chainTogether,chainedTrObj) > 0)){
             // Must chain
             chainedTrObj[prop] = primaryTrObj[prop];
             // Don't delete if specified in keepInPrimary prop
@@ -1403,13 +1402,6 @@ class CanvasWrapper extends Component {
 
   getPseudoImage(url){
     return this.$('img[src="' + url + '"]')[0];
-  }
-
-  generateCloudinaryAsset(){
-    let canvasObjects = this.canvas._objects;
-    canvasObjects.map((val,index)=>{
-      
-    });
   }
 
   mainMethods = {

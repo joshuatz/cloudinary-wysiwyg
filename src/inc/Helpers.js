@@ -66,7 +66,6 @@ class Helpers {
       classes : styleMappings[style]
     }
     this.Materialize.toast(toastConfig);
-    // @TODO - spruce up
   }
 
   getPlaceholderImage(width,height){
@@ -77,9 +76,9 @@ class Helpers {
   index(obj,is, value) {
     if (typeof is == 'string')
       return this.index(obj,is.split('.'), value);
-    else if (is.length==1 && value!==undefined)
+    else if (is.length===1 && value!==undefined)
       return obj[is[0]] = value;
-    else if (is.length==0)
+    else if (is.length===0)
       return obj;
     else
       return this.index(obj[is[0]],is.slice(1), value);
@@ -117,8 +116,8 @@ class Helpers {
       }
     }
     else {
-      for (var attr in objectA){mergedObj[attr] = objectA[attr]};
-      for (var attr in objectB){mergedObj[attr] = objectB[attr]};
+      for (let attr in objectA){mergedObj[attr] = objectA[attr]};
+      for (let attr in objectB){mergedObj[attr] = objectB[attr]};
     }
     return mergedObj;
   }
@@ -150,7 +149,6 @@ class Helpers {
    * @param {function} callback - function that will be called with the (loaded) image as the argument.
    */
   loadRemoteImageWithCallback(remoteImageUrl,callback){
-    let $ = this.$;
     let image = new Image();
     image.onload = function(){
       callback(this);
@@ -238,6 +236,13 @@ class Helpers {
     return processedText;
   }
 
+  forceHttps(url){
+    url = url.replace('http:','https:');
+    if (!url.startsWith('https')){
+      url = 'https:' + (url.startsWith('//') ? '' : '//') + url;
+    }
+    return url;
+  }
 }
 
 export default Helpers;
