@@ -1,3 +1,7 @@
+/**
+ * @author Joshua Tzucker
+ */
+
 import React, { Component } from 'react';
 import Fabs from './components/Fabs';
 import Warnings from './components/Warnings';

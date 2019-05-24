@@ -1,5 +1,6 @@
 {
   "name": "cloudinary-wysiwyg",
+  "author": "Joshua Tzucker",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -34,7 +35,6 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "homepage": "./",
   "devDependencies": {
     "cross-env": "^5.2.0"
   }
