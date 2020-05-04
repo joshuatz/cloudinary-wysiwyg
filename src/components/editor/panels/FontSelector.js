@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import Helpers from '../../../inc/Helpers';
-let googleFonts = require('google-fonts-complete/google-fonts.json');
-const GOOGLE_FONTS_ARR = Object.keys(googleFonts);
+import googleFonts from 'google-fonts-complete/api-response.json';
+const GOOGLE_FONTS_ARR = googleFonts.map((fontObj) => fontObj.family)
 
 class FontSelector extends Component  {
   constructor(props){
@@ -20,6 +20,10 @@ class FontSelector extends Component  {
         <option value={fontName} key={fontName+'_'+index}>{fontName}</option>
       )
     });
+  }
+
+  getGoogleFontByName(fontFamilyName) {
+    return this.state.googleFontsObj.filter(fontObj => fontObj.family === fontFamilyName)[0];
   }
 
   /**
@@ -73,7 +77,7 @@ class FontSelector extends Component  {
    */
   handleFontFamilyChange(evt){
     let selectedFontName = evt.target.options[evt.target.selectedIndex].value;
-    let googleFontObj = this.state.googleFontsObj[selectedFontName];
+    let googleFontObj = this.getGoogleFontByName(selectedFontName);
     let fontFamilyString = "'" + selectedFontName + "', " + googleFontObj.category;
     this.props.mainMethods.app.mergeEditorData('currSelectedFont.fontFamilyFull',fontFamilyString);
     this.props.mainMethods.app.mergeEditorData('currSelectedFont.fontFamilySlim',selectedFontName);
