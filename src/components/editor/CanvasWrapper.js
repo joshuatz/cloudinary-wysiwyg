@@ -616,7 +616,14 @@ class CanvasWrapper extends Component {
         baseTransformationObj.opacity = parseInt(baseLayerConfig.opacity);
       }
       let cloudinaryImageTag = {};
-      if (baseLayerConfig.type==='color' || baseLayerConfig.type==='none'){
+      if (baseLayerConfig.type === 'none') {
+        // There needs to be a base layer, no matter what!
+        // However, we can fake it by using a transparent pixel
+        cloudinaryImageTag = cloudinaryInstance.imageTag(this.mainMethods.cloudinary.getTransparentPixelSrc(), {
+          type: 'fetch'
+        });
+      }
+      else if (baseLayerConfig.type==='color'){
         // Use fetch as baselayer, with pixel src
         cloudinaryImageTag = cloudinaryInstance.imageTag(this.mainMethods.cloudinary.getSolidPixelSrc(),{
           type : 'fetch'

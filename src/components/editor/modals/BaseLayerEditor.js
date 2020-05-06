@@ -78,6 +78,7 @@ class BaseLayerEditor extends Component {
       </div>
     );
     let colorHex = typeof(this.props.masterState.editorData.baseLayer.colorHex)==='string' ? this.props.masterState.editorData.baseLayer.colorHex : '#FFF';
+    const hasNoBaseLayer = this.props.masterState.editorData.baseLayer.type==='none'||this.props.masterState.editorData.baseLayer.type===null;
     return(
       <div className="baseLayerEditorWrapper">
         <div className="baseLayerEditor modal" id="baseLayerEditor">
@@ -88,7 +89,7 @@ class BaseLayerEditor extends Component {
               <div className="horizontalRadioGroup">
                 <p>
                   <label>
-                    <input name="baseLayerTypeSelector" type="radio" value="none" checked={this.props.masterState.editorData.baseLayer.type==='none'||this.props.masterState.editorData.baseLayer.type===null} onChange={this.handleBaseTypeChange.bind(this)} />
+                    <input name="baseLayerTypeSelector" type="radio" value="none" checked={hasNoBaseLayer} onChange={this.handleBaseTypeChange.bind(this)} />
                     <span>None</span>
                   </label>
                 </p>
@@ -111,7 +112,7 @@ class BaseLayerEditor extends Component {
                 <div className="col s9">
                   {this.props.masterState.editorData.baseLayer.type==='none' && 
                     <div className="card-panel">
-                      {opacitySlider}
+                      <p>No Settings :)</p>
                     </div>
                   }
                   {this.props.masterState.editorData.baseLayer.type==='color' && 
