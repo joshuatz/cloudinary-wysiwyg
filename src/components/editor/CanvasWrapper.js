@@ -1,7 +1,6 @@
 import React, {Component} from 'react';
 import Helpers from '../../inc/Helpers';
 import LayersPanel from './panels/LayersPanel';
-import ImageAssets from './panels/ImageAssets';
 import ToolPanel from './panels/ToolPanel';
 import PaintSelector from './panels/PaintSelector';
 import FontSelector from './panels/FontSelector';
@@ -1500,9 +1499,6 @@ class CanvasWrapper extends Component {
               <LayersPanel />
             </div>
 
-            <div className="col s12 sidebarComponent">
-              <ImageAssets mainMethods={this.mainMethods} />
-            </div>
           </div>
 
         </div>

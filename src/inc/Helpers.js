@@ -224,8 +224,7 @@ class Helpers {
   }
 
   getIsDebug(){
-    // @TODO - more robust
-    return (document.location.hostname==='localhost' && /debug=off/gim.test(document.location.search)===false);
+    return (process.env.NODE_ENV !== 'production' || /debug=on/gim.test(document.location.search));
   }
   
   properCase(text){

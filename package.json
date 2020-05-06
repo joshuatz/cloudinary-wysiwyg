@@ -27,7 +27,11 @@
     "preinstall": "cp lib/fabric.min.js public/lib/js/fabric.min.js"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": "react-app",
+    "rules": {
+      "no-useless-constructor": "off",
+      "no-useless-escape": "off"
+    }
   },
   "browserslist": [
     ">0.2%",

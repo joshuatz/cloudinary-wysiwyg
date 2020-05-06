@@ -4,9 +4,6 @@ import {ChromePicker} from 'react-color';
 class PaintSelector extends Component {
   constructor(props){
     super(props);
-    let initialState = {
-      currSelectedColor : this.props.color
-    }
   }
 
   handleChangeComplete = (color, event) => {

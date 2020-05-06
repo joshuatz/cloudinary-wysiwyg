@@ -102,14 +102,14 @@ class ImageSelector extends Component {
     let destinationString = this.destinationString;
     let pseudoImageElements = this.state.psuedoImages.map((imgSrc,index)=>{
       return (
-        <img src={imgSrc} alt=""></img>
+        <img src={imgSrc} alt="" key={`${imgSrc}-${index}`}></img>
       )
     });
     return(
       <div className="ImageSelectorWrapper">
 
         {/* Image Hosting Method Selector */}
-        <div className={"imageHostingMethodSelector" + " " + this.modalClassName} data-destination={this.destinationString}>
+        <div className={`imageHostingMethodSelector ${this.modalClassName}`} data-destination={this.destinationString}>
           <div className="modal-content">
             {this.props.destination!=='baseLayer' &&
               <h3>Image Selector</h3>
